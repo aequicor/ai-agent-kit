@@ -1,0 +1,46 @@
+# opencode-kit profile: Kotlin Multiplatform
+# Usage: add kotlin-multiplatform to stack.profiles in your manifest
+
+_profile_name: kotlin-multiplatform
+_profile_description: "Kotlin Multiplatform with Compose Desktop + Android + iOS + Ktor backends"
+_profile_category: stack
+
+stack:
+  language: kotlin
+  build_command: "./gradlew"
+  compile_command: "./gradlew compileKotlin"
+  lint_command: "./gradlew detekt ktlintCheck"
+  test_command: "./gradlew :[module]:test"
+
+lsp:
+  enabled: true
+  command: kotlin-lsp
+  extensions: [".kt", ".kts"]
+
+formatter:
+  enabled: true
+  name: "gradle-detekt-format"
+  command: ["./gradlew", "detekt", "--auto-correct"]
+  extensions: [".kt", ".kts"]
+
+code_quality:
+  forbidden_patterns:
+    - "!! operator (use requireNotNull/checkNotNull with message)"
+    - "GlobalScope.launch (always use a scoped coroutine)"
+    - "Thread.sleep in suspend code (use delay())"
+    - "Empty catch blocks"
+    - "Bare Exception/Throwable catch (catch specific types)"
+    - "lateinit outside DI containers, fragments, and tests"
+    - "runBlocking outside main and tests"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Raw SQL string concatenation (use Exposed parameterized queries)"
+    - "Logging tokens, passwords, PII data"
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: true

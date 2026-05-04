@@ -1,0 +1,136 @@
+# ai-agent-kit manifest example
+# Copy to <project-slug>.yaml in your target project, edit fields, then either:
+#   - have an AI agent follow docs/prompts/setup.md to install (no scripts), or
+#   - keep this manifest as the canonical config the kit's /update command reads.
+
+# ─────────────────────────────────────────────
+# KIT VERSION (do not change manually — set by setup.md / /update)
+# ─────────────────────────────────────────────
+kit_version: "1.0.0"
+
+# ─────────────────────────────────────────────
+# EDITORS
+# ─────────────────────────────────────────────
+# ai-agent-kit currently supports only opencode (CLAUDE.md generation).
+editors: [opencode]
+
+# ─────────────────────────────────────────────
+# PROJECT
+# ─────────────────────────────────────────────
+project:
+  name: "My Project"
+  description: "Brief one-line description of the project"
+
+# ─────────────────────────────────────────────
+# STACK
+# ─────────────────────────────────────────────
+# Available profiles (left-to-right merge, manifest values win):
+#   Stack:      kotlin-multiplatform | minecraft-paper-plugin | generic
+#   Provider:   ollama-cloud
+#   Capability: requirements-pipeline (BA / CCR / SA / Coverage / Consistency)
+stack:
+  language: kotlin
+  profiles: [kotlin-multiplatform, requirements-pipeline]
+
+  build_command: "./gradlew"
+  compile_command: "./gradlew compileKotlin"
+  lint_command: "./gradlew detekt ktlintCheck"
+  test_command: "./gradlew :[module]:test"   # [module] is a literal placeholder
+
+# ─────────────────────────────────────────────
+# MODULES
+# ─────────────────────────────────────────────
+modules:
+  - name: server
+    gradle_module: ":server"
+    source_root: "server/src/main/kotlin/com/example/"
+    test_root: "server/src/test/kotlin/com/example/"
+    docs_path: "docs/server/"
+    responsibility: "Ktor server, business logic, auth"
+
+  - name: client
+    gradle_module: ":composeApp"
+    source_root: "composeApp/src/commonMain/kotlin/com/example/"
+    test_root: "composeApp/src/commonTest/kotlin/com/example/"
+    docs_path: "docs/client/"
+    responsibility: "Compose Multiplatform UI, session management"
+
+# ─────────────────────────────────────────────
+# PROVIDER (env var NAME, never the actual key)
+# ─────────────────────────────────────────────
+provider:
+  name: routerai
+  base_url: https://routerai.ru/api/v1
+  api_key_env: ROUTERAI_OPENCODE
+
+# ─────────────────────────────────────────────
+# MODELS
+# ─────────────────────────────────────────────
+models:
+  default: moonshotai/kimi-k2.6
+  coder: qwen/qwen3-coder-next
+  reviewer: deepseek/deepseek-v4-pro
+  designer: openai/gpt-5.4         # set to null to omit @Designer agent
+  small: qwen/qwen3-coder-next
+
+# ─────────────────────────────────────────────
+# MCP INTEGRATIONS
+# ─────────────────────────────────────────────
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+
+  knowledge:
+    enabled: true
+    url: http://localhost:8085/mcp
+
+  serena:
+    enabled: true                    # set false for non-JVM projects
+
+# ─────────────────────────────────────────────
+# LSP
+# ─────────────────────────────────────────────
+lsp:
+  enabled: true
+  command: kotlin-lsp
+  extensions: [".kt", ".kts"]
+
+# ─────────────────────────────────────────────
+# UI / DESIGNER
+# ─────────────────────────────────────────────
+ui:
+  framework: "Compose Multiplatform"   # null → omit @Designer agent
+  platforms: ["Desktop", "Android", "iOS"]
+  colors:
+    - name: "Brand Primary"
+      hex: "#2A6FF1"
+      purpose: "Primary accent / CTA"
+    - name: "Background"
+      hex: "#FFFFFF"
+      purpose: "Page background"
+    - name: "Text Primary"
+      hex: "#0F172A"
+      purpose: "Body text"
+
+# ─────────────────────────────────────────────
+# CODE QUALITY (forbidden patterns surfaced in AGENTS.md and @CodeWriter)
+# ─────────────────────────────────────────────
+code_quality:
+  forbidden_patterns:
+    - "!! operator (use requireNotNull/checkNotNull with message)"
+    - "GlobalScope.launch (always use a scoped coroutine)"
+    - "Thread.sleep in suspend code (use delay())"
+    - "Empty catch blocks"
+    - "Bare Exception/Throwable catch (catch specific types)"
+    - "TODO() in production code without a DECISIONS.md entry"
+    - "Raw SQL string concatenation with user input (use parameterized queries)"
+
+# ─────────────────────────────────────────────
+# FORMATTER (auto-fix on save)
+# ─────────────────────────────────────────────
+formatter:
+  enabled: true
+  name: "gradle-detekt-format"
+  command: ["./gradlew", "detekt", "--auto-correct"]
+  extensions: [".kt", ".kts"]

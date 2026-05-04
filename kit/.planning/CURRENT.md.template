@@ -1,0 +1,32 @@
+# CURRENT.md — {{PROJECT_NAME}}
+
+> Bridge between sessions. @Main writes a checkpoint after every significant step.
+> Agents read this file at startup before any tool call.
+
+## Project
+
+**{{PROJECT_NAME}}** — {{PROJECT_DESCRIPTION}}
+
+**Modules:** {{MODULE_NAMES_LIST}}
+
+---
+
+## Active Task
+
+*(fill in when starting first task)*
+
+---
+
+## Timeline
+
+<!-- Entries added by @Main via /checkpoint command -->
+<!-- Format:
+## <ISO timestamp>
+- DONE: <what completed>
+- NEXT: <what's next>
+- BLOCKED: <only if blocked>
+-->
+
+## {{ISO_TIMESTAMP_PLACEHOLDER}}
+- DONE: opencode-kit applied, project configured
+- NEXT: first task (to be determined by PO)

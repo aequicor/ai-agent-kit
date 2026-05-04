@@ -1,0 +1,49 @@
+# opencode-kit profile: Minecraft Paper Plugin (Kotlin / Gradle Kotlin DSL)
+# Usage: add minecraft-paper-plugin to stack.profiles in your manifest
+
+_profile_name: minecraft-paper-plugin
+_profile_description: "Minecraft Paper server plugin built with Kotlin, Gradle, detekt"
+_profile_category: stack
+
+stack:
+  language: kotlin
+  build_command: "./gradlew"
+  compile_command: "./gradlew compileKotlin"
+  lint_command: "./gradlew detekt ktlintCheck"
+  test_command: "./gradlew :[module]:test"
+
+lsp:
+  enabled: true
+  command: kotlin-lsp
+  extensions: [".kt", ".kts"]
+
+formatter:
+  enabled: true
+  name: "gradle-detekt-format"
+  command: ["./gradlew", "detekt", "--auto-correct"]
+  extensions: [".kt", ".kts"]
+
+code_quality:
+  forbidden_patterns:
+    - "!! operator (use requireNotNull/checkNotNull with message)"
+    - "GlobalScope.launch (always use a scoped coroutine)"
+    - "Thread.sleep in suspend code (use delay())"
+    - "Empty catch blocks"
+    - "Bare Exception/Throwable catch (catch specific types)"
+    - "lateinit outside DI containers and tests"
+    - "runBlocking outside main and tests"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Hardcoded Bukkit ChatColor strings — use MiniMessage or component API"
+    - "Using deprecated Bukkit API (use Paper-adventure components, not legacy ChatColors)"
+    - "Blocking main thread — schedule async with Bukkit schedulers or coroutines"
+    - "Storing Player references past event scope (causes memory leaks)"
+    - "Logging tokens, passwords, PII data"
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: true

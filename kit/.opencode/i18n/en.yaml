@@ -1,0 +1,74 @@
+# Prompts — English (Английский)
+# Master locale. All other locales are translations of this file.
+
+language: English
+locale: en
+
+## Language settings
+
+| Element | Original (EN) | Localization (EN) |
+|---------|-------------|-------------------|
+| `classify_and_clarify` | "Classify and clarify the task" | "Classify and clarify the task" |
+| `write_code` | "Write code" | "Write code" |
+| `review_code` | "Review code" | "Review code" |
+| `fix_bug` | "Fix bug" | "Fix bug" |
+| `debug_issue` | "Debug issue" | "Debug issue" |
+| `qa_check` | "Quality assurance check" | "Quality assurance check" |
+| `design_ui` | "Design UI" | "Design UI" |
+| `prompt_maintenance` | "Prompt maintenance" | "Prompt maintenance" |
+| `checkpoint` | "Checkpoint" | "Checkpoint" |
+| `resume_work` | "Resume work" | "Resume work" |
+| `new_feature` | "New feature" | "New feature" |
+| `lint` | "Lint" | "Lint" |
+| `fix` | "Fix" | "Fix" |
+| `review` | "Review" | "Review" |
+| `update_deps` | "Update dependencies" | "Update dependencies" |
+| `deploy` | "Deploy" | "Deploy" |
+
+## Modules
+
+| Term | EN |
+|------|----|
+| module | module |
+| source root | source root |
+| test root | test root |
+| docs | docs |
+| requirements | requirements |
+| spec | spec |
+| plan | plan |
+| report | report |
+
+## Commands
+
+| EN |
+|----|
+| `/new-feature` |
+| `/resume` |
+| `/checkpoint` |
+| `/lint` |
+| `/fix` |
+| `/review` |
+| `/update-deps` |
+| `/deploy` |
+
+## Statuses
+
+| EN |
+|----|
+| DONE |
+| NEXT |
+| BLOCKED |
+| TODO |
+| Approved |
+| Proposed |
+| In Progress |
+
+## Usage
+
+Agent language is controlled via `OPPENCODE_LANG` environment variable:
+
+```json
+"environment": {
+  "OPPENCODE_LANG": "en"
+}
+```

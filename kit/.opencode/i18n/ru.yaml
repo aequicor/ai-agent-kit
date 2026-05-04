@@ -1,0 +1,65 @@
+# Prompts — Russian (Русский)
+
+> Локализованные версии промптов для русскоязычных пользователей.
+> Локализует промпты агентов и системные сообщения.
+
+## Языковые настройки
+
+| Элемент | Оригинал (EN) | Локализация (RU) |
+|---------|-------------|-------------------|
+| `classify_and_clarify` | "Classify and clarify the task" | "Классификация и уточнение задачи" |
+| `write_code` | "Write code" | "Написание кода" |
+| `review_code` | "Review code" | "Проверка кода" |
+| `fix_bug` | "Fix bug" | "Исправление ошибки" |
+| `debug_issue` | "Debug issue" | "Отладка проблемы" |
+| `qa_check` | "Quality assurance check" | "Контроль качества" |
+| `design_ui` | "Design UI" | "Дизайн интерфейса" |
+| `prompt_maintenance` | "Prompt maintenance" | "Обслуживание промптов" |
+| `checkpoint` | "Checkpoint" | "Контрольная точка" |
+| `resume_work` | "Resume work" | "Продолжить работу" |
+| `new_feature` | "New feature" | "Новая функция" |
+
+## Модули (module → модуль)
+
+| Термин | RU |
+|--------|----|
+| module | модуль |
+| source root | корень исходников |
+| test root | корень тестов |
+| docs | документация |
+| requirements | требования |
+| spec | спецификация |
+| plan | план |
+| report | отчёт |
+
+## Команды (commands → команды)
+
+| EN | RU |
+|----|----|
+| `/new-feature` | `/новая-функция` |
+| `/resume` | `/продолжить` |
+| `/checkpoint` | `/контрольная-точка` |
+
+## Статусы (statuses)
+
+| EN | RU |
+|----|----|
+| DONE | ВЫПОЛНЕНО |
+| NEXT | ДАЛЕЕ |
+| BLOCKED | ЗАБЛОКИРОВАНО |
+| TODO | СДЕЛАТЬ |
+| Approved | Одобрено |
+| Proposed | Предложено |
+| In Progress | В работе |
+
+## Использование
+
+Для переключения на русский язык добавьте в `opencode.json`:
+
+```json
+"environment": {
+  "OPPENCODE_LANG": "ru"
+}
+```
+
+Агенты проверяют `OPPENCODE_LANG` и подгружают соответствующие локализованные варианты сообщений через `.opencode/_shared.md`.

@@ -1,0 +1,32 @@
+versions:
+  - version: "1.0.0"
+    released: "2026-05-04"
+    breaking: false
+    description: |
+      Initial release of ai-agent-kit. Forked and trimmed from
+      opencode-kit v1.6.0 with the following key changes:
+        - QA + RequirementsQA agents merged into a single @QA with phase parameter
+          (REQUIREMENTS / IMPLEMENTATION). RequirementsQA.md.template is removed.
+        - The living test-cases file <feature>-test-cases.md is now the central
+          artifact for /fix. It is created by @QA in the requirements pipeline,
+          appended by @QA in the implementation pipeline, updated by @TestRunner
+          (SCAN/EXECUTE/RERUN/APPEND modes), and updated by @BugFixer
+          (Status ❌→✅, Defects log 🔴→🟢) after each fix.
+        - /fix without arguments scans the test-cases file for ❌/⏸ rows and
+          asks PO which to fix. With a TC-id, fixes that one. With free-form
+          text, creates a new TC and fixes it. PO can edit the file by hand.
+        - Bug pipeline reorganized: INTAKE → SCAN/TRIAGE → DEBUG → DISPATCH
+          (BugFixer) → RE-VERIFY (TestRunner RERUN) → REPORT.
+        - Install path: pure-AI prompt at docs/prompts/setup.md. No Python,
+          no JDK, no curl-jar. Update path: /update command (in installed kit)
+          → docs/prompts/update.md.
+        - Stack profiles trimmed to: kotlin-multiplatform, minecraft-paper-plugin,
+          generic. Provider profile: ollama-cloud. Capability profile:
+          requirements-pipeline.
+        - Editor support trimmed to opencode (cursor and copilot dropped).
+        - Removed: scripts/ (Python apply.py, apply_remote.py, run_evals.py,
+          core/*.py), tests/, evals/, Dockerfile, docker-compose.yaml,
+          pyproject.toml, .pre-commit-config.yaml, .github/workflows/.
+    files_changed: []
+    manifest_changes:
+      added_fields: []

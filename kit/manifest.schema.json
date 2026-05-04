@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aequicor/opencode-kit/manifest.schema.json",
+  "title": "OpenCode Kit Manifest",
+  "description": "Schema for opencode-kit manifest YAML files",
+  "type": "object",
+  "required": ["kit_version", "project", "stack", "modules", "provider", "models"],
+  "properties": {
+    "kit_version": {
+      "type": "string",
+      "description": "Kit version — used for migration checks",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "editors": {
+      "type": "array",
+      "description": "Editor-specific config files to generate",
+      "items": {
+        "type": "string",
+        "enum": ["opencode", "cursor", "copilot"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "project": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "description": {"type": "string"}
+      }
+    },
+    "stack": {
+      "type": "object",
+      "required": ["language", "build_command", "compile_command", "lint_command", "test_command"],
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["kotlin", "python", "typescript", "go", "rust", "java", "generic"]
+        },
+        "profiles": {
+          "type": "array",
+          "description": "List of profile names to merge (left-to-right, manifest wins over merged profiles)",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "profile": {"type": "string", "description": "Legacy single profile name — use profiles[] instead"},
+        "build_command": {"type": "string", "minLength": 1},
+        "compile_command": {"type": "string", "minLength": 1},
+        "lint_command": {"type": "string", "minLength": 1},
+        "test_command": {"type": "string", "minLength": 1}
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "source_root", "test_root", "docs_path"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "gradle_module": {
+            "oneOf": [
+              {"type": "string", "pattern": "^:"},
+              {"type": "null"}
+            ]
+          },
+          "source_root": {"type": "string", "minLength": 1},
+          "test_root": {"type": "string", "minLength": 1},
+          "docs_path": {"type": "string", "minLength": 1},
+          "responsibility": {"type": "string"},
+          "conventions": {"type": "string"},
+          "module_dependencies": {"type": "string"}
+        }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "required": ["name", "base_url", "api_key_env"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "base_url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+        "api_key_env": {"type": "string", "minLength": 1}
+      }
+    },
+    "models": {
+      "type": "object",
+      "required": ["default", "coder", "reviewer"],
+      "properties": {
+        "default": {"type": "string", "minLength": 1},
+        "coder": {"type": "string", "minLength": 1},
+        "reviewer": {"type": "string", "minLength": 1},
+        "designer": {
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        },
+        "small": {"type": "string"}
+      }
+    },
+    "mcp": {
+      "type": "object",
+      "properties": {
+        "context7": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "api_key_env": {"type": "string"}
+          }
+        },
+        "knowledge": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "url": {"type": "string", "format": "uri"}
+          }
+        },
+        "serena": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "lsp": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "command": {"type": "string"},
+        "extensions": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^\\."}
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "framework": {
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        },
+        "platforms": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "colors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "hex", "purpose"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "hex": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+              "purpose": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "code_quality": {
+      "type": "object",
+      "properties": {
+        "forbidden_patterns": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "formatter": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "name": {"type": "string"},
+        "command": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "extensions": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^\\."}
+        }
+      }
+    }
+  }
+}
