@@ -16,7 +16,7 @@ Forked and trimmed from [aequicor/opencode-kit](https://github.com/aequicor/open
 | `/new-feature "<feature>"` | (auto-runs requirements-pipeline if needed) → SEARCH → DESIGN → PLAN → @QA IMPL DRAFT → CONFIRM → CodeWriter ↔ CodeReviewer (per stage) → @QA IMPL FINAL → optional @TestRunner walkthrough → CLOSE | implementation + tests + updated test-cases.md |
 | `/fix [TC-id\|description]` or `/fix` | SCAN test-cases.md → TRIAGE → DEBUG (if needed) → BugFixer → RERUN | fixed code, regression test, test-cases.md updated (Status ❌→✅, Defects log 🔴→🟢) |
 
-The **living test-cases file** at `.vault/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/fix`. PO can edit it manually — change Status to ❌, append a new TC row, edit Notes — and `/fix` will pick it up.
+The **living test-cases file** at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/fix`. PO can edit it manually — change Status to ❌, append a new TC row, edit Notes — and `/fix` will pick it up. (`vault_path` is set in the manifest, default `vault`.)
 
 ---
 
@@ -55,7 +55,7 @@ That command (defined in `kit/.opencode/commands/update.md`) tells the agent to 
 - Reads current `kit_version` from your manifest.
 - Fetches `docs/migration/changelog.yaml` and computes the migration path.
 - Shows you breaking changes, new manifest fields, files to be overwritten.
-- After confirmation, re-renders all kit-managed files in **merge mode** (overwrite kit-managed; never touch `.vault/concepts/**`, `.vault/reference/**`, `.planning/CURRENT.md`, etc.).
+- After confirmation, re-renders all kit-managed files in **merge mode** (overwrite kit-managed; never touch `<vault_path>/concepts/**`, `<vault_path>/reference/**`, `.planning/CURRENT.md`, etc.).
 - Bumps `kit_version`, appends new manifest fields with documented defaults.
 - Verifies (9 agents, JSON validity, no literal API keys, smoke `compile_command`).
 
@@ -112,7 +112,7 @@ stack:
 
 ## Bug-fix workflow with the living test-cases file
 
-The test-cases file at `.vault/reference/<module>/test-cases/<feature>-test-cases.md` is your control panel for what's working and what isn't:
+The test-cases file at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is your control panel for what's working and what isn't:
 
 1. As you test the feature manually, change the **Status** column for each row: `⏸` → `✅` or `❌`. Add Notes if helpful.
 2. If you find a bug not covered by an existing TC, **add a new row** with `Status: ❌` and Notes describing the symptom.
@@ -184,7 +184,7 @@ ai-agent-kit/
     │   ├── _shared.md.template
     │   └── FILE_STRUCTURE.md.template
     ├── .planning/{CURRENT,DECISIONS}.md.template
-    └── .vault/
+    └── .vault/                                # rendered to <vault_path>/ at install time
         ├── _INDEX.md.template
         └── _templates/{bug-report,requirements,spec,test-cases,test-plan}.md
 ```
