@@ -1,4 +1,4 @@
----
+﻿---
 name: look-up
 description: Proactively look up documentation when working with an unfamiliar library, new instruction set, or any topic where knowledge is missing or uncertain. Searches the local index first; if nothing is found, researches the internet and indexes the result for future use.
 ---
@@ -120,5 +120,5 @@ Execute the instructions:
 | `find_or_create` returns no results and sampling unavailable | Follow fallback: WebSearch → WebFetch → add_document (Step 3c). |
 | WebSearch returns irrelevant results | Refine query: add language name, version, or specific API. Try 2 more queries with different keywords. If still irrelevant → report `LOOKUP FAILED: Could not find authoritative docs for [query]. Proceed with caution — flag uncertainty in output.` |
 | WebFetch fails (site blocks, timeout, 403) | Skip that source, try the next search result. If all fail → fall back to summarizing what you know and mark it uncertain. |
-| `add_document` fails or indexing unavailable | Save the researched content as a local file: `.vault/guidelines/[module]/lookup-[topic].md`. Report path. |
+| `add_document` fails or indexing unavailable | Save the researched content as a local file: `{{VAULT_PATH}}/guidelines/[module]/lookup-[topic].md`. Report path. |
 | Found document is outdated (references deprecated API) | Note the version mismatch. Research the current version via WebSearch. Update the document if possible, flag it if not. |

@@ -21,6 +21,12 @@
       "minItems": 1,
       "uniqueItems": true
     },
+    "vault_path": {
+      "type": "string",
+      "description": "Root path (relative to project) where KnowledgeOS stores all docs. Default: vault (matches KnowledgeOS out-of-the-box). Legacy: .vault",
+      "default": "vault",
+      "minLength": 1
+    },
     "project": {
       "type": "object",
       "required": ["name"],

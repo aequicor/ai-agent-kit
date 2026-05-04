@@ -22,6 +22,14 @@ project:
   description: "Brief one-line description of the project"
 
 # ─────────────────────────────────────────────
+# KNOWLEDGE VAULT
+# ─────────────────────────────────────────────
+# Path (relative to project root) where KnowledgeOS stores all agent-generated docs.
+# Default matches KnowledgeOS out-of-the-box: vault/
+# Legacy ai-agent-kit installs used .vault/ — change here to keep compatibility.
+vault_path: vault
+
+# ─────────────────────────────────────────────
 # STACK
 # ─────────────────────────────────────────────
 # Available profiles (left-to-right merge, manifest values win):
@@ -45,14 +53,14 @@ modules:
     gradle_module: ":server"
     source_root: "server/src/main/kotlin/com/example/"
     test_root: "server/src/test/kotlin/com/example/"
-    docs_path: "docs/server/"
+    docs_path: "vault/server/"
     responsibility: "Ktor server, business logic, auth"
 
   - name: client
     gradle_module: ":composeApp"
     source_root: "composeApp/src/commonMain/kotlin/com/example/"
     test_root: "composeApp/src/commonTest/kotlin/com/example/"
-    docs_path: "docs/client/"
+    docs_path: "vault/client/"
     responsibility: "Compose Multiplatform UI, session management"
 
 # ─────────────────────────────────────────────

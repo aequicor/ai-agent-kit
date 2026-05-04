@@ -1,4 +1,4 @@
----
+﻿---
 name: test-execution
 description: AI-driven test execution and defect management. Generates test cases from spec/requirements, provides a structured template for manual testing with defect logging, and supports transactional updates — including re-running after fixes and adding new test cases when new defects reveal additional edge cases. Use ONLY when @Main requests test execution or manual test case walkthrough.
 ---
@@ -36,10 +36,10 @@ Validation rules:
 ### 1.1 Read source artifacts
 
 Read the following files in order:
-1. `.vault/reference/[module]/spec/[feature].md` — technical spec
-2. `.vault/concepts/[module]/requirements/[feature].md` — business requirements
-3. `.vault/concepts/[module]/plans/[feature]-corner-cases.md` — corner case register (if exists)
-4. `.vault/reference/[module]/spec/[feature]-test-plan.md` — test plan (if exists)
+1. `{{VAULT_PATH}}/reference/[module]/spec/[feature].md` — technical spec
+2. `{{VAULT_PATH}}/concepts/[module]/requirements/[feature].md` — business requirements
+3. `{{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md` — corner case register (if exists)
+4. `{{VAULT_PATH}}/reference/[module]/spec/[feature]-test-plan.md` — test plan (if exists)
 
 If spec file is missing → report to @Main and STOP.
 
@@ -83,7 +83,7 @@ Each test case follows the template format:
 
 ### 1.4 Write the document
 
-Write to `.vault/reference/[module]/test-cases/[feature]-test-cases.md` following the template from `.vault/_templates/test-cases.md`.
+Write to `{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md` following the template from `{{VAULT_PATH}}/_templates/test-cases.md`.
 
 Set Status to **Draft**.
 
@@ -100,7 +100,7 @@ Call `knowledge-my-app_write_guideline` for the new test cases file.
 ### 1.7 Return
 
 ```
-Test cases generated: .vault/reference/[module]/test-cases/[feature]-test-cases.md
+Test cases generated: {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 Total test cases: N
   - Happy path: N
   - Edge case: N
@@ -117,7 +117,7 @@ This step is designed for **interactive execution** where the PO (human) walks t
 
 ### 2.1 Read the test cases file
 
-Read `.vault/reference/[module]/test-cases/[feature]-test-cases.md`.
+Read `{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md`.
 
 ### 2.2 Present test cases to PO
 

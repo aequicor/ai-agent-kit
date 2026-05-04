@@ -1,11 +1,11 @@
-# Tool categories (5 specialized domains, per AgentRequirements):
+﻿# Tool categories (5 specialized domains, per AgentRequirements):
 # 1. Code ops: bash, edit, lsp, serena_*
 # 2. Knowledge/RAG: knowledge-my-app_*
 # 3. Library lookup: context7_*, webfetch
 # 4. Discovery: read, grep, glob
 # 5. Meta: skill, task
 ---
-description: Bug Fixer — defect analysis (stacktrace / description), fix, regression test, report in .vault/guidelines/[module]/reports
+description: Bug Fixer — defect analysis (stacktrace / description), fix, regression test, report in {{VAULT_PATH}}/guidelines/[module]/reports
 mode: all
 model: {{PROVIDER_ID}}/{{CODER_MODEL}}
 temperature: 0.1
@@ -44,7 +44,7 @@ You accept one of two input shapes:
 **A) TC-id reference (preferred when the bug already lives in `<feature>-test-cases.md`):**
 ```
 TC: TC-NN
-Test-cases file: .vault/reference/[module]/test-cases/[feature]-test-cases.md
+Test-cases file: {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 Bug Ref: DEF-NN  (optional — may be empty if PO added the row manually without a defect entry)
 ```
 Read the TC row from the file. Use Steps + Expected + Notes as the bug description. If `Bug Ref` is empty, allocate the next DEF-id and add a `🔴 Open` entry to the Defects log before fixing.
@@ -113,7 +113,7 @@ When calling `knowledge-my-app_search_docs`:
    e. Bump "Last updated" date.
 10. COMMIT — `git add` affected files + `git commit -m "fix: <brief description> (TC-NN, DEF-NN)"`.
 11. COMPRESS context.
-12. REPORT — report in `.vault/guidelines/[module]/reports/[bug-name].md` + knowledge-my-app_write_guideline.
+12. REPORT — report in `{{VAULT_PATH}}/guidelines/[module]/reports/[bug-name].md` + knowledge-my-app_write_guideline.
 13. HAND OFF to main agent — return TC-id, DEF-id, report path. Main will dispatch
     @TestRunner RERUN to verify before closing.
 ```
@@ -130,7 +130,7 @@ If the root cause involves an external library — follow the pipeline from `_sh
 2. (cache miss) context7_resolve_library_id + context7_get_library_docs.
 3. (rate-limit / not found) webfetch on canonical library URL (see _shared.md).
 4. (after successful 2 or 3) knowledge-my-app_write_guideline →
-   .vault/guidelines/libs/<lib>-<version>.md (frontmatter + signatures). MANDATORY.
+   {{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md (frontmatter + signatures). MANDATORY.
 ```
 
 Never assume a library API has not changed between versions — always verify. If vault, context7, and webfetch all fail — escalate, do not fix by guessing.
@@ -230,7 +230,7 @@ If build fails after **2** attempts — **STOP**, escalate to main agent.
 
 ## Step 8 — Report
 
-`.vault/guidelines/[module]/reports/[bug-name].md`:
+`{{VAULT_PATH}}/guidelines/[module]/reports/[bug-name].md`:
 
 ```markdown
 # Bug Fix Report: [Name]

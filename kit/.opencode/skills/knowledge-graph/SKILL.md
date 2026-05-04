@@ -1,4 +1,4 @@
----
+﻿---
 name: knowledge-graph
 description: Build and query a semantic knowledge graph from project documentation when @Main needs cross-module understanding that keyword search cannot provide. Use ONLY when simple search fails to connect related concepts across documents — not for single-module lookups.
 ---
@@ -39,7 +39,7 @@ rebuild: false
 ## Architecture
 
 ```
-.vault/                           .opencode/knowledge-graph/
+{{VAULT_PATH}}/                           .opencode/knowledge-graph/
   concepts/                           index.json         — document metadata
   reference/                          graph.json         — entity relationships
   guidelines/                         embeddings.json    — vector storage (if available)
@@ -52,7 +52,7 @@ rebuild: false
 ### 1. Index documents
 
 ```
-for each document in .vault/:
+for each document in {{VAULT_PATH}}/:
   1. Extract metadata (title, module, type, date, agent)
   2. Extract entities (classes, functions, APIs, concepts)
   3. Extract relationships (imports, references, "depends on", "implements")
@@ -84,10 +84,10 @@ Response:
 {
   "results": [
     {
-      "path": ".vault/reference/server/spec/auth.md",
+      "path": "{{VAULT_PATH}}/reference/server/spec/auth.md",
       "excerpt": "Session tokens are issued by AuthService...",
       "entities": ["AuthService", "SessionToken", "AuthConfig"],
-      "related": [".vault/concepts/server/requirements/auth.md"]
+      "related": ["{{VAULT_PATH}}/concepts/server/requirements/auth.md"]
     }
   ],
   "graph_summary": "AuthService → SessionManager (implements), AuthConfig ← SessionToken (references)"
@@ -110,7 +110,7 @@ Response:
 |---------|-------------|
 | `import X` / `uses X` | depends_on |
 | `implements X` / `extends X` | implements |
-| `described in .vault/X/` | documented_in |
+| `described in {{VAULT_PATH}}/X/` | documented_in |
 | `tested in tests/X` | tested_by |
 | `see ADR-NNN` | references_decision |
 | `depends on X module` | module_dependency |
@@ -126,7 +126,7 @@ Response:
 
 ## Error Handling
 
-- If `.vault/` is empty → report `NO DATA: No documents found in .vault/. Build requirements and spec first.` Do not build an empty index.
+- If `{{VAULT_PATH}}/` is empty → report `NO DATA: No documents found in {{VAULT_PATH}}/. Build requirements and spec first.` Do not build an empty index.
 - If no documents match the query modules → report `NO MATCH: No documents found for modules [list]. Available modules: [from index or manifest].`
 - If index is stale (documents newer than index.json) → automatically rebuild before querying. Report: `INDEX STALE: Rebuilding index (N new/updated documents).`
 

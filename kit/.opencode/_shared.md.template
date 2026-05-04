@@ -1,4 +1,4 @@
-# Shared Agent Context — {{PROJECT_NAME}}
+﻿# Shared Agent Context — {{PROJECT_NAME}}
 
 > This file is loaded by all agents via `opencode.json` `instructions`. Agent-specific files contain only role-specific details — shared context lives here.
 > OpenCode-kit v2 — migrated to `permission` syntax (OpenCode v1.1.1+), `external_directory`, `doom_loop`, `small_model`, `compaction`, `formatter`.
@@ -41,9 +41,9 @@ To add a new language:
 
 Central path reference: `.opencode/FILE_STRUCTURE.md`. Read it before creating any new file.
 
-## Documentation Layout — Knowledge Vault (.vault/)
+## Documentation Layout — Knowledge Vault ({{VAULT_PATH}}/)
 
-All documentation lives in `.vault/`, indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
+All documentation lives in `{{VAULT_PATH}}/`, indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
 Structure follows [Diátaxis](https://diataxis.fr/) genre layout.
 
 ### Genre mapping
@@ -58,14 +58,14 @@ Structure follows [Diátaxis](https://diataxis.fr/) genre layout.
 | `guidelines/libs/` | **How to use library?** | External API cache | @CodeWriter, @BugFixer |
 
 Per-module path examples:
-- Requirements: `.vault/concepts/<module>/requirements/<feature>.md`
-- Spec: `.vault/reference/<module>/spec/<feature>.md`
-- Test plan: `.vault/reference/<module>/spec/<feature>-test-plan.md`
-- Implementation plan: `.vault/concepts/<module>/plans/<feature>-plan.md`
-- Stage files: `.vault/how-to/<module>/plans/<feature>-stage-NN.md`
-- Guidelines: `.vault/guidelines/<module>/<topic>.md`
-- Bug reports: `.vault/guidelines/<module>/reports/<bug-name>.md`
-- External API cache: `.vault/guidelines/libs/<lib>-<version>.md`
+- Requirements: `{{VAULT_PATH}}/concepts/<module>/requirements/<feature>.md`
+- Spec: `{{VAULT_PATH}}/reference/<module>/spec/<feature>.md`
+- Test plan: `{{VAULT_PATH}}/reference/<module>/spec/<feature>-test-plan.md`
+- Implementation plan: `{{VAULT_PATH}}/concepts/<module>/plans/<feature>-plan.md`
+- Stage files: `{{VAULT_PATH}}/how-to/<module>/plans/<feature>-stage-NN.md`
+- Guidelines: `{{VAULT_PATH}}/guidelines/<module>/<topic>.md`
+- Bug reports: `{{VAULT_PATH}}/guidelines/<module>/reports/<bug-name>.md`
+- External API cache: `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md`
 
 **Indexing rule:** when creating or updating any document, immediately call `knowledge-my-app_write_guideline` (new) or `knowledge-my-app_update_doc` (update).
 
@@ -74,7 +74,7 @@ Per-module path examples:
 Always search `knowledge-my-app_search_docs` for documentation first, then full read of found documents. If vault returns nothing — `serena_search_symbols` for code, then `grep`/`glob`/`read` on the filesystem.
 
 ```
-1. knowledge-my-app_search_docs  → .vault/ docs, guidelines, spec, requirements
+1. knowledge-my-app_search_docs  → {{VAULT_PATH}}/ docs, guidelines, spec, requirements
 2. serena_find_symbol / serena_search_symbols → code symbols (classes, functions)
 3. grep / glob / read → filesystem (last resort)
 ```
@@ -96,7 +96,7 @@ Always search `knowledge-my-app_search_docs` for documentation first, then full 
 
 ## External API Lookup — KnowledgeOS-first, context7 conditional
 
-Documentation for external libraries is cached in the vault at `.vault/guidelines/libs/<lib>-<version>.md`. This reduces load on context7 (rate-limited) and gives deterministic results for the same versions.
+Documentation for external libraries is cached in the vault at `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md`. This reduces load on context7 (rate-limited) and gives deterministic results for the same versions.
 
 **Pipeline (in fallback order):**
 
@@ -108,7 +108,7 @@ Documentation for external libraries is cached in the vault at `.vault/guideline
       → rate-limit / not found / error → go to step 3.
 3. webfetch on canonical source URL (see project guidelines for URLs).
       → if none returns valid API → escalate to main agent.
-4. knowledge-my-app_write_guideline → .vault/guidelines/libs/<lib>-<version>.md
+4. knowledge-my-app_write_guideline → {{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md
       Frontmatter: lib, version, source, date.
       Body: imports, used API signatures, minimal example.
       This step is MANDATORY after successful step 2 or 3.
@@ -212,20 +212,20 @@ PO ─► @RequirementsPipeline (entry point via /requirements-pipeline)
 ```
 
 **Artifacts produced:**
-- `.vault/concepts/[module]/requirements/[feature].md` — business requirements
-- `.vault/concepts/[module]/plans/[feature]-corner-cases.md` — corner case register
-- `.vault/reference/[module]/test-cases/[feature]-test-cases.md` — requirements test plan
-- `.vault/reference/[module]/spec/[feature].md` — technical spec
+- `{{VAULT_PATH}}/concepts/[module]/requirements/[feature].md` — business requirements
+- `{{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md` — corner case register
+- `{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md` — requirements test plan
+- `{{VAULT_PATH}}/reference/[module]/spec/[feature].md` — technical spec
 
 ### Requirements Pipeline → @Main Handoff
 
 `@RequirementsPipeline` writes four artifact paths to `.planning/CURRENT.md` on PO sign-off:
 
 ```
-- requirements file: .vault/concepts/[module]/requirements/[feature].md
-- corner cases: .vault/concepts/[module]/plans/[feature]-corner-cases.md
-- test cases: .vault/reference/[module]/test-cases/[feature]-test-cases.md
-- spec: .vault/reference/[module]/spec/[feature].md
+- requirements file: {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
+- corner cases: {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md
+- test cases: {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
+- spec: {{VAULT_PATH}}/reference/[module]/spec/[feature].md
 ```
 
 **Flow A — integrated (default):** `@RequirementsPipeline` is dispatched by `@Main` as step 1 of the FEATURE pipeline. After PO types `/approve` to `@RequirementsPipeline` and then `/resume`, `@Main` continues from step 2 (SEARCH).
@@ -239,14 +239,14 @@ In both flows, `@Main` does **not** modify requirements, corner cases, or spec f
 | Zone | Who writes | Who reads |
 |------|-----------|-----------|
 | `src/`, `*/src/test/` | @CodeWriter, @BugFixer | all |
-| `.vault/concepts/<module>/requirements/` | @Main, @BusinessAnalyst | all |
-| `.vault/concepts/<module>/plans/` | @Main, @BusinessAnalyst, corner-case-refinement skill | all |
-| `.vault/reference/<module>/spec/` | @Main, @CodeWriter, @SystemAnalyst | all |
-| `.vault/reference/<module>/test-cases/` | @Main, @QA, @TestRunner, @BugFixer | all |
-| `.vault/how-to/<module>/plans/` | @Main | all |
-| `.vault/guidelines/<module>/` | @Main, @Designer, @CodeWriter | all |
-| `.vault/guidelines/<module>/reports/` | @BugFixer | all |
-| `.vault/guidelines/libs/` | @CodeWriter, @BugFixer | all |
+| `{{VAULT_PATH}}/concepts/<module>/requirements/` | @Main, @BusinessAnalyst | all |
+| `{{VAULT_PATH}}/concepts/<module>/plans/` | @Main, @BusinessAnalyst, corner-case-refinement skill | all |
+| `{{VAULT_PATH}}/reference/<module>/spec/` | @Main, @CodeWriter, @SystemAnalyst | all |
+| `{{VAULT_PATH}}/reference/<module>/test-cases/` | @Main, @QA, @TestRunner, @BugFixer | all |
+| `{{VAULT_PATH}}/how-to/<module>/plans/` | @Main | all |
+| `{{VAULT_PATH}}/guidelines/<module>/` | @Main, @Designer, @CodeWriter | all |
+| `{{VAULT_PATH}}/guidelines/<module>/reports/` | @BugFixer | all |
+| `{{VAULT_PATH}}/guidelines/libs/` | @CodeWriter, @BugFixer | all |
 | `.opencode/agents/`, `.opencode/skills/` | @PromptEngineer | all |
 | `.planning/CURRENT.md` | @Main, @RequirementsPipeline (checkpoint after each step) | all |
 | `opencode.json`, build files | human (PO) | all |
@@ -268,7 +268,7 @@ KnowledgeOS tools use a **hyphen** in `my-app`, not underscore:
 ## MCP and Skills
 
 **Built-in skills:**
-- `corner-case-refinement` — business-level corner case analysis. Runs BEFORE spec is written, during business requirements phase. Scans 6 categories: input integrity, process integrity, domain invariants, external dependency failures, scale/capacity, temporal/concurrency. Produces corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`. Critical items become mandatory test tasks.
+- `corner-case-refinement` — business-level corner case analysis. Runs BEFORE spec is written, during business requirements phase. Scans 6 categories: input integrity, process integrity, domain invariants, external dependency failures, scale/capacity, temporal/concurrency. Produces corner case register at `{{VAULT_PATH}}/concepts/<module>/plans/<feature>-corner-cases.md`. Critical items become mandatory test tasks.
 - `code-review-checklist` — pre-commit systematic review checklist.
 - `test-execution` — AI-driven test execution and defect management. Generates test cases from spec/requirements, provides structured template for manual testing with defect logging, and supports transactional updates (re-run after fixes, add new test cases when defects reveal edge cases).
 - `bug-retro` — post-bug root cause analysis and prevention.

@@ -1,4 +1,4 @@
----
+﻿---
 genre: concept
 title: Vault Index — {{PROJECT_NAME}}
 topic: overview
@@ -37,7 +37,7 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 ### Per-module layout
 
 ```
-.vault/
+{{VAULT_PATH}}/
 ├── _INDEX.md
 ├── _templates/                        ← document templates
 ├── concepts/<module>/                 ← architecture, requirements, plans

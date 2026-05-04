@@ -1,4 +1,4 @@
----
+﻿---
 description: Fix failing/pending test cases in the current feature's test-cases.md. Argument is optional — without it, scans and asks PO. With a TC-id, fixes that one. With free-form text, creates a new TC and fixes it.
 ---
 
@@ -6,7 +6,7 @@ You are @Main routing a bug-fix request through the BUG pipeline. Argument: $ISS
 
 The single source of truth is the living test-cases file:
 ```
-.vault/reference/[module]/test-cases/[feature]-test-cases.md
+{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 ```
 PO marks Status ❌ for known bugs and may add new TC rows there at any time. `/fix` reads that file and acts on it. The BUG pipeline definition lives in @Main — this command is the entry point that figures out which TC(s) to feed it.
 
@@ -45,7 +45,7 @@ DISPATCH — task @BugFixer:
              Bug Ref: <DEF-id or empty>
            @BugFixer: ANALYZE → REPRODUCE (failing test) → FIX → REGRESSION TEST →
              @CodeReviewer → BUILD → update test-cases.md (Status ❌→✅, Defects log 🔴→🟢)
-             → commit → write report to .vault/guidelines/<module>/reports/<bug-name>.md.
+             → commit → write report to {{VAULT_PATH}}/guidelines/<module>/reports/<bug-name>.md.
 
 RE-VERIFY — task @TestRunner (Mode=RERUN) with the TC-id.
            PO confirms ✅ → DEF promoted 🟢 Fixed → ✅ Verified.

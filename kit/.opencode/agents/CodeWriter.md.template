@@ -1,4 +1,4 @@
-# Tool categories (5 specialized domains, per AgentRequirements):
+﻿# Tool categories (5 specialized domains, per AgentRequirements):
 # 1. Code ops: bash, edit, lsp, serena_*
 # 2. Knowledge/RAG: knowledge-my-app_*
 # 3. Library lookup: context7_*, webfetch
@@ -71,7 +71,7 @@ Record 2-3 key conclusions. Do NOT skip this step. Do NOT output conclusions —
    (URLs list — in _shared.md). If still empty — escalate to main agent,
    do not write code from memory.
 4. (cache write — MANDATORY after 2 or 3) knowledge-my-app_write_guideline
-   → .vault/guidelines/libs/<lib>-<version>.md with frontmatter (lib, version, source, date)
+   → {{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md with frontmatter (lib, version, source, date)
    and exact signatures + minimal example. Investment: next agent gets API from vault
    without network calls.
 ```
@@ -81,7 +81,7 @@ Record 2-3 key conclusions. Do NOT skip this step. Do NOT output conclusions —
 Before writing **any** code:
 
 1. Read the stage file (passed in task prompt).
-1a. If `.vault/reference/[module]/spec/[feature]-test-plan.md` exists → read the **Unit Tests** and **Integration Tests** sections.
+1a. If `{{VAULT_PATH}}/reference/[module]/spec/[feature]-test-plan.md` exists → read the **Unit Tests** and **Integration Tests** sections.
     Use them as coverage spec: your tests **must cover** all test cases from those tables.
 2. Read **all** guidelines from the "Guidelines for This Stage" section.
 3. Read related requirements + spec.

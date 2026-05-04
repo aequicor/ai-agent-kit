@@ -1,4 +1,4 @@
----
+﻿---
 description: Code Reviewer — read-only review of changesets (compilation readiness, code style, technical compliance, security)
 mode: subagent
 model: {{PROVIDER_ID}}/{{REVIEWER_MODEL}}
@@ -46,7 +46,7 @@ Technical reviewer. Reviews the changeset of one stage / bug-fix. **Read-only:**
 
 | Check | What to look for |
 |-------|-----------------|
-| Spec alignment | Does implementation match `.vault/reference/[module]/spec/[feature].md`? |
+| Spec alignment | Does implementation match `{{VAULT_PATH}}/reference/[module]/spec/[feature].md`? |
 | Plan alignment | Does it match the stage file? |
 | API contracts | Do request/response match the spec? |
 | Data models | Do schema, DTOs, entities match the spec? |

@@ -1,4 +1,4 @@
----
+﻿---
 name: corner-case-refinement
 description: Systematic corner case discovery during business requirements phase. Runs BEFORE spec and design — surfaces domain invariants, boundary conditions, failure modes, and concurrency scenarios at the business planning level. Corner cases found during implementation are a planning failure.
 ---
@@ -14,11 +14,11 @@ Called by `@Main` via the `requirements-pipeline` skill (Step 2.5) or directly w
 ```
 Feature: [feature-name, snake_case]
 Module: [module name from manifest]
-Requirements file: [path to .vault/concepts/[module]/requirements/[feature].md]
+Requirements file: [path to {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md]
 ```
 
 The skill reads the requirements file, runs the 6-category analysis, and writes the corner case register to:
-`.vault/concepts/[module]/plans/[feature]-corner-cases.md`
+`{{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md`
 
 where `[module]` and `[feature]` are substituted from the input fields above.
 
@@ -153,7 +153,7 @@ For each corner case, write the **business decision** — not the technical impl
 
 ### Step 5: Produce the corner case register
 
-Save to `.vault/concepts/<module>/plans/<feature>-corner-cases.md`.
+Save to `{{VAULT_PATH}}/concepts/<module>/plans/<feature>-corner-cases.md`.
 
 ## Output Format
 
@@ -213,7 +213,7 @@ This is the only integration point. Writing-plans reads the register as input. I
 | Requirements file does not exist or is empty | STOP. Report: `Requirements file not found at [path] — BA must produce it first.` |
 | 6-category scan produces zero corner cases | WARNING. Write register with 0 rows + a note explaining why: `No corner cases identified because [reason]. PO review recommended — every feature accepting input has at least input boundary corner cases.` |
 | Cannot answer a category question | Flag it in the register row as `NEEDS_PO_DECISION`. Do not silently skip — PO must confirm or provide the answer. |
-| Register file cannot be written (path invalid) | Fallback to `.vault/concepts/[module]/plans/[feature]-corner-cases.md`. If that also fails, STOP and report the path error. |
+| Register file cannot be written (path invalid) | Fallback to `{{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md`. If that also fails, STOP and report the path error. |
 | Previous corner case register exists for same feature | Overwrite only if PO confirmed rejection of previous version. Otherwise, append new findings with a `## Supplement — [date]` section. |
 
 ## Red Flags

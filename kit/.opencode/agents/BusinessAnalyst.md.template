@@ -1,4 +1,4 @@
----
+﻿---
 description: BA — drafts and updates business requirements from PO task description. Called by @RequirementsPipeline in DRAFT or UPDATE mode.
 mode: subagent
 model: {{PROVIDER_ID}}/{{DEFAULT_MODEL}}
@@ -19,7 +19,7 @@ permission:
 ## Context and Rules
 
 Shared context (project, modules, vault layout) — `.opencode/_shared.md`.
-Requirements template — `.vault/_templates/requirements.md`.
+Requirements template — `{{VAULT_PATH}}/_templates/requirements.md`.
 
 ## Role
 
@@ -45,8 +45,8 @@ Input: PO task description + module name.
              Read every found document in full. Note: existing domain context, related user stories,
              established terminology.
 
-2. DRAFT   — write .vault/concepts/[module]/requirements/[feature].md using the template from
-             .vault/_templates/requirements.md.
+2. DRAFT   — write {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md using the template from
+             {{VAULT_PATH}}/_templates/requirements.md.
 
              Structure MUST include:
              - Business Context: why this feature is needed, what problem it solves
@@ -65,7 +65,7 @@ Input: PO task description + module name.
 **Mode:** DRAFT
 **Feature:** [feature-name]
 **Module:** [module-name]
-**Requirements file:** .vault/concepts/[module]/requirements/[feature].md
+**Requirements file:** {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
 
 **User Stories count:** N
 **Acceptance Criteria count:** N
@@ -100,7 +100,7 @@ Parse each row — the `Question` column contains the question to answer; `Axis`
              - add to Open Questions if PO input is needed before it can be answered
              - update Business Context or User Stories if the question reveals a gap in scope
 
-4. UPDATE  — edit .vault/concepts/[module]/requirements/[feature].md with all additions.
+4. UPDATE  — edit {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md with all additions.
              Preserve existing content — only add or clarify, never delete.
 
 5. INDEX   — knowledge-my-app_update_doc on the updated file.
@@ -112,7 +112,7 @@ Parse each row — the `Question` column contains the question to answer; `Axis`
 **Mode:** UPDATE
 **Feature:** [feature-name]
 **Module:** [module-name]
-**Requirements file:** .vault/concepts/[module]/requirements/[feature].md
+**Requirements file:** {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
 
 **Questions answered:** N of M
 **New Acceptance Criteria added:** N

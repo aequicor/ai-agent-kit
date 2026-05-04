@@ -1,4 +1,4 @@
----
+﻿---
 name: bug-retro
 description: Post-bug retrospective — root cause analysis, prevention measures, and guideline updates
 ---
@@ -50,10 +50,10 @@ For each root cause, define a specific action:
 | Action type | What to do | Where to save |
 |------------|------------|--------------|
 | **New test** | Write unit or integration test | Mirror of src/ in test/ |
-| **Update guideline** | Add rule, pattern, anti-pattern | `.vault/guidelines/[module]/` |
-| **New guideline** | Create document on bug topic | `.vault/guidelines/[module]/` |
-| **Update spec** | Clarify contract, API, data model | `.vault/reference/[module]/spec/` |
-| **Review checklist** | Add item to code review checklist | `.vault/guidelines/[module]/code-review-checklist.md` |
+| **Update guideline** | Add rule, pattern, anti-pattern | `{{VAULT_PATH}}/guidelines/[module]/` |
+| **New guideline** | Create document on bug topic | `{{VAULT_PATH}}/guidelines/[module]/` |
+| **Update spec** | Clarify contract, API, data model | `{{VAULT_PATH}}/reference/[module]/spec/` |
+| **Review checklist** | Add item to code review checklist | `{{VAULT_PATH}}/guidelines/[module]/code-review-checklist.md` |
 | **Refactor task** | Describe tech task | Return to PO |
 
 ### Step 4: Implement Actions (priority order)
@@ -67,7 +67,7 @@ For each root cause, define a specific action:
 
 ### Step 5: Update Report
 
-Add "Retrospective" section to the fix report (`.vault/guidelines/[module]/reports/`):
+Add "Retrospective" section to the fix report (`{{VAULT_PATH}}/guidelines/[module]/reports/`):
 
 ```markdown
 ## Retrospective

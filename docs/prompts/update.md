@@ -80,8 +80,8 @@ If fetch fails on both raw and `https://github.com/{KIT_REPO}/blob/main/docs/mig
    ### Files That Will Be Overwritten
    <Union of files_changed across all MIGRATION_PATH entries. List relative paths.
     These files will be REWRITTEN — local customizations will be lost unless committed.
-    PO-managed content in .vault/ (anything outside .vault/_templates/ and .vault/_INDEX.md)
-    and .planning/CURRENT.md / HISTORY.md will NOT be touched.>
+    PO-managed content in <vault_path>/ (anything outside <vault_path>/_templates/ and <vault_path>/_INDEX.md,
+    where vault_path = manifest.vault_path, default "vault") and .planning/CURRENT.md / HISTORY.md will NOT be touched.>
    ```
 
 9. Ask PO: "Proceed with update? (yes / no)". Stop on no.
@@ -108,7 +108,7 @@ Same as setup.md 3.3: drop other-editor files based on `manifest.editors`.
 
 ### 3.4. Compute target paths
 
-Same as setup.md 3.4 (drop `kit/` prefix, drop `editors/<editor>/` prefix, drop `.template` suffix, path-escape guard).
+Same as setup.md 3.4 — including the vault path substitution: if a path starts with `.vault/` after stripping `kit/`, replace `.vault/` with `{manifest.vault_path}/` (default `vault/`). Then drop `editors/<editor>/` prefix, drop `.template` suffix, apply path-escape guard.
 
 ### 3.5. Render and write — merge mode
 
@@ -122,7 +122,7 @@ For each kit file:
 5. **Skip these target paths even if they appear in the index** (PO-managed runtime state):
    - `<target>/.planning/CURRENT.md`
    - `<target>/.planning/HISTORY.md`
-   - Any `<target>/.vault/concepts/**`, `<target>/.vault/reference/**`, `<target>/.vault/how-to/**`, `<target>/.vault/tutorials/**`, `<target>/.vault/guidelines/**` content created by PO/agents — but the **templates** under `<target>/.vault/_templates/` and `<target>/.vault/_INDEX.md` ARE kit-managed and DO get overwritten.
+   - Any content under `<target>/<vault_path>/concepts/**`, `<target>/<vault_path>/reference/**`, `<target>/<vault_path>/how-to/**`, `<target>/<vault_path>/tutorials/**`, `<target>/<vault_path>/guidelines/**` created by PO/agents (where `vault_path = manifest.vault_path`, default `vault`) — but the **templates** under `<target>/<vault_path>/_templates/` and `<target>/<vault_path>/_INDEX.md` ARE kit-managed and DO get overwritten.
    - Any file the manifest explicitly marks as `merge_skip` (future extension; ignore for now).
 6. Write the file. Create parent dirs as needed.
 
@@ -207,7 +207,7 @@ Then return control.
 
 - **NEVER modify files outside the target project root.**
 - **NEVER delete user files.** Merge mode only overwrites kit-managed files.
-- **NEVER touch `.vault/` content created by PO/agents** — only `.vault/_templates/` and `.vault/_INDEX.md` are kit-managed.
+- **NEVER touch `<vault_path>/` content created by PO/agents** — only `<vault_path>/_templates/` and `<vault_path>/_INDEX.md` are kit-managed (vault_path = `manifest.vault_path`, default `vault`).
 - **NEVER touch `.planning/CURRENT.md` or `.planning/HISTORY.md`** — runtime state, not kit content.
 - **ALWAYS preserve `kit_version`** by explicitly setting it in PHASE 4.
 - **STOP if `provider.api_key_env` looks like a real key** (32+ chars with letters+digits+special, or matches `sk-`, `ghp_`, `glpat-`, `AKIA*`, `xox[bp]-`).

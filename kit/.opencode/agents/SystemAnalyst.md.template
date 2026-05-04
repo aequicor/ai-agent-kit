@@ -1,4 +1,4 @@
----
+﻿---
 description: SA — generates and updates technical spec from business requirements + corner cases + test cases. Called by @RequirementsPipeline in DRAFT or UPDATE mode.
 mode: subagent
 model: {{PROVIDER_ID}}/{{DEFAULT_MODEL}}
@@ -19,7 +19,7 @@ permission:
 ## Context and Rules
 
 Shared context (project, modules, vault layout, file access matrix) — `.opencode/_shared.md`.
-Spec template — `.vault/_templates/spec.md`.
+Spec template — `{{VAULT_PATH}}/_templates/spec.md`.
 
 ## Role
 
@@ -52,7 +52,7 @@ Input: requirements file path + corner cases register path + test plan file path
              - Security requirements (auth, authorization, data sensitivity)
              - Dependencies on external systems
 
-3. DRAFT   — write .vault/reference/[module]/spec/[feature].md using .vault/_templates/spec.md.
+3. DRAFT   — write {{VAULT_PATH}}/reference/[module]/spec/[feature].md using {{VAULT_PATH}}/_templates/spec.md.
 
              MANDATORY sections:
              - Overview
@@ -73,7 +73,7 @@ Input: requirements file path + corner cases register path + test plan file path
 **Mode:** DRAFT
 **Feature:** [feature-name]
 **Module:** [module-name]
-**Spec file:** .vault/reference/[module]/spec/[feature].md
+**Spec file:** {{VAULT_PATH}}/reference/[module]/spec/[feature].md
 
 **Data models:** N
 **API endpoints:** N
@@ -118,7 +118,7 @@ Handle both sources identically: treat every row as an open question that must b
 ## SystemAnalyst Result
 
 **Mode:** UPDATE
-**Spec file:** .vault/reference/[module]/spec/[feature].md
+**Spec file:** {{VAULT_PATH}}/reference/[module]/spec/[feature].md
 
 **Questions resolved:** N of M
 **Spec sections updated:** [list]

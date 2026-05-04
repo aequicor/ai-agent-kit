@@ -26,6 +26,10 @@ Ask PO every question below in a numbered list. Wait for ALL answers before proc
 - **Q2.** Project name `[default: "My Project"]`
 - **Q3.** One-line description `[default: ""]`
 
+### 2b. Knowledge vault
+
+- **Q3b.** Vault path (relative to project root) `[default: vault]`. This is the root folder where KnowledgeOS stores all agent-generated documentation (requirements, specs, test cases, guidelines, etc.). KnowledgeOS default is `vault`. Legacy ai-agent-kit installs used `.vault` — enter `.vault` if migrating from that setup.
+
 ### 3. Stack profile
 
 Fetch the live profile list: `RAW_BASE/profiles/` directory listing via GitHub API:
@@ -58,7 +62,7 @@ Explain: a module = logical unit with own source root and test root.
   - b) Gradle path (e.g. `:server`, `:composeApp`). Write `null` if not Gradle. `[default: ":<name>"]`
   - c) Source root (e.g. `server/src/main/kotlin/com/example/`) — *required*
   - d) Test root (e.g. `server/src/test/kotlin/com/example/`) — *required*
-  - e) Docs path `[default: ".vault/<name>/"]`
+  - e) Docs path `[default: "<vault_path>/<name>/" (using the vault_path from Q3b)]`
   - f) Responsibility (one line) `[default: ""]`
 
 If `<target>/settings.gradle.kts` or `build.gradle.kts` exists, read it and propose module names automatically.
@@ -131,6 +135,7 @@ editors: [opencode]
 project:
   name: <Q2>
   description: <Q3>
+vault_path: <Q3b or "vault">
 stack:
   language: <from chosen profile or PO override>
   profiles: [<chosen profile list>]
@@ -210,6 +215,7 @@ Compute these `{{VAR}} → value` pairs from the manifest. **Many are computed (
 | Variable | Source / rule |
 |---|---|
 | `KIT_REPO` | The `<user>/<repo>` slug of the kit source. |
+| `VAULT_PATH` | `manifest.vault_path` (default `vault` — matches KnowledgeOS default). No trailing slash. |
 | `PROJECT_NAME` | `manifest.project.name` |
 | `PROJECT_DESCRIPTION` | `manifest.project.description` |
 | `STACK_DESCRIPTION` | `"<project-name> — <language> stack"` |
@@ -337,8 +343,9 @@ Given `kit/<rel-path-inside-kit>`:
 1. Drop the leading `kit/` segment.
 2. If the remaining path starts with `editors/<editor>/` → drop those two segments (so `editors/opencode/CLAUDE.md.template` becomes `CLAUDE.md.template`).
 3. If the path starts with `nested/` → SKIP for the base scaffold (handled separately in step 3.6).
-4. If the basename ends with `.template` → drop the `.template` suffix.
-5. Final target = `<target-dir>/<resulting-relative-path>`.
+4. If the remaining path starts with `.vault/` → replace the `.vault/` prefix with `{manifest.vault_path}/` (e.g. if `vault_path = vault`, then `.vault/_INDEX.md.template` → `vault/_INDEX.md.template`). This makes the vault location configurable. Default produces `vault/`.
+5. If the basename ends with `.template` → drop the `.template` suffix.
+6. Final target = `<target-dir>/<resulting-relative-path>`.
 
 **Path-escape guard:** resolve the absolute target path; if it does not start with the absolute target directory, SKIP and warn PO.
 
@@ -365,7 +372,7 @@ The file `kit/nested/AGENTS.md.nested.template` is a per-module template. For ea
   - `MODULE_BUILD_TABLE` = three rows derived from build_command and gradle_module (see rule below)
   - `MODULE_CONVENTIONS` = `m.conventions` or `"(use project-default conventions from root AGENTS.md)"`
   - `MODULE_DEPENDENCIES` = `- \`<m.name>\`: <m.module_dependencies or "(none specified)">`
-  - `MODULE_DOCS_PATH` = `m.docs_path` (or `.vault/<m.name>/`)
+  - `MODULE_DOCS_PATH` = `m.docs_path` (or `{VAULT_PATH}/<m.name>/`)
 - Render the template with this context.
 - Write to `<target>/<source_root>/AGENTS.md`. Apply the path-escape guard.
 - If the target AGENTS.md already exists, SKIP (do not overwrite without merge confirmation).
@@ -385,15 +392,18 @@ Else:
 
 ### 3.7. Create vault scaffold
 
-For each module, create directories and an empty `.gitkeep` in each:
-- Per-module docs root: `<target>/<docs_path>` (default `<target>/.vault/<name>/` if `docs_path` not set).
-- Genres × subdirs:
-  - `concepts/<module-name>/{requirements, plans}/`
-  - `reference/<module-name>/{spec, test-cases}/` *(test-cases/ is the home of the living test-cases.md — important)*
-  - `how-to/<module-name>/plans/`
-  - `tutorials/<module-name>/documentation/`
-  - `guidelines/<module-name>/reports/`
-- Plus `<docs-root>/guidelines/libs/.gitkeep`.
+For each module, create directories and an empty `.gitkeep` in each.
+
+The docs root for each module is `<target>/<m.docs_path>`. If `docs_path` was not explicitly set, default to `<target>/{VAULT_PATH}/<m.name>/` (e.g. `vault/server/`).
+
+All genre subdirs are created **relative to the vault root** (`<target>/{VAULT_PATH}/`), not relative to the per-module docs path:
+- `concepts/<module-name>/{requirements, plans}/`
+- `reference/<module-name>/{spec, test-cases}/` *(test-cases/ is the home of the living test-cases.md — important)*
+- `how-to/<module-name>/plans/`
+- `tutorials/<module-name>/documentation/`
+- `guidelines/<module-name>/reports/`
+
+Plus `<target>/{VAULT_PATH}/guidelines/libs/.gitkeep`.
 
 > **Note:** the original opencode-kit subdir map did not include `test-cases` under `reference/`. ai-agent-kit adds it because the living `<feature>-test-cases.md` lives there.
 
@@ -413,7 +423,7 @@ For each module, create directories and an empty `.gitkeep` in each:
 
 4. **No unresolved `{{...}}` placeholders.** Grep the entire target directory for `\{\{[A-Z_]+\}\}`. If matches found, list them by file. Tell PO they need to be filled manually.
 
-5. **Living test-cases path.** Confirm that the directory `<target>/.vault/reference/<first-module>/test-cases/` exists. Create the `.gitkeep` if it doesn't.
+5. **Living test-cases path.** Confirm that the directory `<target>/{VAULT_PATH}/reference/<first-module>/test-cases/` exists (where `VAULT_PATH = manifest.vault_path`, default `vault`). Create the `.gitkeep` if it doesn't.
 
 ---
 

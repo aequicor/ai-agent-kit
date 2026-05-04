@@ -1,4 +1,4 @@
----
+﻿---
 description: Coverage checker — verifies that every requirement and corner case has at least one test case. Returns PASS or GAPS list. Called by @RequirementsPipeline.
 mode: subagent
 model: {{PROVIDER_ID}}/{{DEFAULT_MODEL}}
@@ -28,7 +28,7 @@ Coverage auditor. Reads requirements + corner case register + the living test-ca
 
 ## Pipeline
 
-Input: requirements file path + corner cases register path + test-cases file path (`.vault/reference/[module]/test-cases/[feature]-test-cases.md`).
+Input: requirements file path + corner cases register path + test-cases file path (`{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md`).
 
 ```
 0. THINK — before checking, reason briefly:

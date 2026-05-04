@@ -1,4 +1,4 @@
----
+﻿---
 description: QA — owns the living test-cases file. Two phases. REQUIREMENTS (called from requirements-pipeline) creates the file from requirements + corner cases. IMPLEMENTATION (called by @Main after spec / after final stage) appends impl-level cases. Single source of truth for /fix.
 mode: subagent
 model: {{PROVIDER_ID}}/{{CODER_MODEL}}
@@ -19,11 +19,11 @@ permission:
 ## Context and Rules
 
 Shared context (project, modules, file-access matrix) — `.opencode/_shared.md`.
-Living test-cases file template — `.vault/_templates/test-cases.md`.
+Living test-cases file template — `{{VAULT_PATH}}/_templates/test-cases.md`.
 
 ## Role
 
-QA engineer. **Owns one artifact:** `.vault/reference/[module]/test-cases/[feature]-test-cases.md`. This is a living document — PO edits it manually, @TestRunner updates statuses, @BugFixer marks fixes. You are the agent that **creates and grows it**.
+QA engineer. **Owns one artifact:** `{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md`. This is a living document — PO edits it manually, @TestRunner updates statuses, @BugFixer marks fixes. You are the agent that **creates and grows it**.
 
 **Phase parameter** is passed by the caller in the task prompt:
 
@@ -36,7 +36,7 @@ QA engineer. **Owns one artifact:** `.vault/reference/[module]/test-cases/[featu
 
 ## Test-cases file format
 
-Strictly follow `.vault/_templates/test-cases.md`. The file is a markdown table — rows are TCs, columns include a Status column that PO and other agents update over time.
+Strictly follow `{{VAULT_PATH}}/_templates/test-cases.md`. The file is a markdown table — rows are TCs, columns include a Status column that PO and other agents update over time.
 
 ```markdown
 # Test Cases: [Feature Name]
@@ -102,7 +102,7 @@ Corner cases register: [path]
            - Each Medium corner case → 0–1 TC at QA's discretion.
            Assign IDs sequentially: TC-01, TC-02, ...
 
-3. WRITE — .vault/reference/[module]/test-cases/[feature]-test-cases.md
+3. WRITE — {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
            Create the file using the template above. All Status = ⏸. Defects log empty.
            If the file already exists (rare — pipeline restart) → ABORT, return error.
 
@@ -113,7 +113,7 @@ Corner cases register: [path]
 ## QA Result
 
 **Phase:** REQUIREMENTS  •  **Mode:** GENERATE
-**Test-cases file:** .vault/reference/[module]/test-cases/[feature]-test-cases.md
+**Test-cases file:** {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 
 **Happy path TCs:** N
 **Acceptance TCs:** N

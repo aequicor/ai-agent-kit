@@ -1,4 +1,4 @@
-@AGENTS.md
+﻿@AGENTS.md
 
 ---
 
@@ -16,7 +16,7 @@ Before reading the user request, before any tool call:
 
 1. READ `.planning/CURRENT.md` — active task and where we stopped last session.
 2. READ `.planning/DECISIONS.md` — existing architectural decisions.
-3. If CURRENT.md references a `.vault/concepts/[module]/plans/` path — read that plan file.
+3. If CURRENT.md references a `{{VAULT_PATH}}/concepts/[module]/plans/` path — read that plan file.
 4. If those files contradict the user's new request → STOP, surface the conflict, ask.
 
 **Single entry point: always start work through `@Main`.** Do not invoke @CodeWriter,
@@ -52,7 +52,7 @@ Before using any external library API, follow this pipeline (fastest → fallbac
 3. (rate-limited / not found) `webfetch` on the canonical source URL — see `_shared.md` for URLs.
 4. If all fail → say "I don't have current docs for X" and **ASK before guessing**.
 
-Cache result to `.vault/guidelines/libs/<lib>-<version>.md` via KnowledgeOS write.
+Cache result to `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md` via KnowledgeOS write.
 
 ---
 

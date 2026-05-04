@@ -1,4 +1,4 @@
-# AGENTS.md — {{PROJECT_NAME}}
+﻿# AGENTS.md — {{PROJECT_NAME}}
 
 > Universal coding-agent rules for this project.
 > Supported by: Claude Code, OpenCode, Cursor, GitHub Copilot, Windsurf, Devin, Google Jules,
@@ -54,9 +54,9 @@
 - `.planning/CURRENT.md` — active task and last checkpoint. **Read before starting work.**
 - `.planning/DECISIONS.md` — architectural decision log (ADR). Check before proposing structural changes. **Append-only — never delete entries.**
 
-### Knowledge Vault (.vault/)
+### Knowledge Vault ({{VAULT_PATH}}/)
 
-Documentation lives in `.vault/` indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
+Documentation lives in `{{VAULT_PATH}}/` indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
 Structure follows [Diátaxis](https://diataxis.fr/) genre layout:
 
 | Genre | Question | Module Content |
@@ -68,14 +68,14 @@ Structure follows [Diátaxis](https://diataxis.fr/) genre layout:
 | `guidelines/<module>/` | **What rules to follow?** | Conventions, patterns, reports/ |
 | `guidelines/libs/` | **How to use library?** | External API cache per library+version |
 
-Each module's docs follow: `.vault/<genre>/<module>/{subdir}/`
+Each module's docs follow: `{{VAULT_PATH}}/<genre>/<module>/{subdir}/`
 
 ### External Libraries
 
 Before using any external library API:
-1. Search `.vault/guidelines/libs/` for cached documentation via KnowledgeOS `search_docs`.
+1. Search `{{VAULT_PATH}}/guidelines/libs/` for cached documentation via KnowledgeOS `search_docs`.
 2. If not found — look up the library from its canonical, authoritative source via `context7` or `webfetch`.
-3. After resolving — write guideline to `.vault/guidelines/libs/<lib>-<version>.md` via `write_guideline`.
+3. After resolving — write guideline to `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md` via `write_guideline`.
 4. **Never invent** method names, builder DSL methods, or annotation parameters.
 5. If no documentation is available, state that clearly — do not guess.
 
@@ -94,7 +94,7 @@ Do NOT modify without explicit instruction:
 ## Corner Cases
 
 - Corner cases MUST be identified during planning, not discovered during implementation.
-- Every feature has a corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`. Read it before implementing.
+- Every feature has a corner case register at `{{VAULT_PATH}}/concepts/<module>/plans/<feature>-corner-cases.md`. Read it before implementing.
 - Critical corner cases (data loss, security, system crash) require a test task in the implementation plan.
 - Use the `corner-case-refinement` skill to systematically scan: input boundaries, state lifecycles, concurrency, error paths, scale limits, domain invariants.
 

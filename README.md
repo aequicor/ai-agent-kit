@@ -26,11 +26,9 @@ Paste this into your AI agent (Claude Code / Cursor / OpenCode chat / GPT-with-t
 
 ```
 Fetch and follow the setup instructions from:
-  https://raw.githubusercontent.com/<USER>/ai-agent-kit/main/docs/prompts/setup.md
+  https://raw.githubusercontent.com/aequicor/ai-agent-kit/main/docs/prompts/setup.md
 Read it completely, then follow every phase exactly. Do not skip steps.
 ```
-
-Replace `<USER>` with the GitHub user/org hosting the kit (this repo's owner).
 
 The agent will:
 1. Ask you ~30 questions about your project (target path, profiles, modules, provider, models, MCP, LSP, UI, code quality, formatter).
@@ -65,7 +63,7 @@ You can also paste the update prompt directly without `/update`:
 
 ```
 Fetch and follow:
-  https://raw.githubusercontent.com/<USER>/ai-agent-kit/main/docs/prompts/update.md
+  https://raw.githubusercontent.com/aequicor/ai-agent-kit/main/docs/prompts/update.md
 ```
 
 ---

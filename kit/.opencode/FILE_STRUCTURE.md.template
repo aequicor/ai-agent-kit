@@ -1,4 +1,4 @@
-# File Structure — {{PROJECT_NAME}} Agent Reference
+﻿# File Structure — {{PROJECT_NAME}} Agent Reference
 
 > Central path reference. Before creating any new file — check this table.
 > All agents read this file instead of guessing paths.
@@ -16,7 +16,7 @@
 
 ---
 
-## Knowledge Vault (.vault/)
+## Knowledge Vault ({{VAULT_PATH}}/)
 
 > Indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
 > Structure follows [Diátaxis](https://diataxis.fr/).
@@ -24,7 +24,7 @@
 ### Per-module structure
 
 ```
-.vault/
+{{VAULT_PATH}}/
   _INDEX.md                          ← vault map — entry point for agents
   _templates/                        ← document templates (bug-report, spec, test-plan, requirements)
 
@@ -60,12 +60,12 @@
 
 | Path | Owner | Purpose |
 |------|-------|---------|
-| `.vault/guidelines/libs/<lib>-<version>.md` | @CodeWriter, @BugFixer | External library documentation cache |
-| `.vault/_templates/test-plan.md` | (template) | Template for @QA |
-| `.vault/_templates/test-cases.md` | (template) | Template for @TestRunner |
-| `.vault/_templates/bug-report.md` | (template) | Template for @BugFixer |
-| `.vault/_templates/spec.md` | (template) | Template for @Main |
-| `.vault/_templates/requirements.md` | (template) | Template for @Main |
+| `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md` | @CodeWriter, @BugFixer | External library documentation cache |
+| `{{VAULT_PATH}}/_templates/test-plan.md` | (template) | Template for @QA |
+| `{{VAULT_PATH}}/_templates/test-cases.md` | (template) | Template for @TestRunner |
+| `{{VAULT_PATH}}/_templates/bug-report.md` | (template) | Template for @BugFixer |
+| `{{VAULT_PATH}}/_templates/spec.md` | (template) | Template for @Main |
+| `{{VAULT_PATH}}/_templates/requirements.md` | (template) | Template for @Main |
 
 ---
 

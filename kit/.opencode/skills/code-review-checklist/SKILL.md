@@ -1,4 +1,4 @@
----
+﻿---
 name: code-review-checklist
 description: Pre-commit code review checklist filled by @CodeReviewer after each CodeWriter cycle. Use ONLY when reviewing code changes before commit — not for design reviews, not for requirements analysis.
 ---
@@ -71,7 +71,7 @@ Called by @CodeReviewer automatically after each @CodeWriter stage completion. N
 - [ ] Public API documented
 - [ ] Complex logic has inline comments explaining WHY, not WHAT
 - [ ] Spec/requirements match implementation
-- [ ] Any new guidelines saved to `.vault/guidelines/[module]/`
+- [ ] Any new guidelines saved to `{{VAULT_PATH}}/guidelines/[module]/`
 
 ## Output
 

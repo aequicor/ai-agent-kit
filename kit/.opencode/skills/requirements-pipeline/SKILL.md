@@ -1,4 +1,4 @@
----
+﻿---
 description: Full AI-driven requirements pipeline: BA → CCR (business loop) → QA → Coverage → SA → CCR (technical loop) → Consistency → PO sign-off. Use ONLY when @Main starts a FEATURE task and needs a complete requirements package before implementation.
 ---
 
@@ -134,7 +134,7 @@ Requirements file: [path from Step 1]
 **Important:** Pass the same requirements file path from Step 1 — this file has been updated in-place by `@BusinessAnalyst UPDATE` during the Step 2 loop. The skill reads the **current (final) state** of that file. Do not create a new copy; pass the same path.
 
 The skill writes the corner case register to:
-`.vault/concepts/[module]/plans/[feature]-corner-cases.md`
+`{{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md`
 
 Verify the file exists before proceeding. Read it and count severity rows. Store in context:
 - `CC_CRITICAL` — count of Critical rows
@@ -143,7 +143,7 @@ Verify the file exists before proceeding. Read it and count severity rows. Store
 
 Write checkpoint:
 ```
-- DONE: corner case register created — .vault/concepts/[module]/plans/[feature]-corner-cases.md (Critical: CC_CRITICAL, High: CC_HIGH, Medium: CC_MEDIUM)
+- DONE: corner case register created — {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md (Critical: CC_CRITICAL, High: CC_HIGH, Medium: CC_MEDIUM)
 - NEXT: QA draft
 ```
 Proceed.
@@ -159,11 +159,11 @@ Phase: REQUIREMENTS
 Feature: [feature-name]
 Module: [module]
 Requirements file: [path]
-Corner cases register: .vault/concepts/[module]/plans/[feature]-corner-cases.md
+Corner cases register: {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md
 ```
 
 Parse result. Extract and store:
-- Test-cases file path (`.vault/reference/[module]/test-cases/[feature]-test-cases.md`)
+- Test-cases file path (`{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md`)
 - Total test case count (from `**Total:** N` field) — store as `TEST_COUNT`
 
 Write checkpoint:
@@ -185,7 +185,7 @@ Dispatch `@CoverageChecker`:
 
 ```
 Requirements file: [path from Step 1]
-Corner cases register: .vault/concepts/[module]/plans/[feature]-corner-cases.md
+Corner cases register: {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md
 Test-cases file: [path from Step 3]
 ```
 
@@ -365,10 +365,10 @@ All automated checks passed. Ready for development.
 
 | Artifact | File | Summary |
 |----------|------|---------|
-| Business Requirements | .vault/concepts/[module]/requirements/[feature].md | BA_USER_STORIES user stories, BA_AC_COUNT acceptance criteria |
-| Corner Case Register | .vault/concepts/[module]/plans/[feature]-corner-cases.md | CC_CRITICAL critical, CC_HIGH high, CC_MEDIUM medium |
-| Test Cases (live)     | .vault/reference/[module]/test-cases/[feature]-test-cases.md      | TEST_COUNT TCs (Status legend, Defects log) |
-| Technical Spec | .vault/reference/[module]/spec/[feature].md | SA_ENDPOINTS endpoints, SA_DATA_MODELS data models |
+| Business Requirements | {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md | BA_USER_STORIES user stories, BA_AC_COUNT acceptance criteria |
+| Corner Case Register | {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md | CC_CRITICAL critical, CC_HIGH high, CC_MEDIUM medium |
+| Test Cases (live)     | {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md      | TEST_COUNT TCs (Status legend, Defects log) |
+| Technical Spec | {{VAULT_PATH}}/reference/[module]/spec/[feature].md | SA_ENDPOINTS endpoints, SA_DATA_MODELS data models |
 
 ### Pipeline log
 - BA iterations: N
@@ -386,10 +386,10 @@ Type `reject: Step N` to discard artifacts from Step N onward and restart from t
 
 **On `/approve`:** write checkpoint `DONE: requirements package approved`. Write artifact paths to `.planning/CURRENT.md`:
 ```
-- requirements file: .vault/concepts/[module]/requirements/[feature].md
-- corner cases: .vault/concepts/[module]/plans/[feature]-corner-cases.md
-- test cases: .vault/reference/[module]/test-cases/[feature]-test-cases.md
-- spec: .vault/reference/[module]/spec/[feature].md
+- requirements file: {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
+- corner cases: {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md
+- test cases: {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
+- spec: {{VAULT_PATH}}/reference/[module]/spec/[feature].md
 ```
 Skill complete. Return control to @Main — proceed to step 2 (SEARCH).
 

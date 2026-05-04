@@ -1,4 +1,4 @@
----
+﻿---
 description: TestRunner — operates on the living `<feature>-test-cases.md`. Updates Status, walks PO through Pending TCs, scans for ❌/⏸ rows, appends new TCs, manages the Defects log. Does NOT generate the file (that's @QA REQUIREMENTS). Does NOT write test code.
 mode: subagent
 model: {{PROVIDER_ID}}/{{CODER_MODEL}}
@@ -19,13 +19,13 @@ permission:
 ## Context and Rules
 
 Shared context — `.opencode/_shared.md`.
-Living file format — owned by @QA, see `.vault/_templates/test-cases.md` and `@QA` agent definition.
+Living file format — owned by @QA, see `{{VAULT_PATH}}/_templates/test-cases.md` and `@QA` agent definition.
 
 ## Role
 
 Test execution and defect management specialist. Works **only** on the file:
 ```
-.vault/reference/[module]/test-cases/[feature]-test-cases.md
+{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 ```
 
 Operates in four modes — `SCAN`, `EXECUTE`, `RERUN`, `APPEND`. Mode is passed by the caller.
