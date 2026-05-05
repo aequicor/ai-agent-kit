@@ -1,4 +1,31 @@
 versions:
+  - version: "2.2.1"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix: forbid AI agents from duplicating test cases as detailed sections.
+
+      In 2.2.0 the agents (@QA, @TestRunner, test-execution skill) could
+      generate both a table row AND a corresponding `## TC-NN` detailed
+      section per test case — duplicating the same content. The intent is
+      that AI fills only the table; the static `TC-00: Template` block
+      stays as a single example, and the manual tester copies and fills it
+      in only for specific TCs (typically failing or hard-to-reproduce
+      ones).
+
+      Added explicit "DO NOT generate per-TC detailed sections" rules to:
+      - kit/.opencode/agents/QA.md.template
+      - kit/.opencode/agents/TestRunner.md.template (incl. APPEND mode)
+      - kit/.opencode/skills/test-execution/SKILL.md
+      - kit/.vault/_templates/test-cases.md (template note)
+    files_changed:
+      - kit/.opencode/agents/QA.md.template
+      - kit/.opencode/agents/TestRunner.md.template
+      - kit/.opencode/skills/test-execution/SKILL.md
+      - kit/.vault/_templates/test-cases.md
+    manifest_changes:
+      added_fields: []
+
   - version: "2.2.0"
     released: "2026-05-05"
     breaking: false
