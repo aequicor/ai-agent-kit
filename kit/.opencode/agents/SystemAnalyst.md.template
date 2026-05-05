@@ -133,7 +133,7 @@ Handle both sources identically: treat every row as an open question that must b
 
 Input: feature name + module + spec file path + test cases file path.
 
-Precondition: requirements-pipeline must have completed and the spec must be PO-signed-off. If the spec file does not exist — STOP and return `BLOCKED: spec not found, run /requirements-pipeline first`.
+Precondition: requirements-pipeline must have completed and the spec must be PO-signed-off. If the spec file does not exist — STOP and return `BLOCKED: spec not found, run /kit-requirements-pipeline first`.
 
 ```
 0. THINK — before drawing, reason briefly:

@@ -15,8 +15,8 @@ Argument: $TASK_SLUG (optional)
    - Read `.planning/CURRENT.md` → get `active_task`.
    - If `active_task` is `(none)` or empty:
      - List all files in `.planning/tasks/` (excluding `done/`).
-     - If none → STOP. Output: "No active task and no open tasks found. Run `/new-feature` to start."
-     - If multiple → show list and ask PO: "Which task to resume? (or run `/status` to see details)"
+     - If none → STOP. Output: "No active task and no open tasks found. Run `/kit-new-feature` to start."
+     - If multiple → show list and ask PO: "Which task to resume? (or run `/kit-status` to see details)"
      - If exactly one → set it as active_task in CURRENT.md and continue.
 
 ## Step 2 — Load context

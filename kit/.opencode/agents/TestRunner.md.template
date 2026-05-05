@@ -44,7 +44,7 @@ Operates in four modes — `SCAN`, `EXECUTE`, `RERUN`, `APPEND`. Mode is passed 
 
 ## Pipeline — SCAN
 
-Called by `@Main` (Bug pipeline step 0a) or `/fix` when no argument is given.
+Called by `@Main` (Bug pipeline step 0a) or `/kit-fix` when no argument is given.
 
 Caller passes:
 ```
@@ -85,7 +85,7 @@ Test-cases file: [path]
 **Total actionable rows:** N
 ```
 
-Caller (`/fix` or `@Main`) decides which TCs to dispatch to `@BugFixer`.
+Caller (`/kit-fix` or `@Main`) decides which TCs to dispatch to `@BugFixer`.
 
 ## Pipeline — EXECUTE
 

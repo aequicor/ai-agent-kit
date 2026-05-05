@@ -21,7 +21,7 @@ ai-agent-kit/
 │   │   ├── update.md                # AI-driven update prompt
 │   │   └── uninstall.md             # AI-driven uninstall prompt
 │   └── migration/
-│       └── changelog.yaml           # version history — source of truth for /update
+│       └── changelog.yaml           # version history — source of truth for /kit-update
 ├── profiles/                        # one subdirectory per axis; dir name IS the axis
 │   ├── language/                    # exactly 1 per manifest
 │   ├── framework/                   # 0..N per manifest
@@ -169,7 +169,7 @@ For breaking changes use `feat!:` (conventional commits breaking-change marker).
 5. Add the new profile to the appropriate table in `README.md` and in `profiles/README.md`.
 6. Bump the version (MINOR) and add a `changelog.yaml` entry.
 
-If you rename or split an existing profile, add a `profile_transforms.rename` entry in the changelog so `/update` migrates installed manifests automatically.
+If you rename or split an existing profile, add a `profile_transforms.rename` entry in the changelog so `/kit-update` migrates installed manifests automatically.
 
 ---
 
@@ -197,7 +197,7 @@ If you rename or split an existing profile, add a `profile_transforms.rename` en
 `kit/manifest.schema.json` is the contract for all installed manifests. When adding a new field:
 
 1. Add it to the schema with a clear description and default value.
-2. Add a corresponding `added_fields` entry in the changelog for the version being released so `/update` knows to append it with the default.
+2. Add a corresponding `added_fields` entry in the changelog for the version being released so `/kit-update` knows to append it with the default.
 3. Update `manifest.example.yaml` to show the new field with a realistic example value.
 4. If the field is **required**, this is a breaking change — bump MAJOR.
 

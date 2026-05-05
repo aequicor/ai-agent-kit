@@ -528,9 +528,9 @@ Quick start:
   opencode         # launches with @Main orchestrator
 
 Three commands to know:
-  /requirements-pipeline "<feature>"   — generates requirements + spec + the living test-cases.md
-  /new-feature           "<feature>"   — runs full FEATURE pipeline (uses pre-made spec if present)
-  /fix                   [TC-id|text]  — works on the living test-cases.md (scans, fixes, re-verifies)
+  /kit-requirements-pipeline "<feature>"   — generates requirements + spec + the living test-cases.md
+  /kit-new-feature           "<feature>"   — runs full FEATURE pipeline (uses pre-made spec if present)
+  /kit-fix                   [TC-id|text]  — works on the living test-cases.md (scans, fixes, re-verifies)
 
 If any TODO fields remain in the manifest or unresolved {{...}} placeholders were reported, fix them before relying on agents.
 
@@ -546,4 +546,4 @@ Report back a summary of what was done.
 - **Cardinality violated** (zero or multiple language/provider profiles after Q4a–c) → re-ask the relevant axis question, max 3 retries, then STOP.
 - **A kit file 404s when fetched** → STOP, report the exact URL and ask PO whether the kit has been published yet at the expected `KIT_REPO`.
 - **A literal API key is detected anywhere** → STOP immediately, warn PO.
-- **Target directory is non-empty AND contains a `.opencode/` directory already** → STOP, warn PO that this is a fresh install path. Suggest `/update` from inside the existing kit instead.
+- **Target directory is non-empty AND contains a `.opencode/` directory already** → STOP, warn PO that this is a fresh install path. Suggest `/kit-update` from inside the existing kit instead.

@@ -109,10 +109,10 @@ could not resolve after 3 iterations. PO input required:
 
 [list of unresolved questions]
 
-Reply with answers, then type /resume to continue the pipeline.
+Reply with answers, then type /kit-resume to continue the pipeline.
 ```
 
-Wait for PO. On `/resume`:
+Wait for PO. On `/kit-resume`:
 1. Dispatch `@BusinessAnalyst` (mode=UPDATE) with PO's answers as the questions list. This is **not** a loop iteration — PO is the authoritative resolver.
 2. Exit the loop immediately after BA UPDATE completes (do not re-run CornerCaseReviewer).
 3. Proceed to Step 2.5.
@@ -283,10 +283,10 @@ that @SystemAnalyst could not resolve after 3 iterations. PO/architect input req
 
 [list of unresolved questions]
 
-Reply with decisions, then type /resume to continue the pipeline.
+Reply with decisions, then type /kit-resume to continue the pipeline.
 ```
 
-Wait for PO. On `/resume`:
+Wait for PO. On `/kit-resume`:
 1. Dispatch `@SystemAnalyst` (mode=UPDATE) with PO's answers. This is **not** a loop iteration.
 2. Exit the loop immediately after SA UPDATE completes.
 3. Proceed to Step 7.
@@ -336,15 +336,15 @@ could not resolve after 2 iterations. Resolution required:
 [list of unresolved conflicts]
 
 Options:
-- Provide decisions to resolve each conflict, then type /resume to continue.
-- Type /approve-with-conflicts to accept conflicts as-is and proceed to sign-off.
+- Provide decisions to resolve each conflict, then type /kit-resume to continue.
+- Type /kit-approve-with-conflicts to accept conflicts as-is and proceed to sign-off.
 ```
 
-Wait for PO. On `/resume`:
+Wait for PO. On `/kit-resume`:
 1. Dispatch `@SystemAnalyst` (mode=UPDATE) with PO's decisions. This is **not** a loop iteration.
 2. Proceed directly to Step 8. Do not re-run ConsistencyChecker.
 
-On `/approve-with-conflicts`:
+On `/kit-approve-with-conflicts`:
 1. Write checkpoint noting which conflicts are accepted as-is.
 2. Proceed to Step 8.
 
@@ -380,11 +380,11 @@ All automated checks passed. Ready for development.
 
 ### PO action required
 
-Type `/approve` to proceed to implementation planning.
+Type `/kit-approve` to proceed to implementation planning.
 Type `reject: Step N` to discard artifacts from Step N onward and restart from that step.
 ```
 
-**On `/approve`:** write checkpoint `DONE: requirements package approved`. Write artifact paths to `.planning/tasks/<active_task>.md`:
+**On `/kit-approve`:** write checkpoint `DONE: requirements package approved`. Write artifact paths to `.planning/tasks/<active_task>.md`:
 ```
 - requirements file: {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
 - corner cases: {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md

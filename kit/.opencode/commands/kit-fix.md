@@ -8,7 +8,7 @@ The single source of truth is the living test-cases file:
 ```
 {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 ```
-PO marks Status ❌ for known bugs and may add new TC rows there at any time. `/fix` reads that file and acts on it. The BUG pipeline definition lives in @Main — this command is the entry point that figures out which TC(s) to feed it.
+PO marks Status ❌ for known bugs and may add new TC rows there at any time. `/kit-fix` reads that file and acts on it. The BUG pipeline definition lives in @Main — this command is the entry point that figures out which TC(s) to feed it.
 
 ## Routing
 
@@ -58,7 +58,7 @@ REPORT   — to PO: list of TCs fixed (FAIL→PASS), defects closed (DEF-ids), l
 
 - **Max 2 fix attempts per same compile/test error** inside @BugFixer → STOP, escalate to PO with full error history.
 - **Max 3 RERUN cycles per defect** → STOP, escalate to PO.
-- **No active task in CURRENT.md or no test-cases file**, and no argument given → STOP. Tell PO: "No active feature. Run `/new-feature` or `/requirements-pipeline` first, or pass a TC-id or description directly."
+- **No active task in CURRENT.md or no test-cases file**, and no argument given → STOP. Tell PO: "No active feature. Run `/kit-new-feature` or `/kit-requirements-pipeline` first, or pass a TC-id or description directly."
 
 ## Build verification commands (used by @BugFixer)
 

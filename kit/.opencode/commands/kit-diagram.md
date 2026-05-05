@@ -10,13 +10,13 @@ You MUST do exactly this — no other action:
 
 1. **Resolve feature + module.**
    - If `$FEATURE` is non-empty: treat it as the feature slug. Read `.planning/CURRENT.md` to find its module, or scan `{{VAULT_PATH}}/reference/*/spec/$FEATURE.md` to discover the module.
-   - If `$FEATURE` is empty: read `.planning/CURRENT.md` → take `active_task` as feature slug. If `active_task` is `(none)` or empty → STOP. Output exactly: `No active task. Run /requirements-pipeline "<feature>" first or pass the feature slug as an argument.`
+   - If `$FEATURE` is empty: read `.planning/CURRENT.md` → take `active_task` as feature slug. If `active_task` is `(none)` or empty → STOP. Output exactly: `No active task. Run /kit-requirements-pipeline "<feature>" first or pass the feature slug as an argument.`
 
 2. **Verify precondition.** Confirm both files exist:
    - Spec: `{{VAULT_PATH}}/reference/<module>/spec/<feature>.md`
    - Test cases: `{{VAULT_PATH}}/reference/<module>/test-cases/<feature>-test-cases.md`
 
-   If either is missing → STOP. Output exactly: `Spec or test-cases not found for <feature>. Run /requirements-pipeline "<feature>" first.` Do NOT continue.
+   If either is missing → STOP. Output exactly: `Spec or test-cases not found for <feature>. Run /kit-requirements-pipeline "<feature>" first.` Do NOT continue.
 
 3. **Dispatch `@SystemAnalyst`** as a subagent with this prompt and nothing else:
 

@@ -34,7 +34,7 @@ This is a **living document**. Ownership is split:
 
 AI agents do NOT touch the Notes column. AI agents do NOT generate per-TC detailed sections.
 
-`/fix` reads this file, scans for `FAIL` and `PEND` rows, asks PO which to fix, dispatches @BugFixer per chosen TC, then dispatches @TestRunner (RERUN) to verify.
+`/kit-fix` reads this file, scans for `FAIL` and `PEND` rows, asks PO which to fix, dispatches @BugFixer per chosen TC, then dispatches @TestRunner (RERUN) to verify.
 
 ---
 

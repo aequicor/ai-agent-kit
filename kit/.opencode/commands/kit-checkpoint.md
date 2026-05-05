@@ -7,7 +7,7 @@ You are a project state manager. Your ONLY task is to write a checkpoint entry �
 You MUST do exactly this — no other action:
 
 1. Read `.planning/CURRENT.md` → get `active_task` value.
-2. If `active_task` is `(none)` or empty → STOP. Output: "No active task. Run `/new-feature` or `/resume <task-slug>` first."
+2. If `active_task` is `(none)` or empty → STOP. Output: "No active task. Run `/kit-new-feature` or `/kit-resume <task-slug>` first."
 3. Read `.planning/tasks/<active_task>.md`.
 4. Append a new entry at the bottom with current ISO timestamp:
    ```

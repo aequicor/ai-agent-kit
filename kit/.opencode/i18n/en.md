@@ -55,4 +55,4 @@ Use these exact strings in `.planning/tasks/*.md` checkpoints and test-cases fil
 ## Commands
 
 Command names are always English regardless of locale — use the slash-command as-is:
-`/new-feature`, `/resume`, `/checkpoint`, `/lint`, `/fix`, `/review`, `/update-deps`, `/deploy`
+`/kit-new-feature`, `/kit-resume`, `/kit-checkpoint`, `/kit-lint`, `/kit-fix`, `/kit-review`, `/kit-update-deps`, `/kit-deploy`

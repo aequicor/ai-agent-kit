@@ -21,17 +21,17 @@
 # and Phase=IMPLEMENTATION during the FEATURE pipeline (appends impl-level TCs).
 #
 # The pipeline is orchestrated by @Main via the requirements-pipeline skill.
-# Entry point: /requirements-pipeline or /new-feature (auto-triggers the pipeline)
+# Entry point: /kit-requirements-pipeline or /kit-new-feature (auto-triggers the pipeline)
 #
 # Workflow:
-#   PO: /requirements-pipeline "description of the feature"
+#   PO: /kit-requirements-pipeline "description of the feature"
 #   ... automated pipeline runs ...
-#   PO: /approve  (or "reject: [what to redo]")
-#   PO: /diagram  (optional — generates Mermaid UML diagrams from the approved spec)
-#   PO: /new-feature "description" (hands artifacts to @Main for dev planning)
+#   PO: /kit-approve  (or "reject: [what to redo]")
+#   PO: /kit-diagram  (optional — generates Mermaid UML diagrams from the approved spec)
+#   PO: /kit-new-feature "description" (hands artifacts to @Main for dev planning)
 #
 # Optional commands provided by this profile:
-#   /diagram [feature] — @SystemAnalyst (DIAGRAM mode) reads the approved spec +
+#   /kit-diagram [feature] — @SystemAnalyst (DIAGRAM mode) reads the approved spec +
 #                        test cases and writes one <feature>-diagrams.md with
 #                        structural (class/component) and behavioral (sequence/
 #                        state) Mermaid diagrams. Read-only with respect to the

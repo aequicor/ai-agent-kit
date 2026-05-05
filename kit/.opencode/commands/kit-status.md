@@ -35,6 +35,6 @@ Active in this session: <active_task or "(none)">
 <git branch output>
 ```
 
-If no open task files → output: "No open tasks. Run `/new-feature` to start."
+If no open task files → output: "No open tasks. Run `/kit-new-feature` to start."
 
 Do not do anything else after the output.

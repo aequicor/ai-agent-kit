@@ -111,7 +111,7 @@ This is the same render-and-write flow as `setup.md` PHASE 3, but with **merge m
 
 Compute the same `{{VAR}}` table as documented in `setup.md` PHASE 3.1, using values from the existing manifest (do not ask PO again — assume the manifest is the source of truth for project values).
 
-Add `KIT_REPO` (from constants above) so `commands/update.md` renders correctly.
+Add `KIT_REPO` (from constants above) so `commands/kit-update.md` renders correctly.
 
 ### 3.2. Discover all kit files
 

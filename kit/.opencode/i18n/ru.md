@@ -55,4 +55,4 @@
 ## Команды
 
 Имена команд всегда на английском вне зависимости от локали — используй слэш-команду как есть:
-`/new-feature`, `/resume`, `/checkpoint`, `/lint`, `/fix`, `/review`, `/update-deps`, `/deploy`
+`/kit-new-feature`, `/kit-resume`, `/kit-checkpoint`, `/kit-lint`, `/kit-fix`, `/kit-review`, `/kit-update-deps`, `/kit-deploy`

@@ -11,7 +11,7 @@ You are @Main. You were waiting for PO confirmation at a CONFIRM step. Act now:
 1. Read `.planning/CURRENT.md` → get `active_task`. Append to `.planning/tasks/<active_task>.md`:
    ```
    ## <ISO timestamp>
-   - DONE: PO approved via /approve
+   - DONE: PO approved via /kit-approve
    - NEXT: proceeding to EXECUTE phase
    ```
 2. Continue immediately to the next phase of the active pipeline:

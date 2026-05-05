@@ -22,7 +22,7 @@ Type: FEATURE (or clarify if this is BUG/TECH)
 3. SEARCH — search KnowledgeOS for existing code patterns and guidelines.
 4. PLAN — create implementation plan + stage files (requirements and spec come from step 2).
 5. QA DRAFT — create implementation test-plan via @QA.
-6. CONFIRM — show summary to PO, wait for /approve (or @AutoApprover if AUTO_APPROVE=true).
+6. CONFIRM — show summary to PO, wait for /kit-approve (or @AutoApprover if AUTO_APPROVE=true).
 7. EXECUTE — implement via @CodeWriter → @CodeReviewer cycles.
 8. QA FINAL — finalize test-plan.
 9. CLOSE — documentation and checkpoint.

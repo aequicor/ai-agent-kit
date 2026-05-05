@@ -1,4 +1,91 @@
 versions:
+  - version: "3.0.0"
+    released: "2026-05-05"
+    breaking: true
+    description: |
+      **BREAKING:** All kit slash-commands are now prefixed with `kit-` to
+      avoid namespace collisions with editor-native or user-defined commands.
+
+      Renames (filename and invocation):
+        /approve              → /kit-approve
+        /checkpoint           → /kit-checkpoint
+        /deploy               → /kit-deploy
+        /diagram              → /kit-diagram
+        /fix                  → /kit-fix
+        /lint                 → /kit-lint
+        /new-feature          → /kit-new-feature
+        /requirements-pipeline → /kit-requirements-pipeline
+        /resume               → /kit-resume
+        /review               → /kit-review
+        /status               → /kit-status
+        /uninstall            → /kit-uninstall
+        /update               → /kit-update
+        /update-deps          → /kit-update-deps
+        /approve-with-conflicts → /kit-approve-with-conflicts
+
+      All cross-references in agents, skills, templates, vault templates,
+      i18n files, the setup prompt, and the README have been updated to use
+      the new names.
+
+      **MIGRATION FROM 2.x:**
+
+      1. From within an installed 2.x kit, the old `/update` command no
+         longer exists in this release of the source repo, so paste the
+         update prompt directly to start the upgrade:
+
+             Fetch and follow:
+               https://raw.githubusercontent.com/aequicor/ai-agent-kit/master/docs/prompts/update.md
+
+         (Once the update completes, you'll have `/kit-update` available
+         for future upgrades.)
+
+      2. **Manual cleanup after update** — the update flow writes the new
+         `kit-*.md` files but does not automatically delete the old
+         unprefixed files. After the update completes, delete the orphan
+         command files in your project:
+
+             rm .opencode/commands/{approve,checkpoint,deploy,diagram,fix,lint,new-feature,requirements-pipeline,resume,review,status,uninstall,update,update-deps}.md
+
+         (Skip files that don't exist — earlier kit versions had a smaller
+         command set.)
+
+      3. Update any project-local docs, READMEs, or onboarding notes that
+         reference the old command names.
+
+      No manifest field changes. `kit_version` simply moves 2.4.0 → 3.0.0.
+    files_changed:
+      - kit/.opencode/commands/kit-approve.md
+      - kit/.opencode/commands/kit-checkpoint.md
+      - kit/.opencode/commands/kit-deploy.md
+      - kit/.opencode/commands/kit-diagram.md
+      - kit/.opencode/commands/kit-fix.md
+      - kit/.opencode/commands/kit-lint.md
+      - kit/.opencode/commands/kit-new-feature.md
+      - kit/.opencode/commands/kit-requirements-pipeline.md
+      - kit/.opencode/commands/kit-resume.md
+      - kit/.opencode/commands/kit-review.md
+      - kit/.opencode/commands/kit-status.md
+      - kit/.opencode/commands/kit-uninstall.md
+      - kit/.opencode/commands/kit-update-deps.md
+      - kit/.opencode/commands/kit-update.md
+      - kit/.opencode/_shared.md.template
+      - kit/.opencode/agents/Main.md.template
+      - kit/.opencode/agents/PromptEngineer.md.template
+      - kit/.opencode/agents/QA.md.template
+      - kit/.opencode/agents/SystemAnalyst.md.template
+      - kit/.opencode/agents/TestRunner.md.template
+      - kit/.opencode/skills/requirements-pipeline/SKILL.md
+      - kit/.opencode/i18n/en.md
+      - kit/.opencode/i18n/ru.md
+      - kit/.vault/_templates/test-cases.md
+      - kit/editors/opencode/CLAUDE.md.template
+      - kit/.planning/CURRENT.md.template
+      - kit/_index.txt
+      - profiles/capability/requirements-pipeline.yaml
+      - profiles/language/make-generic.yaml
+    manifest_changes:
+      added_fields: []
+
   - version: "2.4.0"
     released: "2026-05-05"
     breaking: false

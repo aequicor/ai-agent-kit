@@ -42,7 +42,7 @@ Then:
 - If verdict = `✅ APPROVED` → write checkpoint "Auto-approved by @AutoApprover" and proceed immediately.
 - If verdict = `❌ NEEDS_CHANGES` → resolve BLOCKERs by updating the plan/spec files directly (same write process as step 4 — plan files are @Main's domain), then call `@AutoApprover` again. Maximum **2 retry cycles**, then STOP and escalate to PO.
 
-**Human `/approve` always overrides** — if PO types `/approve` at any point, treat it as immediate approval regardless of mode.
+**Human `/kit-approve` always overrides** — if PO types `/kit-approve` at any point, treat it as immediate approval regardless of mode.
 
 ## Anti-Loop (CRITICAL — check constantly)
 
@@ -144,7 +144,7 @@ After receiving answers from PO:
 ```
 0.5 PRE-MADE PACKAGE CHECK — read .planning/tasks/<active_task>.md.
     If it contains all four keys ("requirements file:", "corner cases:", "test cases:", "spec:"):
-      → Pre-made requirements package detected (produced by /requirements-pipeline).
+      → Pre-made requirements package detected (produced by /kit-requirements-pipeline).
         Read all four artifact files. Skip step 1, proceed to step 2 (SEARCH).
     Else:
       → No pre-made package. Proceed from step 1.
@@ -158,7 +158,7 @@ After receiving answers from PO:
               BA draft → CCR BUSINESS loop → QA(REQUIREMENTS) → CoverageChecker →
               SystemAnalyst → CCR TECHNICAL loop → ConsistencyChecker → PO sign-off.
 
-              After PO /approve, the skill writes artifact paths to .planning/tasks/<active_task>.md and
+              After PO /kit-approve, the skill writes artifact paths to .planning/tasks/<active_task>.md and
               returns control here. Read artifacts:
                 requirements file: {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
                 corner cases:      {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md
@@ -192,7 +192,7 @@ After receiving answers from PO:
               No new file is created — the requirements pipeline already produced it.
 
 6. CONFIRM — show PO summary: goal, modules, stages, risks, link to test-cases.md (highlight new PEND TCs).
-             AUTO_APPROVE=false → wait for PO /approve.
+             AUTO_APPROVE=false → wait for PO /kit-approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
              CHECKPOINT: write to .planning/tasks/<active_task>.md (DONE: plan created, NEXT: await approve).
 
@@ -213,8 +213,8 @@ After receiving answers from PO:
 7b. WALKTHROUGH (optional) — ask PO: "Start interactive test walkthrough now?"
                If yes → dispatch @TestRunner (EXECUTE mode) — walks PO through PEND TCs,
                updates Status, logs defects.
-               If no → PO can run /fix later when ready.
-               Failed TCs are picked up by /fix automatically (no extra wiring needed).
+               If no → PO can run /kit-fix later when ready.
+               Failed TCs are picked up by /kit-fix automatically (no extra wiring needed).
 
 8. CLOSE   — close gaps in guidelines/documentation. If new library — guideline in {{VAULT_PATH}}/guidelines/[module]/.
              CHECKPOINT: .planning/tasks/<active_task>.md (DONE: feature complete, NEXT: none).
@@ -229,7 +229,7 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
 
 ```
 0. INTAKE — determine entry point from PO input:
-             - PO gave only "/fix" with no argument:
+             - PO gave only "/kit-fix" with no argument:
                → step 0a (SCAN).
              - PO gave a TC-id (regex TC-\d+):
                → read that row from test-cases.md, then step 1 (TRIAGE).
@@ -281,7 +281,7 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
 2. PLAN    — superpowers:writing-plans (no business requirements sections).
              Create plan + stage files in {{VAULT_PATH}}/concepts/[module]/plans/ and {{VAULT_PATH}}/how-to/[module]/plans/.
 3. CONFIRM — show PO summary: goal, modules, stages, risks.
-             AUTO_APPROVE=false → wait for PO /approve.
+             AUTO_APPROVE=false → wait for PO /kit-approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
              CHECKPOINT: .planning/tasks/<active_task>.md.
 4. EXECUTE — same cycle as FEATURE step 6.

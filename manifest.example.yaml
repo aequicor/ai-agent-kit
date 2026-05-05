@@ -1,12 +1,12 @@
 # ai-agent-kit manifest example
 # Copy to <project-slug>.yaml in your target project, edit fields, then either:
 #   - have an AI agent follow docs/prompts/setup.md to install (no scripts), or
-#   - keep this manifest as the canonical config the kit's /update command reads.
+#   - keep this manifest as the canonical config the kit's /kit-update command reads.
 
 # ─────────────────────────────────────────────
-# KIT VERSION (do not change manually — set by setup.md / /update)
+# KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "2.4.0"
+kit_version: "3.0.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE

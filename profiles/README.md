@@ -42,4 +42,4 @@ setup.md cross-checks `_profile_axis` against the directory and stops with an er
 
 ## Renaming or splitting a profile
 
-Don't break existing manifests silently. Add a `profile_transforms` entry to the next changelog version in [`docs/migration/changelog.yaml`](../docs/migration/changelog.yaml) so `/update` migrates installed projects automatically. Supported operations: `rename` (1→N split allowed), `ensure`, `ensure_axis`. See update.md PHASE 4 step 11b.
+Don't break existing manifests silently. Add a `profile_transforms` entry to the next changelog version in [`docs/migration/changelog.yaml`](../docs/migration/changelog.yaml) so `/kit-update` migrates installed projects automatically. Supported operations: `rename` (1→N split allowed), `ensure`, `ensure_axis`. See update.md PHASE 4 step 11b.

@@ -8,13 +8,13 @@ AI-agent configuration kit for [OpenCode](https://opencode.ai). Drops a complete
 
 | Trigger | Pipeline | Output |
 |---|---|---|
-| `/requirements-pipeline "<feature>"` | BusinessAnalyst → CornerCaseReviewer (loop) → @QA REQUIREMENTS → CoverageChecker (loop) → SystemAnalyst → CornerCaseReviewer (loop) → ConsistencyChecker (loop) → PO sign-off | requirements.md, corner-cases.md, **living test-cases.md**, spec.md |
-| `/new-feature "<feature>"` | (auto-runs requirements-pipeline if needed) → SEARCH → DESIGN → PLAN → @QA IMPL DRAFT → CONFIRM → CodeWriter ↔ CodeReviewer (per stage) → @QA IMPL FINAL → optional @TestRunner walkthrough → CLOSE | implementation + tests + updated test-cases.md |
-| `/fix [TC-id\|description]` or `/fix` | SCAN test-cases.md → TRIAGE → DEBUG (if needed) → BugFixer → RERUN | fixed code, regression test, test-cases.md updated (Status FAIL→PASS, Defects log OPEN→FIXED) |
+| `/kit-requirements-pipeline "<feature>"` | BusinessAnalyst → CornerCaseReviewer (loop) → @QA REQUIREMENTS → CoverageChecker (loop) → SystemAnalyst → CornerCaseReviewer (loop) → ConsistencyChecker (loop) → PO sign-off | requirements.md, corner-cases.md, **living test-cases.md**, spec.md |
+| `/kit-new-feature "<feature>"` | (auto-runs requirements-pipeline if needed) → SEARCH → DESIGN → PLAN → @QA IMPL DRAFT → CONFIRM → CodeWriter ↔ CodeReviewer (per stage) → @QA IMPL FINAL → optional @TestRunner walkthrough → CLOSE | implementation + tests + updated test-cases.md |
+| `/kit-fix [TC-id\|description]` or `/kit-fix` | SCAN test-cases.md → TRIAGE → DEBUG (if needed) → BugFixer → RERUN | fixed code, regression test, test-cases.md updated (Status FAIL→PASS, Defects log OPEN→FIXED) |
 
-The **living test-cases file** at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/fix`. PO can edit it manually — change Status to `FAIL`, append a new TC row, edit Notes — and `/fix` will pick it up. (`vault_path` is set in the manifest, default `vault`.)
+The **living test-cases file** at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/kit-fix`. PO can edit it manually — change Status to `FAIL`, append a new TC row, edit Notes — and `/kit-fix` will pick it up. (`vault_path` is set in the manifest, default `vault`.)
 
-**Optional add-on:** after `/approve` (and before or after `/new-feature`), run `/diagram [feature]` to generate a single `<feature>-diagrams.md` next to the spec, containing structural (class + component) and behavioral (sequence + state) UML diagrams in **Mermaid**. Available on stacks that include the `requirements-pipeline` capability profile, since the spec it consumes is produced there.
+**Optional add-on:** after `/kit-approve` (and before or after `/kit-new-feature`), run `/kit-diagram [feature]` to generate a single `<feature>-diagrams.md` next to the spec, containing structural (class + component) and behavioral (sequence + state) UML diagrams in **Mermaid**. Available on stacks that include the `requirements-pipeline` capability profile, since the spec it consumes is produced there.
 
 ---
 
@@ -45,10 +45,10 @@ No external runtime needed — the AI does all rendering itself.
 Inside an installed kit, run:
 
 ```
-/update
+/kit-update
 ```
 
-That command (defined in `kit/.opencode/commands/update.md`) tells the agent to fetch [docs/prompts/update.md](docs/prompts/update.md) and follow it. The update prompt:
+That command (defined in `kit/.opencode/commands/kit-update.md`) tells the agent to fetch [docs/prompts/update.md](docs/prompts/update.md) and follow it. The update prompt:
 
 - Reads current `kit_version` from your manifest.
 - Fetches `docs/migration/changelog.yaml` and computes the migration path.
@@ -57,7 +57,7 @@ That command (defined in `kit/.opencode/commands/update.md`) tells the agent to 
 - Bumps `kit_version`, appends new manifest fields with documented defaults.
 - Verifies (9 agents, JSON validity, no literal API keys, smoke `compile_command`).
 
-You can also paste the update prompt directly without `/update`:
+You can also paste the update prompt directly without `/kit-update`:
 
 ```
 Fetch and follow:
@@ -126,9 +126,9 @@ The test-cases file at `<vault_path>/reference/<module>/test-cases/<feature>-tes
 
 1. As you test the feature manually, change the **Status** column for each row: `PEND` → `PASS` or `FAIL`. Add Notes if helpful.
 2. If you find a bug not covered by an existing TC, **add a new row** with `Status: FAIL` and Notes describing the symptom.
-3. Run `/fix` (no arguments). It dispatches `@TestRunner SCAN`, lists all `FAIL`/`PEND` rows (including your additions), and asks which to fix.
+3. Run `/kit-fix` (no arguments). It dispatches `@TestRunner SCAN`, lists all `FAIL`/`PEND` rows (including your additions), and asks which to fix.
 4. For each chosen TC, the BUG pipeline runs: `@BugFixer` analyzes, fixes, runs `@CodeReviewer`, builds, updates the file (Status `FAIL`→`PASS`, Defects log `OPEN`→`FIXED`), commits, writes a report. Then `@TestRunner RERUN` re-verifies with you (`FIXED` → `PASS Verified`).
-5. You can also run `/fix TC-05` to fix one specific row, or `/fix "login crashes when email has +"` to add a new TC and fix it in one step.
+5. You can also run `/kit-fix TC-05` to fix one specific row, or `/kit-fix "login crashes when email has +"` to add a new TC and fix it in one step.
 
 You never have to leave the markdown file — it's the source of truth.
 
@@ -164,7 +164,7 @@ If you find yourself wanting to set a field outside your axis, that's a sign the
 
 ### Customize an agent for one project (post-install)
 
-After install, the kit files live in your target project. Edit `<target>/.opencode/agents/<X>.md` directly. Just remember `/update` will overwrite kit-managed files in merge mode — commit your edits first, and re-apply them after each upgrade (or use `git diff` after `/update` to spot what was overwritten).
+After install, the kit files live in your target project. Edit `<target>/.opencode/agents/<X>.md` directly. Just remember `/kit-update` will overwrite kit-managed files in merge mode — commit your edits first, and re-apply them after each upgrade (or use `git diff` after `/kit-update` to spot what was overwritten).
 
 ---
 
@@ -205,7 +205,7 @@ ai-agent-kit/
     ├── editors/opencode/CLAUDE.md.template
     ├── .opencode/
     │   ├── agents/        (15 .md.template — 10 base + 5 requirements-pipeline)
-    │   ├── commands/      (14 — /new-feature, /fix, /requirements-pipeline, /diagram, /review, /deploy, /update, /approve, /checkpoint, /lint, /resume, /status, /uninstall, /update-deps)
+    │   ├── commands/      (14 — /kit-new-feature, /kit-fix, /kit-requirements-pipeline, /kit-diagram, /kit-review, /kit-deploy, /kit-update, /kit-approve, /kit-checkpoint, /kit-lint, /kit-resume, /kit-status, /kit-uninstall, /kit-update-deps)
     │   ├── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
     │   ├── i18n/{en,ru}.md
     │   ├── sessions/SESSIONS.md.template

@@ -24,9 +24,9 @@ Feature description: $FEATURE_DESCRIPTION
 6. **SA DRAFT** — @SystemAnalyst generates technical spec from requirements + test cases.
 7. **CC TECHNICAL** — @CornerCaseReviewer attacks tech spec (up to 3 iterations with @SystemAnalyst).
 8. **CONSISTENCY** — @ConsistencyChecker verifies spec does not contradict requirements.
-9. **SIGN-OFF** — presents complete artifact package to PO for `/approve`.
+9. **SIGN-OFF** — presents complete artifact package to PO for `/kit-approve`.
 
-After `/approve`, use `/new-feature` to hand the artifacts to `@Main` for implementation planning.
+After `/kit-approve`, use `/kit-new-feature` to hand the artifacts to `@Main` for implementation planning.
 
 **Do not call pipeline agents directly — only @Main.**
 

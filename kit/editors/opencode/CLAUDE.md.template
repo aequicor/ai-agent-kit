@@ -24,10 +24,10 @@ Before reading the user request, before any tool call:
 @BugFixer, or @CodeReviewer directly — always through @Main orchestration.
 
 If the user says **"continue"**, **"continue work"**, **"продолжай"**, **"go on"**
-→ invoke `/resume`:
-- `/resume` reads CURRENT.md + active task file + git state, shows resume context, waits for confirmation.
-- `/resume <task-slug>` switches the active task explicitly.
-- Do NOT act on bare "continue" — run `/resume` first, always.
+→ invoke `/kit-resume`:
+- `/kit-resume` reads CURRENT.md + active task file + git state, shows resume context, waits for confirmation.
+- `/kit-resume <task-slug>` switches the active task explicitly.
+- Do NOT act on bare "continue" — run `/kit-resume` first, always.
 
 ---
 
@@ -41,7 +41,7 @@ If the user says **"continue"**, **"continue work"**, **"продолжай"**, 
 | Same review issue raised 3× across stages | STOP. Escalate to user with full context. |
 
 - Never paste full file contents into your reply — reference by path + line range.
-- After every 5 tool calls OR every file edit batch → call `/checkpoint`.
+- After every 5 tool calls OR every file edit batch → call `/kit-checkpoint`.
 
 ---
 
