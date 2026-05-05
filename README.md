@@ -22,7 +22,7 @@ Paste this into your AI agent (Claude Code / Cursor / OpenCode chat / GPT-with-t
 
 ```
 Fetch and follow the setup instructions from:
-  https://raw.githubusercontent.com/aequicor/ai-agent-kit/main/docs/prompts/setup.md
+  https://raw.githubusercontent.com/aequicor/ai-agent-kit/master/docs/prompts/setup.md
 Read it completely, then follow every phase exactly. Do not skip steps.
 ```
 
@@ -59,7 +59,7 @@ You can also paste the update prompt directly without `/update`:
 
 ```
 Fetch and follow:
-  https://raw.githubusercontent.com/aequicor/ai-agent-kit/main/docs/prompts/update.md
+  https://raw.githubusercontent.com/aequicor/ai-agent-kit/master/docs/prompts/update.md
 ```
 
 ---

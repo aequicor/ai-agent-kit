@@ -9,7 +9,7 @@ You are an AI agent upgrading an installed ai-agent-kit. Your only job is to fol
 ## Constants
 
 - `KIT_REPO` = the GitHub `<user>/<repo>` slug from which this kit is hosted. Read it from the URL of the prompt you fetched.
-- `RAW_BASE` = `https://raw.githubusercontent.com/{KIT_REPO}/main`
+- `RAW_BASE` = `https://raw.githubusercontent.com/{KIT_REPO}/master`
 
 ---
 
@@ -52,7 +52,7 @@ You are an AI agent upgrading an installed ai-agent-kit. Your only job is to fol
 
 7. Build `MIGRATION_PATH`: all entries in `versions[]` whose version is **strictly greater** than `CURRENT_VERSION` and **less than or equal to** `versions[0].version`. Sort oldest-first (chronological).
 
-If fetch fails on both raw and `https://github.com/{KIT_REPO}/blob/main/docs/migration/changelog.yaml` → STOP. "Cannot reach changelog. Check internet connection or `KIT_REPO` value."
+If fetch fails on both raw and `https://github.com/{KIT_REPO}/blob/master/docs/migration/changelog.yaml` → STOP. "Cannot reach changelog. Check internet connection or `KIT_REPO` value."
 
 ---
 

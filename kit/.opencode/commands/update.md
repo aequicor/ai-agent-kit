@@ -8,7 +8,7 @@ You are upgrading an ai-agent-kit installation. **Do not run any external script
 
 ```
 Fetch and follow the instructions from:
-  https://raw.githubusercontent.com/{{KIT_REPO}}/main/docs/prompts/update.md
+  https://raw.githubusercontent.com/{{KIT_REPO}}/master/docs/prompts/update.md
 
 Read it completely, then execute every phase exactly. Do not skip steps. Do not improvise.
 ```

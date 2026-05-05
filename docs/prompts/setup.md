@@ -8,8 +8,8 @@ You are an AI agent applying ai-agent-kit to a target project. Your only job is 
 
 ## Constants used below
 
-- `KIT_REPO` = the GitHub `<user>/<repo>` slug of the kit you are installing from. You can read it from the URL of the prompt you fetched. Example: if you were told to fetch `https://raw.githubusercontent.com/example-org/ai-agent-kit/main/docs/prompts/setup.md`, then `KIT_REPO = example-org/ai-agent-kit`.
-- `RAW_BASE` = `https://raw.githubusercontent.com/{KIT_REPO}/main`
+- `KIT_REPO` = the GitHub `<user>/<repo>` slug of the kit you are installing from. You can read it from the URL of the prompt you fetched. Example: if you were told to fetch `https://raw.githubusercontent.com/example-org/ai-agent-kit/master/docs/prompts/setup.md`, then `KIT_REPO = example-org/ai-agent-kit`.
+- `RAW_BASE` = `https://raw.githubusercontent.com/{KIT_REPO}/master`
 
 ---
 
