@@ -27,7 +27,7 @@ Read it completely, then follow every phase exactly. Do not skip steps.
 ```
 
 The agent will:
-1. Ask you ~30 questions about your project (target path, profiles, modules, provider, models, MCP, LSP, UI, code quality, formatter).
+1. Ask you ~30 questions about your project (preferred language, target path, profiles, modules, provider, models, MCP, LSP, UI, code quality, formatter).
 2. Fetch the chosen profile YAMLs, deep-merge them, overlay your answers, validate the manifest against `kit/manifest.schema.json`.
 3. Show you the manifest, wait for confirmation, write it to `<target>/<project-slug>.yaml`.
 4. Read `kit/_index.txt`, fetch every kit file, render `{{VAR}}` placeholders, write to your target.
@@ -175,7 +175,8 @@ ai-agent-kit/
 ├── docs/
 │   ├── prompts/
 │   │   ├── setup.md                       # AI-driven install (no scripts)
-│   │   └── update.md                      # AI-driven update (no scripts)
+│   │   ├── update.md                      # AI-driven update (no scripts)
+│   │   └── uninstall.md                   # AI-driven uninstall (no scripts)
 │   └── migration/changelog.yaml           # version history + breaking changes + new fields
 ├── profiles/                              # one subdirectory per axis — directory name == _profile_axis
 │   ├── language/
@@ -202,13 +203,16 @@ ai-agent-kit/
     ├── editors/opencode/CLAUDE.md.template
     ├── .opencode/
     │   ├── agents/        (15 .md.template — 10 base + 5 requirements-pipeline)
-    │   ├── commands/      (11 — /new-feature, /fix, /requirements-pipeline, /review, /deploy, /update, ...)
+    │   ├── commands/      (13 — /new-feature, /fix, /requirements-pipeline, /review, /deploy, /update, /approve, /checkpoint, /lint, /resume, /status, /uninstall, /update-deps)
     │   ├── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
     │   ├── i18n/{en,ru}.yaml
     │   ├── sessions/SESSIONS.md.template
     │   ├── _shared.md.template
     │   └── FILE_STRUCTURE.md.template
-    ├── .planning/{CURRENT,DECISIONS}.md.template
+    ├── .planning/
+    │   ├── CURRENT.md.template
+    │   ├── DECISIONS.md.template
+    │   └── tasks/TASK.md.template         # per-task planning stubs
     └── .vault/                                # rendered to <vault_path>/ at install time
         ├── _INDEX.md.template
         └── _templates/{bug-report,requirements,spec,test-cases,test-plan}.md
