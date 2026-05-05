@@ -68,12 +68,10 @@ locale: ru
 
 ## Использование
 
-Для переключения на русский язык добавьте в `opencode.json`:
+Язык агентов задаётся переменной окружения `OPENCODE_LANG` в шелле перед запуском OpenCode:
 
-```json
-"environment": {
-  "OPENCODE_LANG": "ru"
-}
+```bash
+export OPENCODE_LANG=ru
 ```
 
-Агенты проверяют `OPENCODE_LANG` и подгружают соответствующие локализованные варианты сообщений через `.opencode/_shared.md`.
+OpenCode не поддерживает ключ `environment` в `opencode.json` — переменную нужно выставлять в окружении процесса. Дефолт устанавливается при установке кита через `language_code` в манифесте.

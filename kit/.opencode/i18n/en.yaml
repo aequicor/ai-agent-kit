@@ -65,10 +65,10 @@ locale: en
 
 ## Usage
 
-Agent language is controlled via `OPENCODE_LANG` environment variable:
+Agent language is controlled via the `OPENCODE_LANG` shell environment variable:
 
-```json
-"environment": {
-  "OPENCODE_LANG": "en"
-}
+```bash
+export OPENCODE_LANG=en
 ```
+
+OpenCode does not support an `environment` key in `opencode.json` — the variable must be set in the process environment before launching OpenCode. The default is set at install time via `language_code` in the manifest.
