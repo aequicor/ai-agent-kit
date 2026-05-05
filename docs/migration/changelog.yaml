@@ -1,4 +1,19 @@
 versions:
+  - version: "2.1.2"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix: corrected Ollama Cloud base URL from https://ollama.com to https://ollama.com/v1.
+
+      @ai-sdk/openai-compatible appends /chat/completions directly to baseURL, so the
+      correct value must include the /v1 path segment. Without it the SDK was hitting
+      https://ollama.com/chat/completions instead of https://ollama.com/v1/chat/completions,
+      causing connection failures on every request after kit installation.
+    files_changed:
+      - profiles/provider/ollama-cloud.yaml
+    manifest_changes:
+      added_fields: []
+
   - version: "2.1.1"
     released: "2026-05-05"
     breaking: false

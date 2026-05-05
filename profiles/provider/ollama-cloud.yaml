@@ -10,7 +10,7 @@ _profile_axis: provider
 
 provider:
   name: ollama-cloud
-  base_url: https://ollama.com
+  base_url: https://ollama.com/v1
   api_key_env: OLLAMA_API_KEY
 
 models:
