@@ -39,7 +39,7 @@ rebuild: false
 ## Architecture
 
 ```
-{{VAULT_PATH}}/                           .opencode/knowledge-graph/
+{{VAULT_PATH}}/                           {{HOST_DIR}}/knowledge-graph/
   concepts/                           index.json         — document metadata
   reference/                          graph.json         — entity relationships
   guidelines/                         embeddings.json    — vector storage (if available)

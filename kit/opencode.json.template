@@ -5,7 +5,7 @@
   "instructions": [
     "AGENTS.md",
     ".opencode/_shared.md",
-    ".opencode/i18n/{{OPENCODE_LANG}}.md",
+    ".opencode/i18n/{{KIT_LANG}}.md",
     ".planning/CURRENT.md",
     ".planning/DECISIONS.md",
     "AUTO_MEMORY.md"

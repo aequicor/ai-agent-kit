@@ -2,7 +2,9 @@
 
 ## What this repo is
 
-A pure-AI configuration kit for [OpenCode](https://opencode.ai). Running the install prompt drops a complete agent team (10 base agents + optional requirements-pipeline agents) into any target project. No scripts, no runtimes — the AI renders `{{VAR}}` templates itself.
+A pure-AI configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Running the install prompt drops a complete agent team (10 base agents + optional requirements-pipeline agents) into any target project. No scripts, no runtimes — the AI resolves `{{INCLUDE: <path>}}` directives and renders `{{VAR}}` templates itself.
+
+**Multi-host architecture (since v4.0.0):** every install picks one or more hosts (`opencode`, `claude-code`). Each host gets its own template tree (`.opencode/` or `.claude/`) with host-specific frontmatter and a host-specific config file (`opencode.json` or `.claude/settings.json`). Agent bodies, commands, and skills are shared via `kit/_shared/` and inlined per host via `{{INCLUDE: ...}}`.
 
 **Repo:** `aequicor/ai-agent-kit` on GitHub.
 **Raw base:** `https://raw.githubusercontent.com/aequicor/ai-agent-kit/master`
@@ -13,7 +15,7 @@ A pure-AI configuration kit for [OpenCode](https://opencode.ai). Running the ins
 
 ```
 ai-agent-kit/
-├── README.md                        # user-facing docs; contains version badge + profile table
+├── README.md                        # user-facing docs; contains profile table + agent roster
 ├── manifest.example.yaml            # reference manifest for users to copy
 ├── docs/
 │   ├── prompts/
@@ -26,13 +28,26 @@ ai-agent-kit/
 ├── profiles/                        # one subdirectory per axis; dir name IS the axis
 │   ├── language/                    # exactly 1 per manifest
 │   ├── framework/                   # 0..N per manifest
-│   ├── provider/                    # exactly 1 per manifest
+│   ├── host/                        # 1..N per manifest (opencode, claude-code)
+│   ├── provider/                    # 1 if opencode ∈ hosts, else 0
 │   └── capability/                  # 0..N (security-baseline always added)
 └── kit/                             # everything rendered into the target project
     ├── _index.txt                   # complete file list — must be kept in sync
     ├── manifest.schema.json         # JSON Schema for assembled manifests
     ├── profile.schema.json          # JSON Schema for individual profile YAMLs
-    └── ...                          # templates (.md.template), commands, skills, etc.
+    ├── AGENTS.md.template           # rendered iff opencode ∈ hosts
+    ├── CLAUDE.md.template           # rendered iff claude-code ∈ hosts (inlines orchestrator body)
+    ├── opencode.json.template       # rendered iff opencode ∈ hosts
+    ├── _shared/                     # single source of truth — pulled into both hosts via INCLUDE
+    │   ├── agents/<Name>.body.md.template     # agent prose, no frontmatter (shared by both hosts)
+    │   ├── commands/<name>.md.template        # /kit-* commands (host-agnostic)
+    │   ├── skills/<name>/SKILL.md.template
+    │   ├── _shared.md.template, FILE_STRUCTURE.md.template, sessions/, i18n/, PROJECT_RULES.body.md.template
+    ├── .opencode/agents/<Name>.md.template    # OpenCode frontmatter + INCLUDE
+    ├── .claude/
+    │   ├── agents/<Name>.md.template          # Claude Code frontmatter + INCLUDE (no Main — see CLAUDE.md)
+    │   └── settings.json.template
+    └── nested/MODULE.body.md.template         # rendered per module per host
 ```
 
 ---
@@ -158,7 +173,7 @@ For breaking changes use `feat!:` (conventional commits breaking-change marker).
 
 ## Adding a profile
 
-1. Pick the axis (`language`, `framework`, `provider`, `capability`). An axis owns specific manifest fields — see `profiles/README.md`. If you need fields from two axes, make two profiles.
+1. Pick the axis (`language`, `framework`, `host`, `provider`, `capability`). An axis owns specific manifest fields — see `profiles/README.md`. If you need fields from two axes, make two profiles.
 2. Create `profiles/<axis>/<name>.yaml`. Required front-matter:
    ```yaml
    _profile_name: <name>
@@ -176,19 +191,46 @@ If you rename or split an existing profile, add a `profile_transforms.rename` en
 
 ## Adding an agent
 
-1. Create `kit/.opencode/agents/<AgentName>.md.template`. Use an existing agent as a starting point. Required front-matter fields: `description`, `mode`, `model`, `temperature`, `permission`.
-2. If the agent participates in a pipeline, reference it from `kit/.opencode/agents/Main.md.template` or from a skill.
-3. Run `find kit -type f ! -name "_index.txt" | sort > kit/_index.txt` to refresh the index.
-4. Update the **Agent roster** table in `README.md`.
-5. Bump version (MINOR) and add a changelog entry.
+Agent prose lives once in `_shared/`; each host has its own thin wrapper file with host-specific frontmatter that includes the body.
+
+1. **Body** — `kit/_shared/agents/<AgentName>.body.md.template`. Pure prose, no frontmatter. Use placeholders like `{{HOST_DIR}}`, `{{HOST_INSTRUCTION_FILE}}`, `{{KIT_LANG_ENV}}`, `{{DISPATCH_TOOL}}` for host-divergent text.
+2. **OpenCode wrapper** — `kit/.opencode/agents/<AgentName>.md.template`:
+   ```
+   ---
+   description: ...
+   mode: subagent
+   model: {{PROVIDER_ID}}/{{<role>_MODEL}}
+   temperature: 0.1
+   permission: { read: allow, edit: allow, ... }
+   ---
+
+   {{INCLUDE: _shared/agents/<AgentName>.body.md.template}}
+   ```
+3. **Claude Code wrapper** — `kit/.claude/agents/<AgentName>.md.template`:
+   ```
+   ---
+   name: <AgentName>
+   description: ...
+   tools: Read,Edit,Bash,Grep,Glob,...
+   model: {{<role>_MODEL}}
+   ---
+
+   {{INCLUDE: _shared/agents/<AgentName>.body.md.template}}
+   ```
+4. If the agent participates in a pipeline, reference it from `kit/_shared/agents/Main.body.md.template` (the orchestrator body) or from a skill.
+5. Run `find kit -type f ! -name "_index.txt" | sort > kit/_index.txt` to refresh the index.
+6. Update the **Agent roster** table in `README.md`.
+7. Bump version (MINOR) and add a changelog entry.
 
 ---
 
 ## Adding a command or skill
 
-1. Create `kit/.opencode/commands/<name>.md` or `kit/.opencode/skills/<name>/SKILL.md`.
+Commands and skills are host-agnostic — single source under `_shared/`, rendered into every host's `<host_dir>/commands/` and `<host_dir>/skills/` at install time.
+
+1. Create `kit/_shared/commands/<name>.md.template` or `kit/_shared/skills/<name>/SKILL.md.template`.
 2. Refresh `kit/_index.txt`.
-3. Reference the command/skill from the relevant agent or from `Main.md.template`.
+3. Reference the command/skill from the orchestrator body (`kit/_shared/agents/Main.body.md.template`) or from a relevant agent body.
 4. Bump version (MINOR) and add a changelog entry.
 
 ---

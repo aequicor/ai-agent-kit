@@ -35,7 +35,7 @@ Deploy protocol for: $TARGET
    - Run build command: `{{BUILD_COMMAND}}`
    - Execute deploy script (project-specific)
    - Run smoke tests after deploy
-   - Write deploy log to `.opencode/sessions/deploy-<timestamp>.md`
+   - Write deploy log to `{{HOST_DIR}}/sessions/deploy-<timestamp>.md`
 
 6. Report: "Deployed to $TARGET: <version/tag>. Smoke tests: <pass/fail>."
 

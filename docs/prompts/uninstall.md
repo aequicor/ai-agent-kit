@@ -14,11 +14,17 @@ You are an AI agent removing ai-agent-kit from a target project. Your only job i
 
 2. Read the manifest. Extract:
    - `vault_path` (default `vault` if absent)
-   - `modules[*].source_root` — list of all module source roots (for nested AGENTS.md removal)
-   - `editors` list (default `[opencode]`)
+   - `modules[*].source_root` — list of all module source roots (for nested instruction-file removal)
+   - `hosts` list (or — for pre-v4 manifests — fall back to `editors` and treat each value as a host name; if neither is present, default to `[opencode]`)
    - `project.name` (for the summary)
 
 3. Compute `MANIFEST_FILE` = the path of the manifest file found in step 1.
+
+4. **Resolve per-host paths.** For each host name `H` in `hosts`, fetch (or hard-code) its profile:
+    - `opencode` → `template_dir = .opencode`, `config_file = opencode.json`, `instruction_file = AGENTS.md`
+    - `claude-code` → `template_dir = .claude`, `config_file = .claude/settings.json`, `instruction_file = CLAUDE.md`
+
+   Build `HOST_DIRS = [H.template_dir for H in hosts]`, `HOST_CONFIGS = [H.config_file ...]`, `HOST_INSTRUCTIONS = [H.instruction_file ...]`. These three lists drive PHASE 1 inventory and PHASE 3 deletion.
 
 ---
 
@@ -30,7 +36,7 @@ Build the full list of files and directories the kit installed. Use the manifest
 
 | Path (relative to project root) | Contents |
 |---|---|
-| `.opencode/` | All agents, commands, skills, sessions, i18n |
+| Each entry in `HOST_DIRS` (e.g. `.opencode/`, `.claude/`) | Agents, commands, skills, sessions, i18n for that host |
 | `.planning/` | CURRENT.md, DECISIONS.md, tasks/, tasks/done/ |
 | `<vault_path>/_templates/` | Bug-report, requirements, spec, test-cases, test-plan templates |
 
@@ -40,16 +46,15 @@ Build the full list of files and directories the kit installed. Use the manifest
 
 | Path (relative to project root) | Note |
 |---|---|
-| `AGENTS.md` | Root agent instructions |
-| `AUTO_MEMORY.md` | Agent auto-memory scaffold |
-| `CLAUDE.md` | OpenCode claude config (only if `opencode` in `editors`) |
-| `opencode.json` | OpenCode provider/model config |
+| Each entry in `HOST_INSTRUCTIONS` (e.g. `AGENTS.md`, `CLAUDE.md`) | Per-host root instruction file |
+| Each entry in `HOST_CONFIGS` (e.g. `opencode.json`, `.claude/settings.json`) | Per-host runtime config file |
+| `AUTO_MEMORY.md` | Agent auto-memory scaffold (host-agnostic) |
 | `<vault_path>/_INDEX.md` | Vault index |
 | `<MANIFEST_FILE>` | The manifest itself |
 
-### Nested AGENTS.md (one per module)
+### Nested module instruction files (one per host per module)
 
-For each module whose `source_root` is set: `<source_root>/AGENTS.md`.
+For each module whose `source_root` is set, and for each host: `<source_root>/<H.instruction_file>`. So if both `opencode` and `claude-code` are installed, both `<source_root>/AGENTS.md` and `<source_root>/CLAUDE.md` are inventoried.
 
 ---
 
@@ -61,20 +66,19 @@ Present the full inventory computed in PHASE 1. Then ask:
 The following will be PERMANENTLY DELETED:
 
 Directories:
-  .opencode/
+  <each entry in HOST_DIRS, one per line, e.g. ".opencode/" and/or ".claude/">
   .planning/
   <vault_path>/_templates/
 
 Files:
-  AGENTS.md
+  <each entry in HOST_INSTRUCTIONS, e.g. "AGENTS.md" and/or "CLAUDE.md">
+  <each entry in HOST_CONFIGS, e.g. "opencode.json" and/or ".claude/settings.json">
   AUTO_MEMORY.md
-  CLAUDE.md
-  opencode.json
   <vault_path>/_INDEX.md
   <MANIFEST_FILE>
 
-Nested AGENTS.md:
-  <list each source_root>/AGENTS.md
+Nested instruction files:
+  <for each module's source_root, list one line per host: "<source_root>/AGENTS.md", "<source_root>/CLAUDE.md">
 
 Additionally — what should happen to the vault root (<vault_path>/)?
   [K] Keep  — preserve all generated docs (requirements, specs, test cases). RECOMMENDED.
@@ -94,35 +98,32 @@ Perform deletions in this order. For each step, report the outcome (deleted / sk
 
 ### 3.1. Delete kit-managed directories
 
-For each directory in the list:
-- If the directory exists → delete it recursively.
-- If it does not exist → report "not found, skipped".
+For each directory in the list, if the directory exists → delete it recursively; else → report "not found, skipped".
 
 Directories to delete:
-- `<target>/.opencode/`
+- For each `D` in `HOST_DIRS`: `<target>/<D>/` (e.g. `<target>/.opencode/`, `<target>/.claude/`)
 - `<target>/.planning/`
 - `<target>/<vault_path>/_templates/`
 
 If `VAULT_CHOICE == delete`:
-- Also delete `<target>/<vault_path>/` entirely (after `_templates/` is already gone, delete the parent).
+- Also delete `<target>/<vault_path>/` entirely.
 
 ### 3.2. Delete kit-managed files
 
 For each file in the list, if it exists → delete it; else → "not found, skipped".
 
 Files to delete:
-- `<target>/AGENTS.md`
+- For each `I` in `HOST_INSTRUCTIONS`: `<target>/<I>` (e.g. `<target>/AGENTS.md`, `<target>/CLAUDE.md`).
+- For each `C` in `HOST_CONFIGS`: `<target>/<C>` (e.g. `<target>/opencode.json`, `<target>/.claude/settings.json`). Note: `.claude/settings.json` is already removed when `<target>/.claude/` is deleted in 3.1; the explicit removal here is a no-op for that case but stays in the list for completeness.
 - `<target>/AUTO_MEMORY.md`
-- `<target>/CLAUDE.md` (only if `opencode` in `manifest.editors`)
-- `<target>/opencode.json`
 - `<target>/<vault_path>/_INDEX.md` (only if `VAULT_CHOICE == keep`; if `delete`, it was already removed with the vault root)
 - `<target>/<MANIFEST_FILE>`
 
-### 3.3. Delete nested AGENTS.md files
+### 3.3. Delete nested module instruction files
 
-For each module in the manifest whose `source_root` is non-empty:
-- Target: `<target>/<source_root>/AGENTS.md`
-- If the file exists AND its first line is `# <module-name>` or contains `ai-agent-kit` anywhere in the first 10 lines → delete it.
+For each module in the manifest whose `source_root` is non-empty, and for each host's instruction file `I` in `HOST_INSTRUCTIONS`:
+- Target: `<target>/<source_root>/<I>`
+- If the file exists AND contains `ai-agent-kit` anywhere in the first 10 lines OR opens with `# AGENTS.md —` / `# CLAUDE.md —` (kit markers) → delete it.
 - If the file exists but does NOT look like a kit file (no kit markers) → SKIP and warn PO: "Skipped `<path>` — does not appear to be a kit-generated file. Review manually."
 - If the file does not exist → "not found, skipped".
 
@@ -134,10 +135,10 @@ After all deletions, check if `<vault_path>/` now contains only empty subdirecto
 
 ## PHASE 4 — Verify
 
-1. Confirm `.opencode/` no longer exists (or is empty). If it still exists → list remaining contents and warn PO.
-2. Confirm `.planning/` no longer exists. If it still exists → list remaining contents and warn PO.
-3. Confirm `opencode.json` no longer exists.
-4. Confirm `AGENTS.md` at project root no longer exists.
+1. For each `D` in `HOST_DIRS`: confirm `<target>/<D>/` no longer exists (or is empty). If it still exists → list remaining contents and warn PO.
+2. Confirm `.planning/` no longer exists.
+3. For each `C` in `HOST_CONFIGS`: confirm `<target>/<C>` no longer exists.
+4. For each `I` in `HOST_INSTRUCTIONS`: confirm `<target>/<I>` no longer exists.
 5. If `VAULT_CHOICE == delete` → confirm `<vault_path>/` no longer exists.
 6. Report any files that could NOT be deleted (permissions issues, etc.) as errors.
 
@@ -176,6 +177,6 @@ To re-install, run the /setup command.
 - **NEVER delete files outside the target project root.**
 - **NEVER delete anything not listed in this prompt.** If in doubt, skip and warn PO.
 - **NEVER delete the vault root without explicit PO confirmation** (VAULT_CHOICE == delete).
-- **NEVER delete nested AGENTS.md that does not contain kit markers** — it may be hand-written.
+- **NEVER delete a nested AGENTS.md or CLAUDE.md that does not contain kit markers** — it may be hand-written.
 - **STOP immediately if PO does not confirm** in PHASE 2.
 - **Do not run `rm -rf` on the entire project root or parent directories.**

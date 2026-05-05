@@ -2,7 +2,7 @@
 
 You are an AI agent extending an installed ai-agent-kit with one additional profile fetched from a URL. Your only job is to follow this script exactly. Do not skip steps. Do not run any external scripts.
 
-> **No Python, no JDK, no curl-jar.** You fetch files yourself, parse YAML/JSON yourself, render `{{VAR}}` yourself, write files yourself.
+> **No Python, no JDK, no curl-jar.** You fetch files yourself, parse YAML/JSON yourself, resolve `{{INCLUDE: <path>}}` yourself, render `{{VAR}}` yourself, write files yourself.
 
 ---
 
@@ -51,9 +51,9 @@ If `URL_PATH` does not end in `.yaml` or `.yml` → STOP. "Profile URLs must poi
 5. Required front-matter:
    - `_profile_name` — must match `^[a-z0-9][a-z0-9-]*$`.
    - `_profile_description` — non-empty string.
-   - `_profile_axis` — must be one of `language | framework | provider | capability`.
+   - `_profile_axis` — must be one of `language | framework | host | provider | capability`.
    If any are missing or invalid → STOP and report.
-6. **Path / axis cross-check** — only when `URL_PATH` matches `^profiles/(language|framework|provider|capability)/[^/]+\.yaml$`:
+6. **Path / axis cross-check** — only when `URL_PATH` matches `^profiles/(language|framework|host|provider|capability)/[^/]+\.yaml$`:
    - Extract `path_axis` (group 1) and `path_name` (basename without `.yaml`).
    - If `path_axis != _profile_axis` → STOP. "Profile declares `_profile_axis: <X>` but URL is filed under `profiles/<path_axis>/`."
    - If `path_name != _profile_name` → STOP. "Profile name `<_profile_name>` does not match URL filename `<path_name>`."
@@ -107,8 +107,8 @@ If `IS_OFFICIAL == true` → skip the confirmation, proceed.
    - Print: "Profile `<NEW_NAME>` is already in `stack.profiles`. Nothing to do."
    - STOP. Do not modify any file.
 
-10. **Cardinality check** — only matters for `language` and `provider` axes. For each profile name currently in `stack.profiles`, look up its axis:
-    - If the name exists in `RAW_BASE/profiles/<axis>/<name>.yaml` (HEAD any of the four axes), record that axis.
+10. **Cardinality check** — only matters for `language` and `provider` axes (exactly 1) and `provider` only when `opencode` ∈ `manifest.hosts`. For each profile name currently in `stack.profiles`, look up its axis:
+    - If the name exists in `RAW_BASE/profiles/<axis>/<name>.yaml` (HEAD any of the five axes), record that axis.
     - Else if the name appears as a key in `manifest.stack.external_profiles` (a map of name → URL), fetch that URL, parse YAML, read `_profile_axis`. Cache results so you don't refetch.
     - Else → WARN and treat as `unknown` (do not block — PO may have legacy entries).
 
@@ -127,7 +127,12 @@ If `IS_OFFICIAL == true` → skip the confirmation, proceed.
 
     Warn the PO that replacing a `language` or `provider` profile may leave behind axis-owned scalar fields the new profile also sets (e.g. `stack.build_command`, `lsp.command`, `provider.name`, `models.*`). The new profile's values will overwrite these scalars in PHASE 5; show a diff before writing.
 
-11. For other axes (`framework`, `capability`) `REPLACE_OLD = null` and you simply append.
+11. For `host` axis (cardinality 1..N): no cardinality conflict — adding a second host (e.g. extending an OpenCode-only project with `claude-code`) is a pure append. After the new host profile is added, the manifest's `hosts:` field MUST be updated to include the new host name (do this in PHASE 5 step 13a). PO is asked to provide the new host's specific config block:
+    - Adding `claude-code` to an OpenCode-only project → ask Q17a–Q17e from `setup.md` PHASE 1 (Claude Code models). Then store the answers in `manifest.claude_code.models`.
+    - Adding `opencode` to a Claude-Code-only project → ask Q10–Q17 (provider + OpenCode models). Store under `manifest.provider` and `manifest.models`.
+    - Skip if the host is already present (caught at step 9).
+
+12. For other axes (`framework`, `capability`) `REPLACE_OLD = null` and you simply append.
 
 ---
 
@@ -147,6 +152,8 @@ If `IS_OFFICIAL == true` → skip the confirmation, proceed.
     - If `REPLACE_OLD != null` → replace the `REPLACE_OLD` entry in place with `NEW_NAME`.
     - Else → append `NEW_NAME` at the end.
     - Dedupe while preserving order.
+
+13a. **For `host`-axis additions:** also add `NEW_NAME` to `manifest.hosts` (if not already present). For removed hosts (only via separate uninstall flow), the corresponding host name in `hosts:` must be removed too — but this prompt only adds, never removes hosts.
 
 14. If `IS_OFFICIAL == false`:
     - Ensure `manifest.stack.external_profiles` exists (create as empty map if missing).
@@ -169,10 +176,9 @@ This is the same render-and-write pass as `update.md` PHASE 3. Run it now so the
 
 19. Fetch `RAW_BASE/kit/_index.txt`. Iterate.
 
-20. Filter, compute target paths, and write each file using merge-mode rules from `update.md` PHASE 3.3 / 3.4 / 3.5:
-    - Drop other-editor files based on `manifest.editors`.
-    - Strip leading `kit/` and `editors/<editor>/` segments.
-    - Replace `.vault/` prefix with `{manifest.vault_path}/`.
+20. Classify each kit file by host (setup.md 3.3) and resolve INCLUDEs (setup.md 3.4). For each host in `manifest.hosts` and each applicable kit file:
+    - Strip leading `kit/`. Re-route `_shared/...` paths to `<target>/<H.template_dir>/...`.
+    - Replace `.vault/` prefix with `<manifest.vault_path>/`.
     - Drop `.template` suffix.
     - Apply path-escape guard.
     - **SKIP** these PO-managed runtime paths even if they appear in the index:
@@ -180,11 +186,11 @@ This is the same render-and-write pass as `update.md` PHASE 3. Run it now so the
       - `<target>/.planning/HISTORY.md`
       - `<target>/.planning/tasks/*.md` and `<target>/.planning/tasks/done/*.md`
       - Anything under `<target>/<vault_path>/{concepts,reference,how-to,tutorials,guidelines}/**` that is not a kit template (`<vault_path>/_templates/` and `<vault_path>/_INDEX.md` ARE kit-managed).
-    - Substitute `{{VARNAME}}` placeholders. Write.
+    - Resolve `{{INCLUDE: ...}}` directives, then substitute `{{VARNAME}}` placeholders using the host's substitution map. Write.
 
-21. Re-render the per-module nested `AGENTS.md` files (setup.md PHASE 3.6) **and overwrite** existing ones so the new forbidden_patterns/ui propagate.
+21. Re-render the per-module nested instruction files (`AGENTS.md` for opencode hosts, `CLAUDE.md` for claude-code hosts — setup.md PHASE 3.7) **and overwrite** existing ones so the new forbidden_patterns/ui propagate.
 
-22. Re-run the vault scaffold (setup.md PHASE 3.7) — only fill missing directories, never delete.
+22. Re-run the vault scaffold (setup.md PHASE 3.9) — only fill missing directories, never delete.
 
 ---
 
@@ -192,9 +198,9 @@ This is the same render-and-write pass as `update.md` PHASE 3. Run it now so the
 
 23. Re-validate `UPDATED_MANIFEST` against the freshly-fetched `RAW_BASE/kit/manifest.schema.json`. On any error — report as a warning (do not auto-fix; ask PO). Common case: a `language`-axis replacement may have left an old `lsp.extensions` entry that no longer matches the new language — PO needs to confirm.
 
-24. Verify `<target>/opencode.json` is valid JSON and contains no literal API keys (only `{env:VAR}` tokens). On failure — STOP with a SECURITY error.
+24. For each host in `manifest.hosts`: verify `<target>/<H.config_file>` is valid JSON and contains no literal API keys. Acceptable token forms: `{env:VAR}` (OpenCode) and `${VAR}` (Claude Code). On failure — STOP with a SECURITY error.
 
-25. Grep the target tree for any unresolved `\{\{[A-Z_]+\}\}` placeholders. Report them as warnings.
+25. Grep the target tree for any unresolved `\{\{[A-Z_]+\}\}` or `\{\{INCLUDE:` patterns. Report them as warnings.
 
 ---
 

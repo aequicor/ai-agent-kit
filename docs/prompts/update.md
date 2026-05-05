@@ -2,7 +2,7 @@
 
 You are an AI agent upgrading an installed ai-agent-kit. Your only job is to follow this script exactly. Do not skip steps. Do not run any external scripts.
 
-> **No Python, no JDK, no curl-jar.** You fetch files yourself, render `{{VAR}}` yourself, write files yourself.
+> **No Python, no JDK, no curl-jar.** You fetch files yourself, resolve `{{INCLUDE: <path>}}` yourself, render `{{VAR}}` yourself, write files yourself.
 
 ---
 
@@ -103,6 +103,23 @@ If fetch fails on both raw and `https://github.com/{KIT_REPO}/blob/master/docs/m
 
 ---
 
+## PHASE 2.5 — Pre-render manifest migration (one-shot)
+
+**v4.0.0 host axis migration.** If `CURRENT_VERSION < 4.0.0` AND the manifest has a top-level `editors:` field but no `hosts:` field, this is a pre-v4 manifest:
+
+1. Read `editors` (always `[opencode]` in pre-v4 since that was the only allowed value).
+2. Set `manifest.hosts = editors` (same values — `opencode` is identical in both fields).
+3. Delete the `editors` field from the manifest.
+4. Add `opencode` to `stack.profiles[]` if it is not already present (it represents the new `host`-axis profile that was implicit before v4).
+5. The old top-level `provider` and `models` blocks remain — they are still required when `opencode` ∈ `hosts`. Leave them untouched.
+6. If PO opts in to Claude Code dual-host (advanced): tell PO they can run `/kit-extend https://github.com/{KIT_REPO}/blob/master/profiles/host/claude-code.yaml` after this update completes to add the `claude-code` host. The auto-update keeps the project OpenCode-only by default.
+
+After this step, the manifest must validate against the v4.0.0 `manifest.schema.json` (with `hosts: [opencode]`). The remaining changelog-driven `added_fields` and `profile_transforms` (from PHASE 4) apply on top of this normalized manifest.
+
+For migrations crossing version 4.0.0, this step ensures PHASE 3's per-host rendering has a valid `manifest.hosts` to iterate over.
+
+---
+
 ## PHASE 3 — Re-apply with merge
 
 This is the same render-and-write flow as `setup.md` PHASE 3, but with **merge mode**: kit-managed files are overwritten, PO-managed files are preserved.
@@ -117,38 +134,38 @@ Add `KIT_REPO` (from constants above) so `commands/kit-update.md` renders correc
 
 Fetch `RAW_BASE/kit/_index.txt`.
 
-### 3.3. Filter
+### 3.3. Classify each kit file by host
 
-Same as setup.md 3.3: drop other-editor files based on `manifest.editors`.
+Use the same classification table as setup.md 3.3: files under `kit/.opencode/` render only if `opencode` ∈ `manifest.hosts`; files under `kit/.claude/` render only if `claude-code` ∈ hosts; files under `kit/_shared/` are not written directly — they are only inlined via INCLUDE; root files (`AGENTS.md.template`, `CLAUDE.md.template`, `opencode.json.template`, `kit/.claude/settings.json.template`) are host-scoped accordingly.
 
-### 3.4. Compute target paths
+### 3.4. Resolve INCLUDEs
 
-Same as setup.md 3.4 — including the vault path substitution: if a path starts with `.vault/` after stripping `kit/`, replace `.vault/` with `{manifest.vault_path}/` (default `vault/`). Then drop `editors/<editor>/` prefix, drop `.template` suffix, apply path-escape guard.
+Use the same `{{INCLUDE: <path>}}` resolution algorithm as setup.md 3.4 (recursive, max depth 5, path-escape guard). Apply BEFORE the `{{VAR}}` substitution pass.
 
 ### 3.5. Render and write — merge mode
 
-For each kit file:
+For each non-`_shared/` kit file (per host):
 
 1. Fetch raw content from `RAW_BASE/<kit-path>`.
-2. Substitute `{{VARNAME}}` patterns from context. Apply to ALL files (`.template` suffix only affects the output filename).
-3. Compute target path.
-4. **Determine if the file is kit-managed:**
-   - Kit-managed (overwrite freely): everything that comes from the kit — i.e. EVERY file you process here is kit-managed by definition.
+2. Resolve INCLUDEs (3.4).
+3. Substitute `{{VARNAME}}` patterns using the host's substitution map (see setup.md 3.1 for the host overlay).
+4. Compute target path: drop `kit/` prefix; for `_shared/...` re-route to `<target>/<H.template_dir>/...`; rewrite `.vault/` → `<manifest.vault_path>/`; drop `.template` suffix.
 5. **Skip these target paths even if they appear in the index** (PO-managed runtime state):
    - `<target>/.planning/CURRENT.md`
    - `<target>/.planning/HISTORY.md`
-   - `<target>/.planning/tasks/*.md` and `<target>/.planning/tasks/done/*.md` — active and archived task state files, never overwrite.
-   - Any content under `<target>/<vault_path>/concepts/**`, `<target>/<vault_path>/reference/**`, `<target>/<vault_path>/how-to/**`, `<target>/<vault_path>/tutorials/**`, `<target>/<vault_path>/guidelines/**` created by PO/agents (where `vault_path = manifest.vault_path`, default `vault`) — but the **templates** under `<target>/<vault_path>/_templates/` and `<target>/<vault_path>/_INDEX.md` ARE kit-managed and DO get overwritten.
-   - Any file the manifest explicitly marks as `merge_skip` (future extension; ignore for now).
+   - `<target>/.planning/tasks/*.md` and `<target>/.planning/tasks/done/*.md` — active and archived task state files.
+   - Any content under `<target>/<vault_path>/{concepts,reference,how-to,tutorials,guidelines}/**` created by PO/agents — but `<target>/<vault_path>/_templates/` and `<target>/<vault_path>/_INDEX.md` ARE kit-managed and DO get overwritten.
 6. Write the file. Create parent dirs as needed.
 
-### 3.6. Render nested AGENTS.md per module — merge mode
+Iterate over each host in `manifest.hosts` and run steps 1-6 with that host's substitution map. Universal scaffold (`.planning/`, vault) is rendered once with the first host's map.
 
-Same algorithm as setup.md 3.6, but **overwrite existing nested AGENTS.md files**.
+### 3.6. Render nested module instruction files — merge mode
+
+Same as setup.md 3.7. For each module and each host: render `kit/nested/MODULE.body.md.template` with the per-module + host context, write to `<target>/<source_root>/<H.instruction_file>`. Overwrite existing.
 
 ### 3.7. Vault scaffold — only fill missing dirs
 
-Re-run the directory scaffold from setup.md 3.7. Skip any directory that already exists. (The vault tree may have grown — only top up missing genres/subdirs.)
+Re-run the directory scaffold from setup.md 3.9. Skip any directory that already exists.
 
 ---
 
@@ -164,7 +181,7 @@ Re-run the directory scaffold from setup.md 3.7. Skip any directory that already
 
    Operate on `manifest.stack.profiles` (a list of profile name strings). Treat the list as ordered but deduplicated; preserve order on insert.
 
-   **First, build a name→axis map** by fetching `https://api.github.com/repos/{KIT_REPO}/git/trees/master?recursive=1` and filtering paths matching `^profiles/(language|framework|provider|capability)/([^/]+)\.yaml$` (axis = group 1, name = group 2). One call resolves every profile's axis without parsing YAML.
+   **First, build a name→axis map** by fetching `https://api.github.com/repos/{KIT_REPO}/git/trees/master?recursive=1` and filtering paths matching `^profiles/(language|framework|host|provider|capability)/([^/]+)\.yaml$` (axis = group 1, name = group 2). One call resolves every profile's axis without parsing YAML.
 
    Then apply each transform:
 
@@ -186,16 +203,22 @@ Re-run the directory scaffold from setup.md 3.7. Skip any directory that already
 
 ---
 
-## PHASE 5 — Verify
+## PHASE 5 — Verify (per host)
 
-14. Read the updated `<target>/opencode.json`. Verify `apiKey` uses `{env:VAR}` syntax — NOT a literal key. If literal — SECURITY ERROR, abort and warn PO.
+For each host `H` in `manifest.hosts`:
 
-15. List `<target>/.opencode/agents/` — verify the 10 base agents still exist:
-    Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer (optional), PromptEngineer, AutoApprover.
+14. **Host config file is valid JSON.** Read `<target>/<H.config_file>` (`opencode.json` for opencode, `.claude/settings.json` for claude-code). Parse. Verify all credential references use the safe-token form: `{env:VAR}` (OpenCode) or `${VAR}` (Claude Code). If a literal key is found — SECURITY ERROR, abort and warn PO.
+
+15. **Mandatory agents present in `<target>/<H.template_dir>/agents/`:**
+    - `opencode`: Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer (optional), PromptEngineer, AutoApprover.
+    - `claude-code`: same list **except Main** (the orchestrator content lives in `<target>/CLAUDE.md`).
     If `requirements-pipeline` is in `manifest.stack.profiles`, also: BusinessAnalyst, CornerCaseReviewer, SystemAnalyst, CoverageChecker, ConsistencyChecker.
-    `RequirementsQA.md` should NOT exist anymore (merged into QA.md as of v1.0.0+).
 
-16. Grep the target tree for any remaining `\{\{[A-Z_]+\}\}` placeholders. List them per file as warnings (PO may need to fill manually).
+16. **Host instruction file present.** `<target>/<H.instruction_file>` (`AGENTS.md` for opencode, `CLAUDE.md` for claude-code) exists and is non-empty.
+
+After all hosts:
+
+16a. Grep the target tree for any remaining `\{\{[A-Z_]+\}\}` or `\{\{INCLUDE:` patterns. List them per file as warnings (PO may need to fill manually or re-fetch).
 
 17. Run smoke commands from the manifest (best-effort, don't block on failure):
     - `<manifest.stack.compile_command>` — report PASS / FAIL.

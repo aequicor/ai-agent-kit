@@ -1,28 +1,28 @@
 ﻿# Shared Agent Context — {{PROJECT_NAME}}
 
-> This file is loaded by all agents via `opencode.json` `instructions`. Agent-specific files contain only role-specific details — shared context lives here.
-> OpenCode-kit v2 — migrated to `permission` syntax (OpenCode v1.1.1+), `external_directory`, `doom_loop`, `small_model`, `compaction`, `formatter`.
+> This file is loaded by all agents in this host's runtime ({{HOST_NAME}}). Agent-specific files contain only role-specific details — shared context lives here.
+> ai-agent-kit v4 — multi-host (OpenCode + Claude Code).
 
 ## Instruction Hierarchy
 
 When instructions conflict, the most specific source wins:
 
 ```
-1. Agent-specific file (.opencode/agents/Name.md)   — highest priority
-2. AGENTS.md                                         — project rules
-3. _shared.md (this file)                            — shared context, lowest priority
+1. Agent-specific file ({{HOST_DIR}}/agents/Name.md)   — highest priority
+2. {{HOST_INSTRUCTION_FILE}}                              — project rules
+3. _shared.md (this file)                                  — shared context, lowest priority
 ```
 
 If an agent file instruction contradicts `_shared.md` — follow the agent file.
 
 ## Language / i18n
 
-Active locale: check the `OPENCODE_LANG` environment variable first; if unset, fall back to the install-time default **{{OPENCODE_LANG}}**. The locale file `.opencode/i18n/<resolved-locale>.md` is loaded automatically via `opencode.json` instructions — follow its labels for all status messages and user-facing output.
+Active locale: check the `{{KIT_LANG_ENV}}` environment variable first; if unset, fall back to the install-time default **{{KIT_LANG}}**. The locale file `{{HOST_DIR}}/i18n/<resolved-locale>.md` is loaded by this host's runtime — follow its labels for all status messages and user-facing output.
 
 Supported locales: `en` (English), `ru` (Russian). To add a new language:
-1. Copy `.opencode/i18n/en.md` to `.opencode/i18n/<code>.md`
+1. Copy `{{HOST_DIR}}/i18n/en.md` to `{{HOST_DIR}}/i18n/<code>.md`
 2. Translate all values
-3. Add `.opencode/i18n/<code>.md` to the `instructions` array in `opencode.json`
+3. Wire it up: for OpenCode add the path to `instructions` in `opencode.json`; for Claude Code reference it from `CLAUDE.md` via `@{{HOST_DIR}}/i18n/<code>.md`
 4. Re-run `/kit-update` and set `language_code: <code>` in the manifest
 
 ## Project Context
@@ -35,7 +35,7 @@ Supported locales: `en` (English), `ru` (Russian). To add a new language:
 
 ## File Structure
 
-Central path reference: `.opencode/FILE_STRUCTURE.md`. Read it before creating any new file.
+Central path reference: `{{HOST_DIR}}/FILE_STRUCTURE.md`. Read it before creating any new file.
 
 ## Documentation Layout — Knowledge Vault ({{VAULT_PATH}}/)
 
@@ -244,10 +244,10 @@ In both flows, `@Main` does **not** modify requirements, corner cases, or spec f
 | `{{VAULT_PATH}}/guidelines/<module>/` | @Main, @Designer, @CodeWriter | all |
 | `{{VAULT_PATH}}/guidelines/<module>/reports/` | @BugFixer | all |
 | `{{VAULT_PATH}}/guidelines/libs/` | @CodeWriter, @BugFixer | all |
-| `.opencode/agents/`, `.opencode/skills/` | @PromptEngineer | all |
+| `{{HOST_DIR}}/agents/`, `{{HOST_DIR}}/skills/` | @PromptEngineer | all |
 | `.planning/CURRENT.md` (local pointer, gitignored) | @Main | all |
 | `.planning/tasks/<slug>.md` | @Main, @RequirementsPipeline (checkpoint after each step) | all |
-| `opencode.json`, build files | human (PO) | all |
+| `{{HOST_CONFIG_FILE}}`, build files | human (PO) | all |
 
 ## Tool Naming — CRITICAL
 

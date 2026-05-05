@@ -6,21 +6,25 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "3.1.0"
+kit_version: "4.0.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
 # ─────────────────────────────────────────────
-# Agent output language. Sets the install-time default for OPENCODE_LANG.
-# Can be overridden at runtime by setting OPENCODE_LANG=<code> in the environment.
+# Agent output language. Sets the install-time default for the locale env var
+# (OPENCODE_LANG for the opencode host, KIT_LANG for the claude-code host).
 # Supported: en (English), ru (Russian). Default: en
 language_code: en
 
 # ─────────────────────────────────────────────
-# EDITORS
+# HOSTS (1..N — projects can run on OpenCode, Claude Code, or both)
 # ─────────────────────────────────────────────
-# ai-agent-kit currently supports only opencode (CLAUDE.md generation).
-editors: [opencode]
+# Each host name renders its own template tree into the target:
+#   opencode    → .opencode/ + opencode.json + AGENTS.md
+#   claude-code → .claude/   + .claude/settings.json + CLAUDE.md
+# Multi-host installs render both side-by-side; subagents in .opencode/agents/
+# and .claude/agents/ share their bodies via the kit's _shared/ tree.
+hosts: [opencode]
 
 # ─────────────────────────────────────────────
 # PROJECT
@@ -40,10 +44,11 @@ vault_path: vault
 # ─────────────────────────────────────────────
 # STACK
 # ─────────────────────────────────────────────
-# Profiles are picked along four orthogonal axes (see README → "Available profiles"):
+# Profiles are picked along five orthogonal axes (see README → "Available profiles"):
 #   language    (exactly 1):  kotlin-gradle | make-generic
 #   framework   (0..N):       compose-multiplatform | paper-plugin
-#   provider    (exactly 1):  routerai | ollama-cloud
+#   host        (1..N):       opencode | claude-code     ← matches the `hosts:` list above
+#   provider    (1 if opencode in hosts, else 0): routerai | ollama-cloud
 #   capability  (0..N):       security-baseline (always-on) | solid | requirements-pipeline
 #
 # Profiles in different axes own disjoint fields, so cross-axis merge is conflict-free.
@@ -53,7 +58,8 @@ stack:
   profiles:
     - kotlin-gradle           # language
     - compose-multiplatform   # framework
-    - routerai                # provider
+    - opencode                # host
+    - routerai                # provider (only because opencode is a host)
     - security-baseline       # capability (auto-added if missing)
     - solid                   # capability
     - requirements-pipeline   # capability
@@ -90,7 +96,7 @@ modules:
     responsibility: "Compose Multiplatform UI, session management"
 
 # ─────────────────────────────────────────────
-# PROVIDER (env var NAME, never the actual key)
+# PROVIDER (OpenCode only — required iff opencode ∈ hosts; env var NAME, never the actual key)
 # ─────────────────────────────────────────────
 provider:
   name: routerai
@@ -98,7 +104,7 @@ provider:
   api_key_env: ROUTERAI_OPENCODE
 
 # ─────────────────────────────────────────────
-# MODELS
+# MODELS (OpenCode only — required iff opencode ∈ hosts)
 # ─────────────────────────────────────────────
 models:
   default: moonshotai/kimi-k2.6
@@ -106,6 +112,20 @@ models:
   reviewer: deepseek/deepseek-v4-pro
   designer: openai/gpt-5.4         # set to null to omit @Designer agent
   small: qwen/qwen3-coder-next
+
+# ─────────────────────────────────────────────
+# CLAUDE_CODE (required iff claude-code ∈ hosts; omit otherwise)
+# ─────────────────────────────────────────────
+# Models accept the Claude Code CLI aliases (opus, sonnet, haiku) which resolve
+# to the latest model in each tier, or full IDs (claude-opus-4-7,
+# claude-sonnet-4-6, claude-haiku-4-5).
+# claude_code:
+#   models:
+#     default: sonnet      # orchestrator (main session role)
+#     coder: opus
+#     reviewer: opus
+#     designer: opus       # set to null to omit @Designer agent
+#     small: haiku
 
 # ─────────────────────────────────────────────
 # MCP INTEGRATIONS

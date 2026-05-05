@@ -1,6 +1,8 @@
 # AI-agent kit
 
-AI-agent configuration kit for [OpenCode](https://opencode.ai). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
+AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
+
+**Multi-host:** pick `opencode`, `claude-code`, or both — projects can run on either runtime, or on both side-by-side. Subagent prompts are shared via the kit's `_shared/` tree, while host-specific frontmatter and config files (`opencode.json`, `.claude/settings.json`) are rendered per host.
 
 ---
 
@@ -29,12 +31,12 @@ Read it completely, then follow every phase exactly. Do not skip steps.
 ```
 
 The agent will:
-1. Ask you ~30 questions about your project (preferred language, target path, profiles, modules, provider, models, MCP, LSP, UI, code quality, formatter).
+1. Ask you ~30 questions about your project (preferred language, target path, profiles **including which host(s) to render**, modules, provider/models, MCP, LSP, UI, code quality, formatter).
 2. Fetch the chosen profile YAMLs, deep-merge them, overlay your answers, validate the manifest against `kit/manifest.schema.json`.
 3. Show you the manifest, wait for confirmation, write it to `<target>/<project-slug>.yaml`.
-4. Read `kit/_index.txt`, fetch every kit file, render `{{VAR}}` placeholders, write to your target.
-5. Verify (9 mandatory agents, valid `opencode.json`, no leaked API keys, no unresolved placeholders).
-6. Print env-var reminder.
+4. Read `kit/_index.txt`, fetch every kit file, **resolve `{{INCLUDE: <path>}}` directives**, render `{{VAR}}` placeholders **per host**, write to your target. Multi-host installs render `.opencode/` and `.claude/` side-by-side.
+5. Verify per host (mandatory agents in `<host_dir>/agents/`, valid host config file, no leaked API keys, no unresolved placeholders).
+6. Print env-var reminder per host.
 
 No external runtime needed — the AI does all rendering itself.
 
@@ -93,29 +95,38 @@ To author your own external profile, follow the [Add a profile](#add-a-profile) 
 
 ## Available profiles
 
-Profiles are organised along four **orthogonal axes**. Each profile is restricted to fields its axis owns, so profiles from different axes never overwrite each other — the merge is conflict-free by construction.
+Profiles are organised along five **orthogonal axes**. Each profile is restricted to fields its axis owns, so profiles from different axes never overwrite each other — the merge is conflict-free by construction.
 
 | Axis | Cardinality | Owns | Profiles |
 |------|------------|------|----------|
 | `language` | exactly 1 | `stack` commands, `lsp`, `formatter`, `mcp.serena` | `kotlin-gradle`, `make-generic` |
 | `framework` | 0..N | `ui`, `code_quality.forbidden_patterns` | `compose-multiplatform`, `paper-plugin` |
-| `provider` | exactly 1 | `provider`, `models` | `routerai` (default), `ollama-cloud` |
+| `host` | 1..N | which template tree is rendered, host config file, agent frontmatter format, instruction file | `opencode`, `claude-code` |
+| `provider` | exactly 1 IF `opencode` ∈ hosts, else 0 | `provider`, `models` (used only by OpenCode rendering) | `routerai` (default), `ollama-cloud` |
 | `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agents via skills | `security-baseline`, `solid`, `requirements-pipeline` |
 
 **Common combos:**
 
 ```yaml
-# KMP app on RouterAI with the requirements pipeline:
+# KMP app on OpenCode + RouterAI with the requirements pipeline:
 stack:
-  profiles: [kotlin-gradle, compose-multiplatform, routerai, security-baseline, requirements-pipeline]
+  profiles: [kotlin-gradle, compose-multiplatform, opencode, routerai, security-baseline, requirements-pipeline]
 
-# Minecraft Paper plugin on Ollama Cloud:
+# Same project on Claude Code (Anthropic native — no provider profile):
 stack:
-  profiles: [kotlin-gradle, paper-plugin, ollama-cloud, security-baseline]
+  profiles: [kotlin-gradle, compose-multiplatform, claude-code, security-baseline, requirements-pipeline]
 
-# Anything else — language-agnostic baseline:
+# Dual-host (run both OpenCode and Claude Code on the same project):
 stack:
-  profiles: [make-generic, routerai, security-baseline]
+  profiles: [kotlin-gradle, compose-multiplatform, opencode, claude-code, routerai, security-baseline, requirements-pipeline]
+
+# Minecraft Paper plugin on Ollama Cloud (OpenCode-only):
+stack:
+  profiles: [kotlin-gradle, paper-plugin, opencode, ollama-cloud, security-baseline]
+
+# Anything else — language-agnostic baseline (OpenCode + RouterAI):
+stack:
+  profiles: [make-generic, opencode, routerai, security-baseline]
 ```
 
 The setup prompt asks one question per axis, validates cardinality, and checks each profile against [`kit/profile.schema.json`](kit/profile.schema.json) so a profile cannot quietly populate a field outside its axis.
@@ -128,14 +139,14 @@ The setup prompt asks one question per axis, validates cardinality, and checks e
 
 | Agent | Role |
 |---|---|
-| `@Main` | Orchestrator — your single entry point. Runs FEATURE / BUG / TECH pipelines. |
+| `@Main` | Orchestrator — your single entry point. Runs FEATURE / BUG / TECH pipelines. **In Claude Code installs this role lives in the main session via `CLAUDE.md`** (no separate `Main.md` subagent file). |
 | `@CodeWriter` | Implements code stage by stage. |
 | `@CodeReviewer` | Read-only review after each CodeWriter stage. |
 | `@BugFixer` | Root-cause analysis + fix + regression test + updates test-cases.md. |
 | `@debugger` | Read-only investigation — produces failing test for complex bugs. |
 | `@QA` | Owns `<feature>-test-cases.md` (REQUIREMENTS phase creates, IMPLEMENTATION phase appends). |
 | `@TestRunner` | Operates on test-cases.md (SCAN / EXECUTE / RERUN / APPEND). |
-| `@Designer` | UI/UX description for visual features (read-only). Optional: omit by setting `models.designer: null`. |
+| `@Designer` | UI/UX description for visual features (read-only). Optional: omit by setting `models.designer: null` (or `claude_code.models.designer: null`). |
 | `@PromptEngineer` | Maintains agent prompts and skills. |
 | `@AutoApprover` | Automated plan gatekeeper when `AUTO_APPROVE=true`. |
 
@@ -163,7 +174,7 @@ You never have to leave the markdown file — it's the source of truth.
 
 ### Add a profile
 
-1. Pick the right axis (`language`, `framework`, `provider`, or `capability`) — see the table above.
+1. Pick the right axis (`language`, `framework`, `host`, `provider`, or `capability`) — see the table above.
 2. Create `profiles/<axis>/<name>.yaml` (the directory name *is* the axis). Include the front-matter:
    ```yaml
    _profile_name: <name>
@@ -177,19 +188,22 @@ If you find yourself wanting to set a field outside your axis, that's a sign the
 
 ### Add an agent
 
-1. Create `kit/.opencode/agents/<YourAgent>.md.template`. Use any existing agent file as a starting point. Include front-matter (`description`, `mode`, `model: {{PROVIDER_ID}}/{{...}}`, `temperature`, `permission`).
-2. If the agent is part of a pipeline, reference it from `kit/.opencode/agents/Main.md.template` or from a skill in `kit/.opencode/skills/`.
-3. Run `find kit -type f ! -name "_index.txt" | sort > kit/_index.txt` to refresh the index. Commit.
+1. Add the body once: `kit/_shared/agents/<YourAgent>.body.md.template`. Pure prose — no frontmatter. This file is included into both host wrappers via `{{INCLUDE: _shared/agents/<YourAgent>.body.md.template}}`.
+2. Add a wrapper per host:
+   - `kit/.opencode/agents/<YourAgent>.md.template` — OpenCode frontmatter (`description`, `mode`, `model: {{PROVIDER_ID}}/{{...}}_MODEL`, `temperature`, `permission`) + `{{INCLUDE: ...}}` directive.
+   - `kit/.claude/agents/<YourAgent>.md.template` — Claude Code frontmatter (`name`, `description`, `tools: <comma-list>`, `model: {{..._MODEL}}`) + the same `{{INCLUDE: ...}}` directive.
+3. If the agent is part of a pipeline, reference it from `kit/_shared/agents/Main.body.md.template` (the orchestrator body) or from a skill under `kit/_shared/skills/`.
+4. Run `find kit -type f ! -name "_index.txt" | sort > kit/_index.txt` to refresh the index. Commit.
 
 ### Add a skill
 
-1. Create `kit/.opencode/skills/<your-skill>/SKILL.md`. Use any existing skill as a starting point.
-2. Reference it from `Main.md.template` (or wherever it should be invoked).
+1. Create `kit/_shared/skills/<your-skill>/SKILL.md.template`. Skills are host-agnostic — one source, rendered into every host's `<host_dir>/skills/`.
+2. Reference it from the orchestrator body or wherever it should be invoked.
 3. Refresh `kit/_index.txt`. Commit.
 
 ### Customize an agent for one project (post-install)
 
-After install, the kit files live in your target project. Edit `<target>/.opencode/agents/<X>.md` directly. Just remember `/kit-update` will overwrite kit-managed files in merge mode — commit your edits first, and re-apply them after each upgrade (or use `git diff` after `/kit-update` to spot what was overwritten).
+After install, the kit files live in your target project. Edit `<target>/.opencode/agents/<X>.md` (or `<target>/.claude/agents/<X>.md`) directly. Note that `/kit-update` will overwrite kit-managed files in merge mode — commit your edits first, and re-apply them after each upgrade (or use `git diff` after `/kit-update` to spot what was overwritten).
 
 ---
 
@@ -213,8 +227,11 @@ ai-agent-kit/
 │   ├── framework/
 │   │   ├── compose-multiplatform.yaml
 │   │   └── paper-plugin.yaml
+│   ├── host/
+│   │   ├── opencode.yaml                  #   default
+│   │   └── claude-code.yaml
 │   ├── provider/
-│   │   ├── routerai.yaml                  #   default
+│   │   ├── routerai.yaml                  #   default (only used by opencode host)
 │   │   └── ollama-cloud.yaml
 │   └── capability/
 │       ├── security-baseline.yaml         #   auto-added on every install
@@ -224,19 +241,25 @@ ai-agent-kit/
     ├── _index.txt                         # complete file list — AI reads this to know what to fetch
     ├── manifest.schema.json               # JSON Schema for the assembled manifest
     ├── profile.schema.json                # JSON Schema for individual profile YAMLs (axis contracts)
-    ├── AGENTS.md.template
+    ├── AGENTS.md.template                 # rendered iff opencode ∈ hosts
+    ├── CLAUDE.md.template                 # rendered iff claude-code ∈ hosts (inlines the orchestrator body)
     ├── AUTO_MEMORY.md.template
-    ├── opencode.json.template
-    ├── nested/AGENTS.md.nested.template   # rendered per-module
-    ├── editors/opencode/CLAUDE.md.template
-    ├── .opencode/
-    │   ├── agents/        (15 .md.template — 10 base + 5 requirements-pipeline)
-    │   ├── commands/      (15 — /kit-new-feature, /kit-fix, /kit-requirements-pipeline, /kit-diagram, /kit-review, /kit-deploy, /kit-update, /kit-extend, /kit-approve, /kit-checkpoint, /kit-lint, /kit-resume, /kit-status, /kit-uninstall, /kit-update-deps)
-    │   ├── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
-    │   ├── i18n/{en,ru}.md
-    │   ├── sessions/SESSIONS.md.template
+    ├── opencode.json.template             # rendered iff opencode ∈ hosts
+    ├── nested/MODULE.body.md.template     # rendered per module per host (→ AGENTS.md / CLAUDE.md)
+    ├── _shared/                           # single source of truth — pulled into both hosts via {{INCLUDE: ...}}
+    │   ├── PROJECT_RULES.body.md.template
     │   ├── _shared.md.template
-    │   └── FILE_STRUCTURE.md.template
+    │   ├── FILE_STRUCTURE.md.template
+    │   ├── sessions/SESSIONS.md.template
+    │   ├── i18n/{en,ru}.md
+    │   ├── agents/        (15 .body.md.template — agent prose without frontmatter)
+    │   ├── commands/      (15 .md.template — /kit-new-feature, /kit-fix, /kit-requirements-pipeline, ...)
+    │   └── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
+    ├── .opencode/
+    │   └── agents/        (15 .md.template — OpenCode frontmatter + INCLUDE directive)
+    ├── .claude/
+    │   ├── agents/        (14 .md.template — Claude Code frontmatter + INCLUDE; Main lives in CLAUDE.md)
+    │   └── settings.json.template
     ├── .planning/
     │   ├── CURRENT.md.template
     │   ├── DECISIONS.md.template

@@ -1,4 +1,203 @@
 versions:
+  - version: "4.0.0"
+    released: "2026-05-05"
+    breaking: true
+    description: |
+      **BREAKING: multi-host architecture — kit now renders per host (OpenCode and/or Claude Code).**
+
+      Pre-v4 the kit only supported OpenCode. v4 introduces a new `host` axis with
+      cardinality 1..N, allowing a project to run on OpenCode, Claude Code, or
+      both side-by-side.
+
+      **What changed in the manifest (BREAKING):**
+        - `editors: [opencode]` → REMOVED. Replaced by `hosts: [opencode]` (or
+          `[claude-code]`, or `[opencode, claude-code]`). `/kit-update` migrates
+          pre-v4 manifests automatically (PHASE 2.5): `editors` is dropped, a
+          `hosts` field with the same values is added, and the `opencode` host
+          profile is appended to `stack.profiles[]`.
+        - New top-level block `claude_code:` (required iff `claude-code` ∈ hosts):
+          ```yaml
+          claude_code:
+            models:
+              default: sonnet      # opus | sonnet | haiku | full ID
+              coder: opus
+              reviewer: opus
+              designer: opus       # null to omit @Designer
+              small: haiku
+          ```
+        - Existing top-level `provider:` and `models:` are now **conditionally
+          required** — only when `opencode` ∈ hosts. Claude-Code-only installs
+          use Anthropic native models (set in `claude_code.models`), so they
+          do NOT need a provider/models block.
+        - `host` axis profiles must be in `stack.profiles[]` to drive the
+          rendering. After auto-migration this list contains `opencode`. Add
+          `claude-code` via `/kit-extend
+          https://github.com/aequicor/ai-agent-kit/blob/master/profiles/host/claude-code.yaml`
+          (this also adds the `claude_code:` block — the prompt asks the
+          per-host questions interactively).
+
+      **What changed in the kit tree (BREAKING for forks/contributors):**
+        - New shared root `kit/_shared/` — single source of truth for agent
+          bodies (no frontmatter), commands, skills, i18n, sessions,
+          `_shared.md`, `FILE_STRUCTURE.md`, `PROJECT_RULES.body.md`. Templates
+          here are inlined via `{{INCLUDE: <path>}}` directives at install time.
+        - `kit/.opencode/` now contains ONLY agent wrappers (frontmatter +
+          INCLUDE). All commands, skills, i18n, sessions, `_shared.md`,
+          `FILE_STRUCTURE.md` moved to `kit/_shared/`.
+        - New `kit/.claude/` tree with 14 agent wrappers (no `Main.md` — the
+          orchestrator content is inlined into `kit/CLAUDE.md.template` because
+          Claude Code's main session IS the orchestrator) and
+          `settings.json.template`.
+        - `kit/CLAUDE.md.template` (new): rendered iff `claude-code` ∈ hosts,
+          inlines `_shared/PROJECT_RULES.body.md.template` + the orchestrator
+          body via INCLUDE.
+        - `kit/AGENTS.md.template` is now a thin wrapper that includes
+          `_shared/PROJECT_RULES.body.md.template`.
+        - `kit/nested/AGENTS.md.nested.template` renamed to
+          `kit/nested/MODULE.body.md.template` — same content, used to render
+          `<source_root>/AGENTS.md` (opencode host) AND
+          `<source_root>/CLAUDE.md` (claude-code host) per module.
+        - `kit/editors/opencode/CLAUDE.md.template` REMOVED (legacy bridge —
+          replaced by the proper `kit/CLAUDE.md.template`).
+
+      **New install-time mechanic — INCLUDE resolution:**
+        - Templates may reference `{{INCLUDE: <relative-path-inside-kit>}}`.
+        - The setup/update/extend prompts recursively resolve these (max depth
+          5, path-escape guarded) BEFORE `{{VAR}}` substitution. This is what
+          lets a single agent body live in `_shared/agents/<Name>.body.md.template`
+          and be wrapped by both OpenCode and Claude Code frontmatter.
+
+      **Per-host substitution placeholders (used inside `_shared/` content):**
+        - `{{HOST_DIR}}` → `.opencode` or `.claude`
+        - `{{HOST_NAME}}` → `OpenCode` or `Claude Code`
+        - `{{HOST_INSTRUCTION_FILE}}` → `AGENTS.md` or `CLAUDE.md`
+        - `{{HOST_CONFIG_FILE}}` → `opencode.json` or `.claude/settings.json`
+        - `{{KIT_LANG_ENV}}` → `OPENCODE_LANG` or `KIT_LANG`
+        - `{{DISPATCH_TOOL}}` → `` `task` `` (OpenCode) or `the Agent tool` (Claude Code)
+        - Model placeholders (`{{DEFAULT_MODEL}}`, `{{CODER_MODEL}}`, etc.)
+          resolve to `models.*` for OpenCode and `claude_code.models.*` for
+          Claude Code.
+
+      **Migration steps for an installed pre-v4 project:**
+        1. Run `/kit-update`. It detects `kit_version < 4.0.0`, replaces
+           `editors:` with `hosts:`, appends `opencode` to
+           `stack.profiles[]`, then re-renders into the existing `.opencode/`
+           tree with the new INCLUDE-based wrappers. The behaviour is
+           equivalent to pre-v4 — no Claude Code is installed yet.
+        2. (Optional) To add Claude Code to the same project, run:
+           ```
+           /kit-extend https://github.com/aequicor/ai-agent-kit/blob/master/profiles/host/claude-code.yaml
+           ```
+           The extend prompt asks Q17a–Q17e (Claude Code model assignments),
+           writes `claude_code.models` to the manifest, and renders the
+           `.claude/` tree alongside the existing `.opencode/`.
+
+      **Why this matters:**
+        - Projects with mixed engineering teams (some on OpenCode, others on
+          Claude Code) can share the same kit, the same agent prompts, the
+          same workflows.
+        - Single agent prose source means a fix to e.g. `@CodeWriter`
+          instructions lands in both runtimes simultaneously.
+    files_changed:
+      - kit/_shared/_shared.md.template
+      - kit/_shared/FILE_STRUCTURE.md.template
+      - kit/_shared/PROJECT_RULES.body.md.template
+      - kit/_shared/agents/AutoApprover.body.md.template
+      - kit/_shared/agents/BugFixer.body.md.template
+      - kit/_shared/agents/BusinessAnalyst.body.md.template
+      - kit/_shared/agents/CodeReviewer.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/agents/ConsistencyChecker.body.md.template
+      - kit/_shared/agents/CornerCaseReviewer.body.md.template
+      - kit/_shared/agents/CoverageChecker.body.md.template
+      - kit/_shared/agents/Designer.body.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/PromptEngineer.body.md.template
+      - kit/_shared/agents/QA.body.md.template
+      - kit/_shared/agents/SystemAnalyst.body.md.template
+      - kit/_shared/agents/TestRunner.body.md.template
+      - kit/_shared/agents/debugger.body.md.template
+      - kit/_shared/commands/kit-approve.md.template
+      - kit/_shared/commands/kit-checkpoint.md.template
+      - kit/_shared/commands/kit-deploy.md.template
+      - kit/_shared/commands/kit-diagram.md.template
+      - kit/_shared/commands/kit-extend.md.template
+      - kit/_shared/commands/kit-fix.md.template
+      - kit/_shared/commands/kit-lint.md.template
+      - kit/_shared/commands/kit-new-feature.md.template
+      - kit/_shared/commands/kit-requirements-pipeline.md.template
+      - kit/_shared/commands/kit-resume.md.template
+      - kit/_shared/commands/kit-review.md.template
+      - kit/_shared/commands/kit-status.md.template
+      - kit/_shared/commands/kit-uninstall.md.template
+      - kit/_shared/commands/kit-update-deps.md.template
+      - kit/_shared/commands/kit-update.md.template
+      - kit/_shared/i18n/en.md
+      - kit/_shared/i18n/ru.md
+      - kit/_shared/sessions/SESSIONS.md.template
+      - kit/_shared/skills/bug-retro/SKILL.md.template
+      - kit/_shared/skills/code-review-checklist/SKILL.md.template
+      - kit/_shared/skills/corner-case-refinement/SKILL.md.template
+      - kit/_shared/skills/knowledge-graph/SKILL.md.template
+      - kit/_shared/skills/look-up/SKILL.md.template
+      - kit/_shared/skills/requirements-pipeline/SKILL.md.template
+      - kit/_shared/skills/session-replay/SKILL.md.template
+      - kit/_shared/skills/test-execution/SKILL.md.template
+      - kit/.opencode/agents/AutoApprover.md.template
+      - kit/.opencode/agents/BugFixer.md.template
+      - kit/.opencode/agents/BusinessAnalyst.md.template
+      - kit/.opencode/agents/CodeReviewer.md.template
+      - kit/.opencode/agents/CodeWriter.md.template
+      - kit/.opencode/agents/ConsistencyChecker.md.template
+      - kit/.opencode/agents/CornerCaseReviewer.md.template
+      - kit/.opencode/agents/CoverageChecker.md.template
+      - kit/.opencode/agents/Designer.md.template
+      - kit/.opencode/agents/Main.md.template
+      - kit/.opencode/agents/PromptEngineer.md.template
+      - kit/.opencode/agents/QA.md.template
+      - kit/.opencode/agents/SystemAnalyst.md.template
+      - kit/.opencode/agents/TestRunner.md.template
+      - kit/.opencode/agents/debugger.md.template
+      - kit/.claude/agents/AutoApprover.md.template
+      - kit/.claude/agents/BugFixer.md.template
+      - kit/.claude/agents/BusinessAnalyst.md.template
+      - kit/.claude/agents/CodeReviewer.md.template
+      - kit/.claude/agents/CodeWriter.md.template
+      - kit/.claude/agents/ConsistencyChecker.md.template
+      - kit/.claude/agents/CornerCaseReviewer.md.template
+      - kit/.claude/agents/CoverageChecker.md.template
+      - kit/.claude/agents/Designer.md.template
+      - kit/.claude/agents/PromptEngineer.md.template
+      - kit/.claude/agents/QA.md.template
+      - kit/.claude/agents/SystemAnalyst.md.template
+      - kit/.claude/agents/TestRunner.md.template
+      - kit/.claude/agents/debugger.md.template
+      - kit/.claude/settings.json.template
+      - kit/AGENTS.md.template
+      - kit/CLAUDE.md.template
+      - kit/manifest.schema.json
+      - kit/nested/MODULE.body.md.template
+      - kit/opencode.json.template
+      - kit/profile.schema.json
+      - kit/_index.txt
+      - profiles/host/opencode.yaml
+      - profiles/host/claude-code.yaml
+    manifest_changes:
+      added_fields:
+        - path: "hosts"
+          default: [opencode]
+          description: "Runtime hosts list (1..N). Replaces the pre-v4 `editors:` field. Allowed values: opencode, claude-code."
+        - path: "claude_code"
+          default: null
+          description: "Claude Code config block. Required iff claude-code ∈ hosts. Contains `models` map with default/coder/reviewer/designer/small role assignments. Omit when only opencode is in hosts."
+      profile_transforms:
+        - ensure: [opencode]
+        # Note: the rename `editors → hosts` and removal of the editors field
+        # are handled by update.md PHASE 2.5 (one-shot v4.0.0 migration). It
+        # cannot be expressed by the existing rename/ensure/ensure_axis
+        # transform vocabulary because those operate on stack.profiles, not
+        # on top-level manifest fields.
+
   - version: "3.1.0"
     released: "2026-05-05"
     breaking: false

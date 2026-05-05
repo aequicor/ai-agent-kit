@@ -4,19 +4,19 @@
   "title": "AI Agent Kit Manifest",
   "description": "Schema for ai-agent-kit manifest YAML files",
   "type": "object",
-  "required": ["kit_version", "project", "stack", "modules", "provider", "models"],
+  "required": ["kit_version", "hosts", "project", "stack", "modules"],
   "properties": {
     "kit_version": {
       "type": "string",
       "description": "Kit version — used for migration checks",
       "pattern": "^\\d+\\.\\d+\\.\\d+$"
     },
-    "editors": {
+    "hosts": {
       "type": "array",
-      "description": "Editor-specific config files to generate",
+      "description": "Runtime hosts the project supports. The kit renders one template tree per host into the target. opencode → .opencode/ tree + opencode.json. claude-code → .claude/ tree + .claude/settings.json + CLAUDE.md (main-session orchestrator). Multi-host installs render both side-by-side.",
       "items": {
         "type": "string",
-        "enum": ["opencode"]
+        "enum": ["opencode", "claude-code"]
       },
       "minItems": 1,
       "uniqueItems": true
@@ -95,6 +95,7 @@
     },
     "provider": {
       "type": "object",
+      "description": "OpenCode provider config. Required iff 'opencode' ∈ hosts. Ignored when only 'claude-code' is in hosts (Claude Code uses Anthropic native models via the Claude Code CLI/desktop).",
       "required": ["name", "base_url", "api_key_env"],
       "properties": {
         "name": {"type": "string", "minLength": 1},
@@ -104,6 +105,7 @@
     },
     "models": {
       "type": "object",
+      "description": "OpenCode model role assignments (used as {{PROVIDER_ID}}/{{MODEL}} in opencode.json and agent frontmatter). Required iff 'opencode' ∈ hosts.",
       "required": ["default", "coder", "reviewer"],
       "properties": {
         "default": {"type": "string", "minLength": 1},
@@ -116,6 +118,29 @@
           ]
         },
         "small": {"type": "string"}
+      }
+    },
+    "claude_code": {
+      "type": "object",
+      "description": "Claude Code runtime config. Required iff 'claude-code' ∈ hosts. Models accept the Claude Code CLI aliases (opus | sonnet | haiku) or full model IDs (e.g. claude-opus-4-7, claude-sonnet-4-6, claude-haiku-4-5).",
+      "required": ["models"],
+      "properties": {
+        "models": {
+          "type": "object",
+          "required": ["default", "coder", "reviewer"],
+          "properties": {
+            "default": {"type": "string", "minLength": 1},
+            "coder": {"type": "string", "minLength": 1},
+            "reviewer": {"type": "string", "minLength": 1},
+            "designer": {
+              "oneOf": [
+                {"type": "string", "minLength": 1},
+                {"type": "null"}
+              ]
+            },
+            "small": {"type": "string"}
+          }
+        }
       }
     },
     "mcp": {
@@ -205,5 +230,23 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "description": "If opencode is in hosts, provider/models must be present.",
+      "if": {
+        "properties": {"hosts": {"type": "array", "contains": {"const": "opencode"}}},
+        "required": ["hosts"]
+      },
+      "then": {"required": ["provider", "models"]}
+    },
+    {
+      "description": "If claude-code is in hosts, claude_code block must be present.",
+      "if": {
+        "properties": {"hosts": {"type": "array", "contains": {"const": "claude-code"}}},
+        "required": ["hosts"]
+      },
+      "then": {"required": ["claude_code"]}
+    }
+  ]
 }

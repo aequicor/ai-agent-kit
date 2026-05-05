@@ -44,7 +44,7 @@ period: 7
 
 ### 1. Load session index
 
-Read `.opencode/sessions/SESSIONS.md` — parse the session index table.
+Read `{{HOST_DIR}}/sessions/SESSIONS.md` — parse the session index table.
 
 If SESSIONS.md doesn't exist → report `NO DATA: SESSIONS.md not found. No session history available.` Stop.
 

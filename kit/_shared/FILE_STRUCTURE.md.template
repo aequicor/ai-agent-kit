@@ -70,14 +70,15 @@
 
 ---
 
-## Agent Configuration (.opencode/)
+## Agent Configuration ({{HOST_DIR}}/)
 
 | Path | Owner | Purpose |
 |------|-------|---------|
-| `.opencode/_shared.md` | @PromptEngineer | Shared context for all agents |
-| `.opencode/FILE_STRUCTURE.md` | @PromptEngineer | This file — path reference |
-| `.opencode/agents/[Name].md` | @PromptEngineer | Individual agent prompt |
-| `.opencode/skills/[name]/SKILL.md` | @PromptEngineer | Skill definition |
+| `{{HOST_DIR}}/_shared.md` | @PromptEngineer | Shared context for all agents |
+| `{{HOST_DIR}}/FILE_STRUCTURE.md` | @PromptEngineer | This file — path reference |
+| `{{HOST_DIR}}/agents/[Name].md` | @PromptEngineer | Individual agent prompt |
+| `{{HOST_DIR}}/skills/[name]/SKILL.md` | @PromptEngineer | Skill definition |
+| `{{HOST_CONFIG_FILE}}` | human (PO) | Runtime config for this host ({{HOST_NAME}}) |
 
 ---
 
