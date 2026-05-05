@@ -1,10 +1,6 @@
-# ai-agent-kit
+# AI-agent kit
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
-
-**Pure prompt-driven.** No Python, no JDK, no curl-jar. The AI agent fetches everything from this repo's raw URLs and renders templates itself.
-
-Forked and trimmed from [aequicor/opencode-kit](https://github.com/aequicor/opencode-kit) v1.6.0 — see [docs/migration/changelog.yaml](docs/migration/changelog.yaml) for the diff.
 
 ---
 
