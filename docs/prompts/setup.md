@@ -41,8 +41,9 @@ If API fetch fails, use this hardcoded list:
 - `generic` — language-agnostic baseline
 - `ollama-cloud` — Ollama Cloud provider profile
 - `requirements-pipeline` — capability profile (BA/CCR/SA/Coverage/Consistency)
+- `solid` — capability profile (SOLID principles + Clean Architecture rules)
 
-- **Q4.** Stack profile `[default: kotlin-multiplatform]`. Multiple allowed (comma-separated). Recommended combos: `kotlin-multiplatform, ollama-cloud, requirements-pipeline`.
+- **Q4.** Stack profile `[default: kotlin-multiplatform]`. Multiple allowed (comma-separated). Recommended combos: `kotlin-multiplatform, ollama-cloud, requirements-pipeline`, `kotlin-multiplatform, solid, requirements-pipeline`.
 
 ### 4. Build commands
 
