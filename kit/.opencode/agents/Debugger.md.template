@@ -19,4 +19,4 @@ permission:
   "serena_*": allow
 ---
 
-{{INCLUDE: _shared/agents/debugger.body.md.template}}
+{{INCLUDE: _shared/agents/Debugger.body.md.template}}

@@ -1,6 +1,6 @@
-# AI-agent kit `v4.0.2`
+# AI-agent kit `v4.0.3`
 
-AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
+AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
 
 **Multi-host:** pick `opencode`, `claude-code`, or both — projects can run on either runtime, or on both side-by-side. Subagent prompts are shared via the kit's `_shared/` tree, while host-specific frontmatter and config files (`opencode.json`, `.claude/settings.json`) are rendered per host.
 
@@ -143,7 +143,7 @@ The setup prompt asks one question per axis, validates cardinality, and checks e
 | `@CodeWriter` | Implements code stage by stage. |
 | `@CodeReviewer` | Read-only review after each CodeWriter stage. |
 | `@BugFixer` | Root-cause analysis + fix + regression test + updates test-cases.md. |
-| `@debugger` | Read-only investigation — produces failing test for complex bugs. |
+| `@Debugger` | Read-only investigation — produces failing test for complex bugs. |
 | `@QA` | Owns `<feature>-test-cases.md` (REQUIREMENTS phase creates, IMPLEMENTATION phase appends). |
 | `@TestRunner` | Operates on test-cases.md (SCAN / EXECUTE / RERUN / APPEND). |
 | `@Designer` | UI/UX description for visual features (read-only). Optional: omit by setting `models.designer: null` (or `claude_code.models.designer: null`). |

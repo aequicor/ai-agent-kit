@@ -1,4 +1,28 @@
 versions:
+  - version: "4.0.3"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix naming inconsistency: rename debugger → Debugger to match PascalCase convention
+      used by all other agents. Add missing .planning/bugs/.gitkeep so the directory is
+      created on fresh installs (the Debugger agent writes BUG-NNN.md there).
+
+      No manifest changes. Installed projects should re-run /kit-update to get the renamed
+      agent files — existing @debugger dispatch calls in AUTO_MEMORY.md or task files will
+      continue to resolve until updated at the next /kit-update.
+    files_changed:
+      - kit/.claude/agents/Debugger.md.template
+      - kit/.opencode/agents/Debugger.md.template
+      - kit/_shared/agents/Debugger.body.md.template
+      - kit/CLAUDE.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_shared/FILE_STRUCTURE.md.template
+      - kit/_shared/commands/kit-fix.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/.planning/bugs/.gitkeep
+    manifest_changes:
+      added_fields: []
+
   - version: "4.0.2"
     released: "2026-05-05"
     breaking: false

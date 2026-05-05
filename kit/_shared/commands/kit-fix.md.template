@@ -37,7 +37,7 @@ PO marks Status ❌ for known bugs and may add new TC rows there at any time. `/
 TRIAGE   — clear stacktrace / self-evident steps → DISPATCH directly.
            complex / needs reproduction → DEBUG first.
 
-DEBUG    — task @debugger with TC Description + (Notes if present) + environment. Output: BUG-NNN.md.
+DEBUG    — task @Debugger with TC Description + (Notes if present) + environment. Output: BUG-NNN.md.
 
 DISPATCH — task @BugFixer:
              TC: <TC-id>

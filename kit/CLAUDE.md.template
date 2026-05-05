@@ -32,7 +32,7 @@ Subagents available in this project (each has its own file under `{{HOST_DIR}}/a
 - **@QA** — owns the living test-cases file (REQUIREMENTS / IMPLEMENTATION phases)
 - **@SystemAnalyst** — generates technical spec + Mermaid UML diagrams
 - **@TestRunner** — operates on test-cases.md (PEND/FAIL/RERUN/APPEND)
-- **@debugger** — reproduces bugs, isolates root cause, writes failing test
+- **@Debugger** — reproduces bugs, isolates root cause, writes failing test
 
 ---
 

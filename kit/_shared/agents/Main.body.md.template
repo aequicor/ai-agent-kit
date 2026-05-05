@@ -240,9 +240,9 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
              clear stacktrace or self-evident steps → step 3 (DISPATCH BugFixer).
              complex, needs reproduction → step 2 (DEBUG).
 
-2. DEBUG  — task @debugger. Pass: TC-id + Description + (Notes if tester wrote one) from test-cases.md, environment.
+2. DEBUG  — task @Debugger. Pass: TC-id + Description + (Notes if tester wrote one) from test-cases.md, environment.
              Output: BUG-NNN.md with root cause hypothesis + failing test reference.
-             If @debugger discovers an additional scenario → dispatch @TestRunner APPEND
+             If @Debugger discovers an additional scenario → dispatch @TestRunner APPEND
              so it's tracked.
              CHECKPOINT: .planning/tasks/<active_task>.md.
 
