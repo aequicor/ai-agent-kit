@@ -62,24 +62,17 @@ For each requirement and acceptance criterion from the spec/requirements:
 - Create **edge cases** from the corner case register (Critical and High items MUST have test cases)
 - Create **manual scenarios** for UI/user-facing features
 
-Each test case follows the template format:
+Each test case is **one row in the table** at the top of the document. The table is owned by AI agents. Columns:
 
 ```
-### TC-NNN: [Short descriptive name]
-
-| Field | Value |
-|-------|-------|
-| **ID** | TC-NNN |
-| **Priority** | HIGH / MEDIUM / LOW |
-| **Type** | Happy path / Edge case / Error / Security / Performance |
-| **Preconditions** | List of preconditions |
-| **Steps** | 1. Step one<br>2. Step two<br>3. Step three |
-| **Expected Result** | What should happen |
-| **Actual Result** | [FILLED DURING EXECUTION] |
-| **Status** | PEND |
-| **Defect** | — |
-| **Notes** | — |
+| ID    | Status | Notes | Type        | Pre-requirements        | To be                    |
+|-------|--------|-------|-------------|-------------------------|--------------------------|
+| TC-NNN| PEND   | —     | happy path  | logged in, DB seeded    | dashboard renders        |
 ```
+
+The detailed sections below the table (Pre-requirements / Steps / As is / To be) are written **by the manual tester**, not by AI. AI only fills the table row.
+
+Notes column doubles as defect link — when a defect is created, write `DEF-NNN: <one-line cause>` in Notes.
 
 ### 1.4 Write the document
 
@@ -124,49 +117,41 @@ Read `{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md`.
 Present test cases one by one (or in groups by priority). For each test case:
 
 ```
-TC-NNN: [name] (Priority: HIGH)
-Preconditions: ...
-Steps:
+TC-NNN: [name]
+Type: <type>
+Pre-requirements: ...
+To be: ...
+(if a detailed section exists below the table) Steps:
   1. ...
   2. ...
-Expected: ...
 
 Please enter result:
   PASS — actual result matches expected
-  FAIL — describe what went wrong
+  FAIL — describe what went wrong (1-line cause for Notes)
   SKIP — with reason
 ```
 
 ### 2.3 Record results
 
-For each test case result, update the file:
+For each test case result, update the table row:
 
-- **PASS:** Set Status to PASS, fill Actual Result.
-- **FAIL:** Set Status to FAIL, fill Actual Result, add a new DEF-NNN to Defects Log, link it from the TC's Defect field.
-- **SKIP:** Set Status to SKIP, add note with reason.
+- **PASS:** Set Status to PASS in the table row.
+- **FAIL:** Set Status to FAIL, write `DEF-NNN: <one-line cause>` to Notes, append a new DEF-NNN entry to Defects Log.
+- **SKIP:** Set Status to SKIP, write reason to Notes.
+
+The detailed section below the table (As is / To be) is updated by the manual tester, not by the agent.
 
 ### 2.4 Defect creation protocol
 
-When a defect is found, create a new entry in the Defects Log section:
+When a defect is found, append a one-line entry to the Defects log section:
 
 ```
-### DEF-NNN: [Short defect title]
-
-| Field | Value |
-|-------|-------|
-| **ID** | DEF-NNN |
-| **Severity** | CRITICAL / HIGH / MEDIUM / LOW |
-| **Related TC** | TC-NNN |
-| **Description** | Clear description of what went wrong |
-| **Steps to Reproduce** | 1. ...<br>2. ... |
-| **Expected Behavior** | What should happen |
-| **Actual Behavior** | What actually happened |
-| **Fix Status** | OPEN |
-| **Fixed By** | — |
-| **Fix Commit** | — |
-| **Verification TC** | — |
-| **Notes** | — |
+- **DEF-NNN** — [SEVERITY] *<one-line summary>*. TC-NNN. Status: OPEN. Reported: YYYY-MM-DD by @TestRunner.
 ```
+
+Then write `DEF-NNN: <one-line cause>` to the Notes column of the affected TC row.
+
+Severity: `CRITICAL | HIGH | MEDIUM | LOW`. Lifecycle: `OPEN → FIXED → VERF`.
 
 ### 2.5 Transaction log entry
 
@@ -208,7 +193,7 @@ Read the test cases file. Identify:
 
 For each identified test case:
 - Present to PO for re-verification
-- Update Actual Result
+- Update Status in the table row
 - Update Status
 
 ### 3.3 Update defect verification

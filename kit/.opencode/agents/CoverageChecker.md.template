@@ -96,7 +96,7 @@ Read-only agent — loops unlikely. Safety limit: **max 3 re-checks** if called 
 
 - CRITICAL corner case without TC → always GAPS, no exceptions.
 - HIGH corner case without TC and without "deferred" note → GAPS.
-- HIGH corner case with a deferred note in the Expected Result cell → acceptable, does not trigger GAPS. Detection: the Expected Result cell of the corresponding corner case row contains the string `deferred:` (case-insensitive).
+- HIGH corner case with a deferred note in the `To be` cell → acceptable, does not trigger GAPS. Detection: the `To be` cell of the corresponding corner case row contains the string `deferred:` (case-insensitive).
 - MEDIUM and LOW corner cases → not required for PASS verdict.
 - AC without TC → always GAPS.
 

@@ -1,4 +1,59 @@
 versions:
+  - version: "2.2.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Restructured the test-cases template to separate AI-owned data from
+      manual-tester-owned content.
+
+      The file now has two parts:
+
+      1. A compact table at the top, filled by AI agents (@QA, @TestRunner,
+         @BugFixer). Columns: ID | Status | Notes | Type | Pre-requirements | To be.
+         The Notes column doubles as a defect link — when a TC fails the agent
+         writes `DEF-NNN: <one-line cause>` there. The manual tester may also
+         edit Notes to record bug remarks.
+
+      2. Detailed TC sections below the table, written by the manual tester
+         using a standardized 4-block format: Pre-requirements / Steps / As is /
+         To be. Agents do NOT write or edit these sections.
+
+      Old test-cases files (with the wide table: Pri | Source | Preconditions |
+      Steps | Expected | Status | Notes | Bug Ref) keep working — agents will
+      continue to update Status/Notes columns. The new column layout applies
+      only to newly generated files. To migrate an existing file, regenerate
+      it via @QA REQUIREMENTS phase, or manually fold the old columns:
+        - Drop "Pri" (priority is now expressed via Type).
+        - "Source" tag → move into Notes.
+        - "Preconditions" → "Pre-requirements" (rename column).
+        - "Steps", "Expected" → move into a detailed section below the table.
+        - "Bug Ref" → fold into Notes as `DEF-NNN: <cause>`.
+
+      Updated files:
+      - kit/.vault/_templates/test-cases.md — new template structure.
+      - kit/.opencode/skills/test-execution/SKILL.md — generation/execution
+        rules updated to the new format.
+      - kit/.opencode/agents/QA.md.template — new template, Source moved to Notes.
+      - kit/.opencode/agents/TestRunner.md.template — drop Pri/Bug Ref,
+        Notes column holds DEF-id reference.
+      - kit/.opencode/agents/BugFixer.md.template — DEF-id read from Notes,
+        forbid editing detailed sections.
+      - kit/.opencode/agents/Main.md.template, kit/.opencode/commands/fix.md —
+        renamed Bug Ref → DEF-id.
+      - kit/.opencode/agents/CoverageChecker.md.template — deferred note now
+        lives in the `To be` cell instead of `Expected Result`.
+    files_changed:
+      - kit/.vault/_templates/test-cases.md
+      - kit/.opencode/skills/test-execution/SKILL.md
+      - kit/.opencode/agents/QA.md.template
+      - kit/.opencode/agents/TestRunner.md.template
+      - kit/.opencode/agents/BugFixer.md.template
+      - kit/.opencode/agents/Main.md.template
+      - kit/.opencode/agents/CoverageChecker.md.template
+      - kit/.opencode/commands/fix.md
+    manifest_changes:
+      added_fields: []
+
   - version: "2.1.3"
     released: "2026-05-05"
     breaking: false

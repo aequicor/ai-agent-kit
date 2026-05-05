@@ -69,16 +69,16 @@ Test-cases file: [path]
 **Test-cases file:** [path]
 
 **FAIL:** N
-| ID    | Pri  | Type        | Notes summary | Bug Ref |
-|-------|------|-------------|---------------|---------|
+| ID    | Type        | Notes (incl. DEF-id) |
+|-------|-------------|----------------------|
 
 **PEND:** N
-| ID    | Pri  | Type        | Notes summary |
-|-------|------|-------------|---------------|
+| ID    | Type        | Pre-requirements summary |
+|-------|-------------|--------------------------|
 
 **SKIP:** N
-| ID    | Pri  | Notes summary |
-|-------|------|---------------|
+| ID    | Notes summary |
+|-------|---------------|
 
 **PO-added rows since last run:** N (TC-ids: ...)
 **Total actionable rows:** N
@@ -88,7 +88,7 @@ Caller (`/fix` or `@Main`) decides which TCs to dispatch to `@BugFixer`.
 
 ## Pipeline — EXECUTE
 
-Interactive walkthrough — PO confirms each result. Default subset: all `PEND` rows, sorted by Priority (HIGH first).
+Interactive walkthrough — manual tester confirms each result. Default subset: all `PEND` rows.
 
 Caller passes:
 ```
@@ -98,21 +98,23 @@ Subset: [optional list of TC-ids; if empty → all PEND rows]
 ```
 
 ```
-0. THINK — order by priority. Identify any preconditions that must be set up first.
+0. THINK — order by row position (HIGH-impact rows usually appear first). Identify any
+           pre-requirements that must be set up.
 
-1. READ  — file + Environment / Preconditions sections (if present).
+1. READ  — file. Parse the table. Read any detailed TC sections written by the tester.
 
-2. PRESENT (per TC) — show ID, Type, Steps, Expected, Preconditions.
-                       Ask PO to enter:
+2. PRESENT (per TC) — show ID, Type, Pre-requirements, To be. If a detailed section
+                       exists below, show its Steps too.
+                       Ask tester to enter:
                        PASS / FAIL / SKIP.
-                       If FAIL → also ask for Notes (1 line).
+                       If FAIL → also ask for Notes (1 line — bug root cause).
 
 3. RECORD (per response):
-   PASS → set Status = PASS.
-   FAIL → set Status = FAIL, save Notes, allocate next DEF-id, append to Defects log:
-          "DEF-XXX [<priority-as-severity>] <one-line summary from Notes>. <TC-id>. Status: OPEN."
-          Fill TC's Bug Ref column with DEF-XXX.
-   SKIP → set Status = SKIP, save Notes (reason for skip).
+   PASS → set Status = PASS in the table.
+   FAIL → set Status = FAIL, allocate next DEF-id, append to Defects log:
+          "DEF-XXX [<severity>] <one-line summary>. <TC-id>. Status: OPEN."
+          Write the DEF-id and root cause to the Notes column: "DEF-XXX: <cause>".
+   SKIP → set Status = SKIP, write reason to Notes column.
 
 4. NEW TC discovered mid-walkthrough — dispatch self in APPEND mode (or just inline-append
                        if scope is small) so the new row is created with a fresh ID.
@@ -151,12 +153,11 @@ Hint: TCs were previously FAIL, fixed by @BugFixer.
              For each, ask PO: "Verify result?" (PASS / FAIL).
 
 3. UPDATE — per response:
-   PASS → set Status = PASS.
+   PASS → set Status = PASS. Clear DEF-id from Notes (or rewrite to "VERF: <cause>").
           In Defects log: change linked DEF-id from FIXED → VERF.
    FAIL → set Status = FAIL (still failing).
-          In Defects log: change linked DEF-id back to OPEN. Increment retry counter
-          in Notes ("retry N").
-          If retry counter == 3 → STOP, return ESCALATE.
+          In Defects log: change linked DEF-id back to OPEN. Append "retry N" to the
+          Notes column. If retry counter == 3 → STOP, return ESCALATE.
 
 4. UPDATE meta — "Last updated".
 
@@ -179,21 +180,18 @@ Caller passes:
 Mode: APPEND
 Test-cases file: [path]
 TC details:
-  Pri:           HIGH | MEDIUM | LOW
-  Type:          happy path | acceptance | corner case | error | security | performance | unit-edge | integration | manual
-  Source:        PO-added | discovered-during-execution | bug-fix | spec
-  Preconditions: [text]
-  Steps:         [numbered]
-  Expected:      [text]
-  Initial Status: PEND | FAIL (use FAIL if PO/BugFixer reports an actual failure)
-  Notes:         [text or empty]
-  Bug Ref:       [DEF-id or empty]
+  Type:             happy path | acceptance | corner case | error | security | performance | unit-edge | integration | manual
+  Pre-requirements: [text — short, fits one table cell]
+  To be:            [text — short, fits one table cell]
+  Initial Status:   PEND | FAIL (use FAIL if BugFixer reports an actual failure)
+  Notes:            [text or empty — DEF-id reference if applicable]
 ```
 
 ```
 1. READ  — file. Find max existing TC-id.
 
-2. APPEND — write one new row to the table with the next ID. Fill all columns from caller input.
+2. APPEND — write one new row to the table with the next ID. Columns:
+            ID | Status | Notes | Type | Pre-requirements | To be.
 
 3. UPDATE meta — "Last updated".
 
@@ -204,7 +202,7 @@ TC details:
 ## TestRunner Result
 
 **Mode:** APPEND
-**TC added:** TC-NN  •  Pri: <pri>  •  Type: <type>  •  Status: PEND|FAIL
+**TC added:** TC-NN  •  Type: <type>  •  Status: PEND|FAIL
 **File:** [path]
 ```
 
@@ -217,7 +215,7 @@ TC details:
 | MEDIUM | Feature partially broken, workaround exists | Filter doesn't clear |
 | LOW | Cosmetic issue | Button label typo |
 
-Map TC Priority → DEF Severity directly (HIGH→HIGH etc.) unless PO overrides during EXECUTE.
+Default to HIGH if unsure. PO can override during EXECUTE.
 
 ## Anti-Loop
 
@@ -238,7 +236,8 @@ Map TC Priority → DEF Severity directly (HIGH→HIGH etc.) unless PO overrides
 
 - **DO NOT create the test-cases file** — that's `@QA` REQUIREMENTS phase.
 - **DO NOT write test code.**
-- **DO NOT touch columns other than Status, Notes, Bug Ref** — and only as defined per mode.
+- **DO NOT touch columns other than Status and Notes** — and only as defined per mode.
+- **DO NOT write or edit the detailed TC sections below the table** — those are owned by the manual tester.
 - **DO NOT delete TC rows.** PO can manually delete; agents must not.
 - **DO NOT renumber existing TCs.** APPEND always continues the sequence.
 - **DO NOT modify Spec or Requirements files** — they are approved artifacts.
