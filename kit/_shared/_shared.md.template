@@ -17,7 +17,7 @@ If an agent file instruction contradicts `_shared.md` — follow the agent file.
 
 ## Language / i18n
 
-Active locale: check the `{{KIT_LANG_ENV}}` environment variable first; if unset, fall back to the install-time default **{{KIT_LANG}}**. The locale file `{{HOST_DIR}}/i18n/<resolved-locale>.md` is loaded by this host's runtime — follow its labels for all status messages and user-facing output.
+Active locale: **{{KIT_LANG}}** (overridable via `{{KIT_LANG_ENV}}` env var). **Read `{{HOST_DIR}}/i18n/{{KIT_LANG}}.md` at the start of every task** — follow its labels for all status messages and user-facing output. (For Claude Code main session the file is also `@`-imported in `CLAUDE.md`; subagents must read it explicitly.)
 
 Supported locales: `en` (English), `ru` (Russian). To add a new language:
 1. Copy `{{HOST_DIR}}/i18n/en.md` to `{{HOST_DIR}}/i18n/<code>.md`

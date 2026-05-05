@@ -1,4 +1,34 @@
 versions:
+  - version: "4.0.2"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix localization not working in Claude Code host.
+
+      The i18n locale file (`.claude/i18n/<lang>.md`) was never loaded in
+      Claude Code installs. OpenCode correctly listed it in `opencode.json`
+      `instructions`, but the Claude Code `CLAUDE.md.template` had no
+      corresponding `@`-import, and `_shared.md.template` described the
+      mechanism as "loaded by this host's runtime" — which was simply wrong
+      for Claude Code.
+
+      Fix 1: `kit/CLAUDE.md.template` now begins with
+        `@{{HOST_DIR}}/i18n/{{KIT_LANG}}.md`
+      so the main (Orchestrator) session loads the locale file automatically.
+
+      Fix 2: `kit/_shared/_shared.md.template` replaces the passive
+      "is loaded by this host's runtime" with an explicit instruction for
+      subagents to Read the locale file at the start of every task, matching
+      what OpenCode already does via its `instructions` array.
+
+      No manifest changes. Existing Claude Code installs should re-run
+      `/kit-update` to get the updated `CLAUDE.md` with the `@`-import.
+    files_changed:
+      - kit/CLAUDE.md.template
+      - kit/_shared/_shared.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.0.1"
     released: "2026-05-05"
     breaking: false
