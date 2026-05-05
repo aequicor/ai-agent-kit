@@ -10,9 +10,9 @@ AI-agent configuration kit for [OpenCode](https://opencode.ai). Drops a complete
 |---|---|---|
 | `/requirements-pipeline "<feature>"` | BusinessAnalyst → CornerCaseReviewer (loop) → @QA REQUIREMENTS → CoverageChecker (loop) → SystemAnalyst → CornerCaseReviewer (loop) → ConsistencyChecker (loop) → PO sign-off | requirements.md, corner-cases.md, **living test-cases.md**, spec.md |
 | `/new-feature "<feature>"` | (auto-runs requirements-pipeline if needed) → SEARCH → DESIGN → PLAN → @QA IMPL DRAFT → CONFIRM → CodeWriter ↔ CodeReviewer (per stage) → @QA IMPL FINAL → optional @TestRunner walkthrough → CLOSE | implementation + tests + updated test-cases.md |
-| `/fix [TC-id\|description]` or `/fix` | SCAN test-cases.md → TRIAGE → DEBUG (if needed) → BugFixer → RERUN | fixed code, regression test, test-cases.md updated (Status ❌→✅, Defects log 🔴→🟢) |
+| `/fix [TC-id\|description]` or `/fix` | SCAN test-cases.md → TRIAGE → DEBUG (if needed) → BugFixer → RERUN | fixed code, regression test, test-cases.md updated (Status FAIL→PASS, Defects log OPEN→FIXED) |
 
-The **living test-cases file** at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/fix`. PO can edit it manually — change Status to ❌, append a new TC row, edit Notes — and `/fix` will pick it up. (`vault_path` is set in the manifest, default `vault`.)
+The **living test-cases file** at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/fix`. PO can edit it manually — change Status to `FAIL`, append a new TC row, edit Notes — and `/fix` will pick it up. (`vault_path` is set in the manifest, default `vault`.)
 
 ---
 
@@ -122,10 +122,10 @@ The setup prompt asks one question per axis, validates cardinality, and checks e
 
 The test-cases file at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is your control panel for what's working and what isn't:
 
-1. As you test the feature manually, change the **Status** column for each row: `⏸` → `✅` or `❌`. Add Notes if helpful.
-2. If you find a bug not covered by an existing TC, **add a new row** with `Status: ❌` and Notes describing the symptom.
-3. Run `/fix` (no arguments). It dispatches `@TestRunner SCAN`, lists all `❌`/`⏸` rows (including your additions), and asks which to fix.
-4. For each chosen TC, the BUG pipeline runs: `@BugFixer` analyzes, fixes, runs `@CodeReviewer`, builds, updates the file (Status `❌`→`✅`, Defects log `🔴`→`🟢`), commits, writes a report. Then `@TestRunner RERUN` re-verifies with you (`🟢` → `✅ Verified`).
+1. As you test the feature manually, change the **Status** column for each row: `PEND` → `PASS` or `FAIL`. Add Notes if helpful.
+2. If you find a bug not covered by an existing TC, **add a new row** with `Status: FAIL` and Notes describing the symptom.
+3. Run `/fix` (no arguments). It dispatches `@TestRunner SCAN`, lists all `FAIL`/`PEND` rows (including your additions), and asks which to fix.
+4. For each chosen TC, the BUG pipeline runs: `@BugFixer` analyzes, fixes, runs `@CodeReviewer`, builds, updates the file (Status `FAIL`→`PASS`, Defects log `OPEN`→`FIXED`), commits, writes a report. Then `@TestRunner RERUN` re-verifies with you (`FIXED` → `PASS Verified`).
 5. You can also run `/fix TC-05` to fix one specific row, or `/fix "login crashes when email has +"` to add a new TC and fix it in one step.
 
 You never have to leave the markdown file — it's the source of truth.
