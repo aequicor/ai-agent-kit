@@ -27,7 +27,16 @@
 #   PO: /requirements-pipeline "description of the feature"
 #   ... automated pipeline runs ...
 #   PO: /approve  (or "reject: [what to redo]")
+#   PO: /diagram  (optional — generates Mermaid UML diagrams from the approved spec)
 #   PO: /new-feature "description" (hands artifacts to @Main for dev planning)
+#
+# Optional commands provided by this profile:
+#   /diagram [feature] — @SystemAnalyst (DIAGRAM mode) reads the approved spec +
+#                        test cases and writes one <feature>-diagrams.md with
+#                        structural (class/component) and behavioral (sequence/
+#                        state) Mermaid diagrams. Read-only with respect to the
+#                        spec; outputs only the file path to keep the parent
+#                        context window clean.
 
 _profile_name: requirements-pipeline
 _profile_description: "AI-driven requirements pipeline: BA → CCR → QA → Coverage → SA → CCR(tech) → Consistency"

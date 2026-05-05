@@ -14,6 +14,8 @@ AI-agent configuration kit for [OpenCode](https://opencode.ai). Drops a complete
 
 The **living test-cases file** at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/fix`. PO can edit it manually — change Status to `FAIL`, append a new TC row, edit Notes — and `/fix` will pick it up. (`vault_path` is set in the manifest, default `vault`.)
 
+**Optional add-on:** after `/approve` (and before or after `/new-feature`), run `/diagram [feature]` to generate a single `<feature>-diagrams.md` next to the spec, containing structural (class + component) and behavioral (sequence + state) UML diagrams in **Mermaid**. Available on stacks that include the `requirements-pipeline` capability profile, since the spec it consumes is produced there.
+
 ---
 
 ## Install (no clone)
@@ -203,7 +205,7 @@ ai-agent-kit/
     ├── editors/opencode/CLAUDE.md.template
     ├── .opencode/
     │   ├── agents/        (15 .md.template — 10 base + 5 requirements-pipeline)
-    │   ├── commands/      (13 — /new-feature, /fix, /requirements-pipeline, /review, /deploy, /update, /approve, /checkpoint, /lint, /resume, /status, /uninstall, /update-deps)
+    │   ├── commands/      (14 — /new-feature, /fix, /requirements-pipeline, /diagram, /review, /deploy, /update, /approve, /checkpoint, /lint, /resume, /status, /uninstall, /update-deps)
     │   ├── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
     │   ├── i18n/{en,ru}.md
     │   ├── sessions/SESSIONS.md.template

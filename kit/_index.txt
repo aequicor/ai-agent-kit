@@ -18,6 +18,7 @@ kit/.opencode/agents/debugger.md.template
 kit/.opencode/commands/approve.md
 kit/.opencode/commands/checkpoint.md
 kit/.opencode/commands/deploy.md
+kit/.opencode/commands/diagram.md
 kit/.opencode/commands/fix.md
 kit/.opencode/commands/lint.md
 kit/.opencode/commands/new-feature.md

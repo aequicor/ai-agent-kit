@@ -1,4 +1,52 @@
 versions:
+  - version: "2.4.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Add `/diagram` command — generates UML (Mermaid) diagrams from an
+      already-approved requirements-pipeline spec.
+
+      What it does:
+      - Dispatches `@SystemAnalyst` in a new **DIAGRAM** mode (added alongside
+        existing DRAFT and UPDATE modes).
+      - Reads the spec + living test-cases file, extracts data models,
+        components, user-story flows, and entity lifecycle.
+      - Writes ONE file:
+            <vault>/reference/<module>/spec/<feature>-diagrams.md
+        containing structural diagrams (class + component) and behavioral
+        diagrams (one sequence per User Story; one state diagram only when
+        the main entity has 3+ distinct lifecycle states).
+
+      Why Mermaid: renders directly inside `.md` viewers (GitHub, IDE
+      preview, Obsidian) — no external tool required.
+
+      Context-pollution guard: the command's prompt is a thin dispatcher and
+      tells the dispatching model to output ONLY the structured
+      `## SystemAnalyst Result` block plus a one-line "open the file
+      directly" reminder. Diagram contents are not echoed back into the
+      orchestrator context. The DIAGRAM-mode pipeline itself is read-only
+      with respect to the spec and writes no checkpoint, so running
+      `/diagram` does not advance any pipeline state.
+
+      Precondition: requirements-pipeline must have completed and the spec
+      must be PO-signed-off. The command fails fast if either the spec or
+      the test-cases file is missing.
+
+      The command is added to all installations regardless of profile (it
+      lives in the kit baseline like `/checkpoint`), but it is only
+      *useful* on stacks that include the `requirements-pipeline`
+      capability profile, since that is what produces the spec it consumes.
+
+      No manifest migration required. No breaking changes.
+    files_changed:
+      - kit/.opencode/commands/diagram.md
+      - kit/.opencode/agents/SystemAnalyst.md.template
+      - kit/.opencode/_shared.md.template
+      - kit/_index.txt
+      - profiles/capability/requirements-pipeline.yaml
+    manifest_changes:
+      added_fields: []
+
   - version: "2.3.1"
     released: "2026-05-05"
     breaking: false
