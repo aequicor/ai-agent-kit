@@ -54,7 +54,10 @@ This is a **living document**. Multiple parties update it over time:
 
 ---
 
-> Everything below is written by the manual tester.
+> Everything below is written by the manual tester. The `TC-00: Template`
+> block stays as-is — copy and fill it in for individual TCs only when you
+> want to elaborate (typically a failing case). AI agents must NOT duplicate
+> the table by generating `TC-NN` sections automatically.
 
 ---
 

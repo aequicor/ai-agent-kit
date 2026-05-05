@@ -38,8 +38,8 @@ QA engineer. **Owns one artifact:** `{{VAULT_PATH}}/reference/[module]/test-case
 
 Strictly follow `{{VAULT_PATH}}/_templates/test-cases.md`. The file has two parts:
 
-1. **Table** — filled by AI agents (you, @TestRunner, @BugFixer). Columns: `ID | Status | Notes | Type | Pre-requirements | To be`. The Notes column may also be edited by the manual tester to record bug root cause.
-2. **Detailed TC sections** — written by the manual tester using the `TC-00: Template` block. Each section has `Pre-requirements`, `Steps`, `As is`, `To be`. You DO NOT write these sections — only the table.
+1. **Table** — filled by AI agents (you, @TestRunner, @BugFixer). One row per TC. Columns: `ID | Status | Notes | Type | Pre-requirements | To be`. The Notes column may also be edited by the manual tester to record bug root cause.
+2. **`TC-00: Template` block** — a single, static template kept as a guide. The manual tester copies it and fills it in only when they need to elaborate on a specific TC (typically a failing one). You **never** generate `TC-NN` sections — neither at creation nor at update. No detailed section per TC. The TC-00 block is the only block under the table on day one.
 
 ```markdown
 # Test Cases: [Feature Name]
@@ -62,7 +62,9 @@ PEND  •  PASS  •  FAIL  •  SKIP
 | TC-04 | PEND   | —     | unit-edge   | n/a                       | guard error on null input      |
 | TC-05 | PEND   | —     | integration | DB seeded                 | echoed payload                 |
 
-> Detailed sections below are written by the manual tester following the TC-00 template.
+> The TC-00 block is a single static template. Manual tester copies it on demand
+> when they want to elaborate on one specific TC (typically a failing one).
+> Agents do not generate per-TC sections.
 
 ## TC-00: Template
 **Pre-requirements:**
@@ -292,6 +294,7 @@ When calling `knowledge-my-app_search_docs`:
 - **DO NOT invent** classes/methods/endpoints not in spec or requirements — only what follows from documents.
 - **DO NOT create a new test-cases file in IMPLEMENTATION phase** — append to existing.
 - **DO NOT touch the Status column or Defects log** — those belong to @TestRunner / @BugFixer / PO.
+- **DO NOT generate `TC-NN` detailed sections** under the table. The only block below the table is the static `TC-00: Template`. Manual tester adds elaborated sections on demand.
 - **DO NOT skip Critical corner cases** in REQUIREMENTS phase — they are mandatory coverage.
 - **DO NOT use** technical jargon in REQUIREMENTS-phase Pre-requirements/To be — write so PO can execute manually.
 - **DO NOT output** system tags or environment artifacts.

@@ -70,7 +70,11 @@ Each test case is **one row in the table** at the top of the document. The table
 | TC-NNN| PEND   | —     | happy path  | logged in, DB seeded    | dashboard renders        |
 ```
 
-The detailed sections below the table (Pre-requirements / Steps / As is / To be) are written **by the manual tester**, not by AI. AI only fills the table row.
+**Do not generate `TC-NN` detailed sections** under the table. The template
+block (`TC-00: Template`) stays as a single static example. The manual tester
+copies and fills it in for individual TCs on demand — typically only for
+failing or hard-to-reproduce cases. The table row alone is enough; do not
+duplicate its content into a section below.
 
 Notes column doubles as defect link — when a defect is created, write `DEF-NNN: <one-line cause>` in Notes.
 
@@ -299,6 +303,7 @@ When calling `knowledge-my-app_search_docs`:
 - **DO NOT skip** the transaction log — every change MUST be recorded.
 - **DO NOT run** automated tests — this skill is for structured manual test case management.
 - **DO NOT invent** test cases not derived from spec/requirements/corner cases. Every test case must trace to a source.
+- **DO NOT generate per-TC detailed sections** (`## TC-01: ...`, `## TC-02: ...`) under the table. The only block below the table is the static `TC-00: Template`. Manual tester writes per-TC sections on demand.
 - **DO NOT modify** Spec or Requirements files — those are approved artifacts.
 - **DO NOT output** system tags or environment artifacts.
 - **DO NOT add conversational filler** — no "Sure!", "Of course", "Here is...". Output ONLY structured results.

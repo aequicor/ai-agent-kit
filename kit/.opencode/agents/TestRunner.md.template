@@ -237,7 +237,8 @@ Default to HIGH if unsure. PO can override during EXECUTE.
 - **DO NOT create the test-cases file** — that's `@QA` REQUIREMENTS phase.
 - **DO NOT write test code.**
 - **DO NOT touch columns other than Status and Notes** — and only as defined per mode.
-- **DO NOT write or edit the detailed TC sections below the table** — those are owned by the manual tester.
+- **DO NOT generate per-TC detailed sections** (`## TC-NN: ...`) under the table. The static `TC-00: Template` block stays as a single template; manual tester adds per-TC sections on demand. Even in APPEND mode, only add a row to the table — never a section.
+- **DO NOT write or edit any existing detailed TC section below the table** — those are owned by the manual tester.
 - **DO NOT delete TC rows.** PO can manually delete; agents must not.
 - **DO NOT renumber existing TCs.** APPEND always continues the sequence.
 - **DO NOT modify Spec or Requirements files** — they are approved artifacts.
