@@ -1,4 +1,4 @@
-# AI-agent kit
+# AI-agent kit `v4.0.2`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
 
