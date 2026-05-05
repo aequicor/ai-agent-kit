@@ -205,7 +205,7 @@ ai-agent-kit/
     │   ├── agents/        (15 .md.template — 10 base + 5 requirements-pipeline)
     │   ├── commands/      (13 — /new-feature, /fix, /requirements-pipeline, /review, /deploy, /update, /approve, /checkpoint, /lint, /resume, /status, /uninstall, /update-deps)
     │   ├── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
-    │   ├── i18n/{en,ru}.yaml
+    │   ├── i18n/{en,ru}.md
     │   ├── sessions/SESSIONS.md.template
     │   ├── _shared.md.template
     │   └── FILE_STRUCTURE.md.template

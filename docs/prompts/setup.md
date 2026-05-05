@@ -140,6 +140,20 @@ If `<target>/settings.gradle.kts` or `build.gradle.kts` exists, read it and prop
 
 ## PHASE 2 — Build manifest
 
+### 2.0. Fetch current kit version
+
+Fetch `RAW_BASE/docs/migration/changelog.yaml` and parse as YAML. Set:
+
+```
+KIT_VERSION = versions[0].version
+```
+
+`versions[0]` is always the latest entry (newest first). This value is what gets stamped into `manifest.kit_version` in step 2.2 — never hardcode it in this prompt.
+
+If the fetch fails on both `RAW_BASE/docs/migration/changelog.yaml` and `https://github.com/{KIT_REPO}/blob/master/docs/migration/changelog.yaml` → STOP. "Cannot reach changelog. Check internet connection or `KIT_REPO` value."
+
+If `versions` is missing, empty, or the top entry has no `version` field → STOP and report the malformed changelog.
+
 ### 2.1. Fetch profile YAMLs and validate axes
 
 For each chosen profile name, you already know which axis it belongs to (from the question that produced it: Q4a → language, Q4b → framework, Q4c → provider, Q4d → capability). Use that to build the path.
@@ -183,7 +197,7 @@ Because every profile is restricted to its axis-owned keys (per `profile.schema.
 Map PO answers into manifest structure:
 
 ```yaml
-kit_version: "2.0.0"
+kit_version: <KIT_VERSION>          # from step 2.0
 language_code: <Q0 or "en">
 editors: [opencode]
 project:

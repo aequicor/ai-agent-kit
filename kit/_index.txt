@@ -28,8 +28,8 @@ kit/.opencode/commands/status.md
 kit/.opencode/commands/uninstall.md
 kit/.opencode/commands/update-deps.md
 kit/.opencode/commands/update.md
-kit/.opencode/i18n/en.yaml
-kit/.opencode/i18n/ru.yaml
+kit/.opencode/i18n/en.md
+kit/.opencode/i18n/ru.md
 kit/.opencode/sessions/SESSIONS.md.template
 kit/.opencode/skills/bug-retro/SKILL.md
 kit/.opencode/skills/code-review-checklist/SKILL.md
@@ -56,3 +56,4 @@ kit/editors/opencode/CLAUDE.md.template
 kit/manifest.schema.json
 kit/nested/AGENTS.md.nested.template
 kit/opencode.json.template
+kit/profile.schema.json

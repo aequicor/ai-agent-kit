@@ -1,4 +1,45 @@
 versions:
+  - version: "2.3.1"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix i18n locale files not loading in user projects.
+
+      Three issues were addressed:
+
+      1. **i18n file was not in `opencode.json` instructions.** The locale file
+         `.opencode/i18n/<lang>.md` was never automatically loaded into agent
+         context — agents only learned of its existence through a comment in
+         `_shared.md`. Now `opencode.json` lists `.opencode/i18n/{{OPENCODE_LANG}}.md`
+         in its `instructions` array, so the locale file is loaded automatically
+         for every agent on every session.
+
+      2. **i18n files renamed from `.yaml` to `.md`.** The files used markdown
+         table format despite the `.yaml` extension, which was misleading. Renamed
+         to `.md` to match actual content and avoid parse errors.
+
+      3. **Removed non-existent localized command names from `ru.md`.** The Russian
+         locale file listed `/новая-функция`, `/исправить`, etc. as if they were
+         valid commands. No such command files exist — commands always use English
+         names. The section now makes this explicit.
+
+      **Manual cleanup after `/update` from 2.3.0:** the old `.opencode/i18n/en.yaml`
+      and `.opencode/i18n/ru.yaml` files were renamed, not modified. `/update` only
+      overwrites kit-managed files and never deletes user files, so the old `.yaml`
+      copies will linger on disk after updating. They are inert (nothing loads them
+      anymore — `opencode.json` now points at the `.md` files) but should be deleted
+      manually:
+
+          rm .opencode/i18n/en.yaml .opencode/i18n/ru.yaml
+    files_changed:
+      - kit/opencode.json.template
+      - kit/.opencode/_shared.md.template
+      - kit/.opencode/i18n/en.md
+      - kit/.opencode/i18n/ru.md
+      - kit/_index.txt
+    manifest_changes:
+      added_fields: []
+
   - version: "2.3.0"
     released: "2026-05-05"
     breaking: false
