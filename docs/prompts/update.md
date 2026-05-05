@@ -172,7 +172,11 @@ Re-run the directory scaffold from setup.md 3.7. Skip any directory that already
    - `ensure: [<P1>, <P2>, ...]` — for each `<Pn>`, if it is not already in the list, append it. Log: `"profile added: <Pn>"`.
    - `ensure_axis: {axis: <A>, default: <P>}` — using the name→axis map, check whether any profile currently in the list belongs to axis `<A>`. If none → append `<P>`. Log: `"axis <A> was empty — added <P>"`.
 
-   After processing all transforms, validate every name in `stack.profiles` resolves to a real profile YAML: look up its axis in the map and HEAD `RAW_BASE/profiles/<axis>/<name>.yaml`. If any name is missing from the map or the HEAD 404s → STOP and report.
+   After processing all transforms, validate every name in `stack.profiles` resolves to a real profile YAML:
+   - If the name appears as a key in `manifest.stack.external_profiles` → HEAD that URL (after normalising `github.com/.../blob/...` → `raw.githubusercontent.com/...`). On 404, report and stop.
+   - Else look up its axis in the kit-repo map built above and HEAD `RAW_BASE/profiles/<axis>/<name>.yaml`. If the name is missing from the map or the HEAD 404s → STOP and report.
+
+   External profiles (those listed under `stack.external_profiles`) are NOT subject to `profile_transforms` — kit-side renames cannot rewrite a third-party profile. Skip them when applying renames.
 
 12. Write the updated manifest back to its original file.
 

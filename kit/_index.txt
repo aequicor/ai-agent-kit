@@ -19,6 +19,7 @@ kit/.opencode/commands/kit-approve.md
 kit/.opencode/commands/kit-checkpoint.md
 kit/.opencode/commands/kit-deploy.md
 kit/.opencode/commands/kit-diagram.md
+kit/.opencode/commands/kit-extend.md
 kit/.opencode/commands/kit-fix.md
 kit/.opencode/commands/kit-lint.md
 kit/.opencode/commands/kit-new-feature.md

@@ -19,6 +19,7 @@ ai-agent-kit/
 │   ├── prompts/
 │   │   ├── setup.md                 # AI-driven install prompt
 │   │   ├── update.md                # AI-driven update prompt
+│   │   ├── extend.md                # AI-driven /kit-extend prompt (add one profile by URL)
 │   │   └── uninstall.md             # AI-driven uninstall prompt
 │   └── migration/
 │       └── changelog.yaml           # version history — source of truth for /kit-update

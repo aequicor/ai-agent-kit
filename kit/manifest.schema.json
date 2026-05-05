@@ -56,6 +56,15 @@
           "minItems": 1,
           "uniqueItems": true
         },
+        "external_profiles": {
+          "type": "object",
+          "description": "Map of profile name → source URL for profiles fetched from outside the kit repo via /kit-extend. Names here MUST also appear in stack.profiles. Used by /kit-update so external profiles can be re-validated without 404s on RAW_BASE/profiles/<axis>/<name>.yaml.",
+          "additionalProperties": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://"
+          }
+        },
         "build_command": {"type": "string", "minLength": 1},
         "compile_command": {"type": "string", "minLength": 1},
         "lint_command": {"type": "string", "minLength": 1},

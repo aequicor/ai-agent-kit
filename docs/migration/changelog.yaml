@@ -1,4 +1,60 @@
 versions:
+  - version: "3.1.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      **NEW: `/kit-extend` command — add a profile to an installed kit by URL.**
+
+      After install, run `/kit-extend <url>` to extend the project with one
+      additional profile. The URL may point at this kit's repo or at any
+      third-party repo hosting a profile YAML. Both shapes are accepted:
+
+        /kit-extend https://github.com/aequicor/ai-agent-kit/blob/master/profiles/capability/solid.yaml
+        /kit-extend https://raw.githubusercontent.com/my-org/my-kit-extras/master/profiles/capability/team-style.yaml
+
+      The command:
+        - normalises the URL (`github.com/.../blob/...` → raw),
+        - fetches and validates the profile against `kit/profile.schema.json`,
+        - cross-checks `_profile_axis` with the URL path when the URL is filed
+          under `profiles/<axis>/`,
+        - asks the PO to confirm before adding any **external** profile (one
+          not hosted in `aequicor/ai-agent-kit`),
+        - performs a duplicate check (no-op if the profile is already present),
+        - performs a cardinality check on `language` / `provider` axes and
+          asks before replacing an existing profile in those slots,
+        - deep-merges the profile fields into the manifest (lists concat+dedupe;
+          axis-owned scalars only overwritten on confirmed replacement),
+        - shows a manifest diff and waits for PO confirmation before writing,
+        - re-renders all kit-managed files in merge mode (same skip-list as
+          `/kit-update`: never touches `<vault>/{concepts,reference,how-to,
+          tutorials,guidelines}/**`, `.planning/CURRENT.md`,
+          `.planning/tasks/*.md`, `.planning/HISTORY.md`),
+        - re-validates the manifest against the latest schema and scans for
+          unresolved `{{...}}` placeholders.
+
+      **NEW manifest field: `stack.external_profiles`** (optional map). When
+      `/kit-extend` adds a profile from outside this kit's repo, it records
+      the source URL here so `/kit-update` can re-validate the profile without
+      404-ing on `RAW_BASE/profiles/<axis>/<name>.yaml`. The field is purely
+      additive — existing manifests without it keep working unchanged.
+
+      `update.md` was patched to consult `stack.external_profiles` first when
+      validating `stack.profiles` entries, and to skip external names when
+      applying `profile_transforms` (kit-side renames cannot rewrite a
+      third-party profile).
+
+      No breaking changes; safe to upgrade from any 3.x release with
+      `/kit-update`.
+    files_changed:
+      - kit/.opencode/commands/kit-extend.md
+      - kit/manifest.schema.json
+      - kit/_index.txt
+    manifest_changes:
+      added_fields:
+        - path: "stack.external_profiles"
+          default: {}
+          description: "Map of <profile-name> → <source URL> for profiles fetched from outside this kit's repo via /kit-extend. Used by /kit-update to re-validate external profiles."
+
   - version: "3.0.0"
     released: "2026-05-05"
     breaking: true

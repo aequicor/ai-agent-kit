@@ -66,6 +66,31 @@ Fetch and follow:
 
 ---
 
+## Extend an installed kit with one more profile
+
+Inside an installed kit, you can pull in any single profile by URL:
+
+```
+/kit-extend https://github.com/aequicor/ai-agent-kit/blob/master/profiles/capability/solid.yaml
+```
+
+The URL may point at this repo or at any third-party repo hosting a profile YAML. Both `github.com/.../blob/...` and `raw.githubusercontent.com/...` shapes are accepted.
+
+The command (defined in [`kit/.opencode/commands/kit-extend.md`](kit/.opencode/commands/kit-extend.md), backed by [`docs/prompts/extend.md`](docs/prompts/extend.md)):
+
+- normalises the URL and fetches the profile YAML;
+- validates it against [`kit/profile.schema.json`](kit/profile.schema.json) and cross-checks `_profile_axis` with the URL path;
+- if the URL is **external** (not in this repo), shows the parsed profile and asks for confirmation before adding;
+- no-ops with a message if the profile is already in `stack.profiles`;
+- on a `language` / `provider` axis collision, asks "replace `<old>` with `<new>`?" and stops on no;
+- deep-merges the profile into the manifest (lists concat+dedupe; axis-owned scalars only overwritten on confirmed replacement), shows a diff, waits for confirmation;
+- re-renders all kit-managed files in merge mode (same skip-list as `/kit-update`);
+- records external profiles in `stack.external_profiles[<name>] = <url>` so `/kit-update` can re-validate them later.
+
+To author your own external profile, follow the [Add a profile](#add-a-profile) instructions and host the YAML anywhere reachable over HTTPS.
+
+---
+
 ## Available profiles
 
 Profiles are organised along four **orthogonal axes**. Each profile is restricted to fields its axis owns, so profiles from different axes never overwrite each other — the merge is conflict-free by construction.
@@ -178,6 +203,7 @@ ai-agent-kit/
 │   ├── prompts/
 │   │   ├── setup.md                       # AI-driven install (no scripts)
 │   │   ├── update.md                      # AI-driven update (no scripts)
+│   │   ├── extend.md                      # AI-driven /kit-extend — add one profile by URL
 │   │   └── uninstall.md                   # AI-driven uninstall (no scripts)
 │   └── migration/changelog.yaml           # version history + breaking changes + new fields
 ├── profiles/                              # one subdirectory per axis — directory name == _profile_axis
@@ -205,7 +231,7 @@ ai-agent-kit/
     ├── editors/opencode/CLAUDE.md.template
     ├── .opencode/
     │   ├── agents/        (15 .md.template — 10 base + 5 requirements-pipeline)
-    │   ├── commands/      (14 — /kit-new-feature, /kit-fix, /kit-requirements-pipeline, /kit-diagram, /kit-review, /kit-deploy, /kit-update, /kit-approve, /kit-checkpoint, /kit-lint, /kit-resume, /kit-status, /kit-uninstall, /kit-update-deps)
+    │   ├── commands/      (15 — /kit-new-feature, /kit-fix, /kit-requirements-pipeline, /kit-diagram, /kit-review, /kit-deploy, /kit-update, /kit-extend, /kit-approve, /kit-checkpoint, /kit-lint, /kit-resume, /kit-status, /kit-uninstall, /kit-update-deps)
     │   ├── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
     │   ├── i18n/{en,ru}.md
     │   ├── sessions/SESSIONS.md.template

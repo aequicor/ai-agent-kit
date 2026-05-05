@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "3.0.0"
+kit_version: "3.1.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -57,6 +57,14 @@ stack:
     - security-baseline       # capability (auto-added if missing)
     - solid                   # capability
     - requirements-pipeline   # capability
+
+  # external_profiles is populated automatically by /kit-extend when you add a
+  # profile fetched from a URL outside this kit's repo. Map: <profile-name> → <source URL>.
+  # /kit-update reads this map so it can re-validate external profiles without
+  # 404-ing on RAW_BASE/profiles/<axis>/<name>.yaml. Leave empty / omit if all
+  # profiles come from this repo.
+  # external_profiles:
+  #   my-team-style: https://github.com/my-org/my-kit-extras/blob/master/profiles/capability/my-team-style.yaml
 
   build_command: "./gradlew"
   compile_command: "./gradlew compileKotlin"
