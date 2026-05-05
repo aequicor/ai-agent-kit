@@ -10,12 +10,12 @@ _profile_axis: provider
 
 provider:
   name: ollama-cloud
-  base_url: https://api.ollama.com/v1
-  api_key_env: OLLAMA_CLOUD_API_KEY
+  base_url: https://ollama.com
+  api_key_env: OLLAMA_API_KEY
 
 models:
-  default: kimi-k2.6
-  coder: qwen3-coder-next
-  reviewer: deepseek-v4-pro
-  designer: null
-  small: deepseek-v4-flash
+  default: kimi-k2.6:cloud
+  coder: deepseek-v4-flash:cloud
+  reviewer: deepseek-v4-pro:cloud
+  designer: glm-5.1:cloud
+  small: deepseek-v4-flash:cloud

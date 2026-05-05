@@ -17,6 +17,14 @@ You are an AI agent applying ai-agent-kit to a target project. Your only job is 
 
 Ask PO every question below in a numbered list. Wait for ALL answers before proceeding. Defaults shown in `[brackets]`.
 
+### 0. Language
+
+- **Q0.** Agent output language — controls how agents label tasks, statuses, and user-facing messages. `[default: en]`
+  - `en` — English
+  - `ru` — Russian (Русский)
+
+If PO answers with a language name or phrase (e.g. "russian", "русский"), map it to the corresponding code (`ru`). If the code is not in `{en, ru}` → re-ask, max 2 retries, then default to `en`.
+
 ### 1. Target
 
 - **Q1.** Target project absolute path. *Required, no default.* The kit will be applied INTO this directory. Verify it exists.
@@ -41,10 +49,14 @@ Profiles are organised into four orthogonal **axes**. Each profile declares `_pr
 | `provider` | exactly 1 | `provider`, `models` | `routerai`, `ollama-cloud` |
 | `capability` | 0..N (always includes `security-baseline`) | `code_quality.forbidden_patterns` (list-add); may wire agents via skills | `security-baseline`, `solid`, `requirements-pipeline` |
 
-Fetch the live profile list: `RAW_BASE/profiles/` directory listing via GitHub API:
-`https://api.github.com/repos/{KIT_REPO}/contents/profiles`. For each `.yaml`, fetch and parse only the front-matter (`_profile_name`, `_profile_description`, `_profile_axis`). Group into the four axes when presenting to PO.
+**Profiles are organised on disk by axis:** `profiles/<axis>/<name>.yaml` (e.g. `profiles/language/kotlin-gradle.yaml`, `profiles/provider/ollama-cloud.yaml`). The directory name *is* the axis — that's how you discover a profile's axis without parsing its YAML.
 
-If the API fetch fails, use this hardcoded grouping:
+Fetch the live profile inventory via the GitHub tree API (one call, recursive):
+`https://api.github.com/repos/{KIT_REPO}/git/trees/master?recursive=1`. Filter entries where `path` matches `^profiles/(language|framework|provider|capability)/[^/]+\.yaml$`. Build a name→axis map from the path. Group by axis when presenting to PO.
+
+If the tree fetch fails, fall back to listing each axis directory directly: `https://api.github.com/repos/{KIT_REPO}/contents/profiles/<axis>` for each of the four axes.
+
+If both fail, use this hardcoded grouping:
 - **language:** `kotlin-gradle`, `make-generic`
 - **framework:** `compose-multiplatform`, `paper-plugin`
 - **provider:** `routerai`, `ollama-cloud`
@@ -130,9 +142,11 @@ If `<target>/settings.gradle.kts` or `build.gradle.kts` exists, read it and prop
 
 ### 2.1. Fetch profile YAMLs and validate axes
 
-For each chosen profile name:
-- Fetch `RAW_BASE/profiles/<name>.yaml` and parse it.
-- Read `_profile_axis`. If missing or not in `{language, framework, provider, capability}` → STOP, report "profile <name> has no valid `_profile_axis`".
+For each chosen profile name, you already know which axis it belongs to (from the question that produced it: Q4a → language, Q4b → framework, Q4c → provider, Q4d → capability). Use that to build the path.
+
+For each chosen profile name with its known axis `<A>`:
+- Fetch `RAW_BASE/profiles/<A>/<name>.yaml` and parse it.
+- Read `_profile_axis`. If missing, not in `{language, framework, provider, capability}`, or not equal to `<A>` (the directory name) → STOP, report "profile <name> declares `_profile_axis: <X>` but is filed under `profiles/<A>/`".
 - Validate the profile against `RAW_BASE/kit/profile.schema.json` (axis-specific allowed keys). If a profile populates a field outside its axis (e.g. a `provider`-axis profile sets `lsp`) → STOP and report which key violates the contract.
 
 **Cardinality check:**
@@ -170,6 +184,7 @@ Map PO answers into manifest structure:
 
 ```yaml
 kit_version: "2.0.0"
+language_code: <Q0 or "en">
 editors: [opencode]
 project:
   name: <Q2>
@@ -256,6 +271,7 @@ Compute these `{{VAR}} → value` pairs from the manifest. **Many are computed (
 | Variable | Source / rule |
 |---|---|
 | `KIT_REPO` | The `<user>/<repo>` slug of the kit source. |
+| `OPPENCODE_LANG` | `manifest.language_code` (default `en`). |
 | `VAULT_PATH` | `manifest.vault_path` (default `vault` — matches KnowledgeOS default). No trailing slash. |
 | `PROJECT_NAME` | `manifest.project.name` |
 | `PROJECT_DESCRIPTION` | `manifest.project.description` |
@@ -291,7 +307,6 @@ Compute these `{{VAR}} → value` pairs from the manifest. **Many are computed (
 | `COLOR_TABLE` | Markdown table — see rule M5 |
 | `FORBIDDEN_PATTERNS_LIST` | `\n`-joined `- <pattern>` |
 | `FORMATTER_BLOCK` | JSON block — see rule B2 |
-| `FORMATTER_HOOK_COMMAND` | `" ".join(formatter.command)` if enabled, else `"echo"` |
 | `DEPENDENCY_FILES_LIST` | One-line description from rule D1 |
 | `EVAL_GLOB_EXTENSIONS` | quoted comma-list of LSP extensions (or `"*"`) |
 | `CURSOR_GLOB_EXTENSIONS` | quoted comma-list per language (only used for cursor editor — skip if editor not selected) |
@@ -431,7 +446,16 @@ Else:
 | `<compile_command>` | Quick compile |
 ```
 
-### 3.7. Create vault scaffold
+### 3.7. Update .gitignore
+
+Append to `<target>/.gitignore` (create if missing). Skip any line already present:
+
+```
+# ai-agent-kit: local session pointer — not shared, each developer has their own
+.planning/CURRENT.md
+```
+
+### 3.8. Create vault scaffold
 
 For each module, create directories and an empty `.gitkeep` in each.
 

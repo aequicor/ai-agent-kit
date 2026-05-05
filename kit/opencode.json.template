@@ -9,14 +9,6 @@
     ".planning/DECISIONS.md",
     "AUTO_MEMORY.md"
   ],
-  "hooks": {
-    "post_edit": [
-      "{{FORMATTER_HOOK_COMMAND}}"
-    ],
-    "pre_commit": [
-      "{{LINT_COMMAND}}"
-    ]
-  },
   "plugin": [
     "opencode-pty",
     "opencode-shell-strategy",
@@ -26,6 +18,9 @@
     "auto": true,
     "prune": true,
     "reserved": 10000
+  },
+  "environment": {
+    "OPPENCODE_LANG": "{{OPPENCODE_LANG}}"
   },
   {{FORMATTER_BLOCK}}
   "provider": {

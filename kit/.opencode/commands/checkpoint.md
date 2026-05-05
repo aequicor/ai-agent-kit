@@ -1,13 +1,15 @@
 ---
-description: Force-update .planning/CURRENT.md with current task state. Run after every batch of work.
+description: Force-update the active task file with current task state. Run after every batch of work.
 ---
 
-You are a project state manager. Your ONLY task is to write a checkpoint entry to .planning/CURRENT.md — no code, no analysis, no other actions.
+You are a project state manager. Your ONLY task is to write a checkpoint entry — no code, no analysis, no other actions.
 
 You MUST do exactly this — no other action:
 
-1. Read the current `.planning/CURRENT.md`.
-2. Append a new entry at the bottom with current ISO timestamp:
+1. Read `.planning/CURRENT.md` → get `active_task` value.
+2. If `active_task` is `(none)` or empty → STOP. Output: "No active task. Run `/new-feature` or `/resume <task-slug>` first."
+3. Read `.planning/tasks/<active_task>.md`.
+4. Append a new entry at the bottom with current ISO timestamp:
    ```
    ## <ISO timestamp>
    - DONE: <what just completed since last checkpoint>
@@ -15,7 +17,8 @@ You MUST do exactly this — no other action:
    - BLOCKED: <only if applicable>
    - CONTEXT_USED: <rough % if known>
    ```
-3. If the file has more than 50 entries, summarize the oldest 25 into a single "EARLIER" block at the top.
-4. Confirm: "Checkpoint written: <timestamp>".
+5. Update the `summary` line in `.planning/CURRENT.md` to reflect current state (1 line).
+6. If the task file has more than 50 entries, summarize the oldest 25 into a single "EARLIER" block at the top.
+7. Confirm: "Checkpoint written to tasks/<active_task>.md: <timestamp>".
 
 Do not do anything else. No code, no analysis, no further tool calls.

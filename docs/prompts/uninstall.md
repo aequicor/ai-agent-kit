@@ -31,7 +31,7 @@ Build the full list of files and directories the kit installed. Use the manifest
 | Path (relative to project root) | Contents |
 |---|---|
 | `.opencode/` | All agents, commands, skills, sessions, i18n |
-| `.planning/` | CURRENT.md, DECISIONS.md |
+| `.planning/` | CURRENT.md, DECISIONS.md, tasks/, tasks/done/ |
 | `<vault_path>/_templates/` | Bug-report, requirements, spec, test-cases, test-plan templates |
 
 > **Warning about vault content:** `<vault_path>/` may contain PO/agent-generated content (requirements, specs, test cases) that is NOT part of the kit itself — it is project knowledge. In step PHASE 2 the PO will choose whether to keep or delete the vault root. The kit only *fully owns* `<vault_path>/_templates/` and `<vault_path>/_INDEX.md`.

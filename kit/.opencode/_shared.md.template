@@ -164,7 +164,7 @@ PO ─► @Main (single entry point)
         │                                 (requirements/spec come from @RequirementsPipeline)
         │   superpowers:executing-plans → stage-by-stage implementation
         │   superpowers:subagent-driven-development → dispatch executors
-        │   checkpoint → .planning/CURRENT.md after each step
+        │   checkpoint → .planning/tasks/<active_task>.md after each step
         │
         ├─► @CodeWriter    (code + tests + build)
         ├─► @CodeReviewer  (pull-request style review)
@@ -180,7 +180,7 @@ PO ─► @Main (single entry point)
 **Pipeline order:**
 1. `clarifying questions` (Step 0) — minimal: module, description, UI?, constraints
 2. `@RequirementsPipeline` — full BA/CCR/QA/SA pipeline; PO signs off → `/resume @Main`
-   (skipped if pre-made requirements package found in `.planning/CURRENT.md`)
+   (skipped if pre-made requirements package found in the active task file)
 3. `writing-plans` — implementation plan + stage files using requirements/corner cases/spec as inputs
 4. `executing-plans` or `subagent-driven-development` — implements plan; no requirements discovery here
 
@@ -219,7 +219,7 @@ PO ─► @RequirementsPipeline (entry point via /requirements-pipeline)
 
 ### Requirements Pipeline → @Main Handoff
 
-`@RequirementsPipeline` writes four artifact paths to `.planning/CURRENT.md` on PO sign-off:
+`@RequirementsPipeline` writes four artifact paths to `.planning/tasks/<active_task>.md` on PO sign-off:
 
 ```
 - requirements file: {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
@@ -230,7 +230,7 @@ PO ─► @RequirementsPipeline (entry point via /requirements-pipeline)
 
 **Flow A — integrated (default):** `@RequirementsPipeline` is dispatched by `@Main` as step 1 of the FEATURE pipeline. After PO types `/approve` to `@RequirementsPipeline` and then `/resume`, `@Main` continues from step 2 (SEARCH).
 
-**Flow B — standalone:** PO first runs `/requirements-pipeline` separately, then `/new-feature`. `@Main` detects the pre-made package in `.planning/CURRENT.md` at step 0.5 and skips directly to step 3 (DESIGN).
+**Flow B — standalone:** PO first runs `/requirements-pipeline` separately, then `/new-feature`. `@Main` detects the pre-made package in the active task file at step 0.5 and skips directly to step 3 (DESIGN).
 
 In both flows, `@Main` does **not** modify requirements, corner cases, or spec files — they are approved artifacts. If `@Main` finds a contradiction at planning time, it surfaces it to PO before starting implementation.
 
@@ -248,7 +248,8 @@ In both flows, `@Main` does **not** modify requirements, corner cases, or spec f
 | `{{VAULT_PATH}}/guidelines/<module>/reports/` | @BugFixer | all |
 | `{{VAULT_PATH}}/guidelines/libs/` | @CodeWriter, @BugFixer | all |
 | `.opencode/agents/`, `.opencode/skills/` | @PromptEngineer | all |
-| `.planning/CURRENT.md` | @Main, @RequirementsPipeline (checkpoint after each step) | all |
+| `.planning/CURRENT.md` (local pointer, gitignored) | @Main | all |
+| `.planning/tasks/<slug>.md` | @Main, @RequirementsPipeline (checkpoint after each step) | all |
 | `opencode.json`, build files | human (PO) | all |
 
 ## Tool Naming — CRITICAL
@@ -313,7 +314,7 @@ After completing a unit of work (plan stage, bug fix, research) — always `comp
 for each file in list:
   1. write(file) — this one file only
   2. compress()
-  3. checkpoint in CURRENT.md
+  3. checkpoint in .planning/tasks/<active_task>.md
   # next turn starts with clean cache
 ```
 
@@ -337,10 +338,10 @@ Critical operations require explicit PO approval before execution. @Main enforce
 
 **Approval flow — all other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API, COST_BREACH):**
 1. @Main detects gate condition.
-2. @Main writes `BLOCKED: <gate> — awaiting PO approval` to CURRENT.md.
+2. @Main writes `BLOCKED: <gate> — awaiting PO approval` to the active task file.
 3. @Main presents the operation description, risk assessment, and impact scope to PO.
 4. PO types `/approve` to proceed or `denied` to abort. AUTO_APPROVE mode does **not** bypass these gates — only PLAN_CONFIRM is automated.
-5. @Main resumes from CURRENT.md `NEXT` line.
+5. @Main resumes from the task file's `NEXT` line.
 
 **NO agent may bypass gates.** If a subagent triggers a gate condition — it must escalate, not proceed.
 

@@ -51,7 +51,9 @@
 
 ### Planning Files
 
-- `.planning/CURRENT.md` — active task and last checkpoint. **Read before starting work.**
+- `.planning/CURRENT.md` — local session pointer (gitignored). Holds `active_task: <slug>`. **Read before starting work.**
+- `.planning/tasks/<slug>.md` — full state per task (committed, one file per task). @Main writes checkpoints here. **Read the file pointed to by `active_task` for full context.**
+- `.planning/tasks/done/` — archived task files after CLOSE.
 - `.planning/DECISIONS.md` — architectural decision log (ADR). Check before proposing structural changes. **Append-only — never delete entries.**
 
 ### Knowledge Vault ({{VAULT_PATH}}/)

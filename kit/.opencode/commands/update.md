@@ -20,7 +20,7 @@ Where `{{KIT_REPO}}` is the GitHub `<user>/<repo>` slug of the ai-agent-kit inst
 - **PHASE 0** — detect current `kit_version` from manifest (or assume 1.0.0).
 - **PHASE 1** — fetch `docs/migration/changelog.yaml` and compute the migration path (current → latest).
 - **PHASE 2** — show PO the migration plan: breaking changes, new manifest fields, files to be overwritten. Wait for confirmation.
-- **PHASE 3** — re-render and write all kit-managed files in merge mode (overwrite kit-managed files, do NOT touch `{{VAULT_PATH}}/` user content or `.planning/CURRENT.md`).
+- **PHASE 3** — re-render and write all kit-managed files in merge mode (overwrite kit-managed files, do NOT touch `{{VAULT_PATH}}/` user content, `.planning/CURRENT.md`, or `.planning/tasks/`).
 - **PHASE 4** — bump `kit_version` in the manifest, append any newly-added manifest fields with their documented defaults and a `# NEW in vX.Y.Z` comment.
 - **PHASE 5** — verify: 9 mandatory agents present, `opencode.json` valid JSON with `apiKey: {env:VAR}` (no literal keys), no unresolved `{{...}}` placeholders.
 - **PHASE 6** — print summary: old → new version, new capabilities, breaking changes applied, next steps (`git diff`, `git commit`).
@@ -30,6 +30,6 @@ Where `{{KIT_REPO}}` is the GitHub `<user>/<repo>` slug of the ai-agent-kit inst
 - **Never modify files outside the project root.**
 - **Never delete user files.** Merge mode overwrites only kit-managed files (agents, commands, skills, templates, opencode.json, AGENTS.md, _shared.md, FILE_STRUCTURE.md, .planning/ templates, .opencode/sessions/, .opencode/i18n/).
 - **Never touch `{{VAULT_PATH}}/` content created by PO.** Only `{{VAULT_PATH}}/_templates/` and `{{VAULT_PATH}}/_INDEX.md` are kit-managed.
-- **Never touch `.planning/CURRENT.md` or `.planning/HISTORY.md`** — those are runtime state.
+- **Never touch `.planning/CURRENT.md` (local pointer), `.planning/tasks/*.md`, `.planning/tasks/done/*.md`, or `.planning/HISTORY.md`** — those are runtime state.
 - **Always preserve `kit_version`** in the updated manifest (PHASE 4 sets the new value explicitly).
 - **If manifest's `provider.api_key_env` contains a literal-looking key** (32+ chars with dashes/underscores) → STOP and warn PO before proceeding.

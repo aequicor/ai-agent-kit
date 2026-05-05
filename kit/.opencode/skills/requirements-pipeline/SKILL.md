@@ -10,7 +10,7 @@ You are executing the requirements pipeline on behalf of @Main. You dispatch sub
 
 | Symptom | Action |
 |---------|--------|
-| Same agent dispatched 3× with identical input | STOP. Write `BLOCKED: loop on [agent]` to CURRENT.md. Surface to PO. |
+| Same agent dispatched 3× with identical input | STOP. Write `BLOCKED: loop on [agent]` to the active task file. Surface to PO. |
 | Agent returned empty result 2× in a row | STOP. Report which agent and what was expected. |
 | CornerCaseReviewer returned OPEN_QUESTIONS for 3rd iteration | STOP. Surface remaining questions to PO. |
 | CoverageChecker returned GAPS for 2nd FIX iteration | STOP. Surface remaining gaps to PO. |
@@ -35,7 +35,7 @@ Validation rules:
 
 These are the ONLY clarifying questions allowed before the pipeline starts.
 
-Write to `.planning/CURRENT.md`:
+Read `.planning/CURRENT.md` → get `active_task`. Write to `.planning/tasks/<active_task>.md`:
 ```
 ## <timestamp>
 - DONE: requirements pipeline intake complete
@@ -384,7 +384,7 @@ Type `/approve` to proceed to implementation planning.
 Type `reject: Step N` to discard artifacts from Step N onward and restart from that step.
 ```
 
-**On `/approve`:** write checkpoint `DONE: requirements package approved`. Write artifact paths to `.planning/CURRENT.md`:
+**On `/approve`:** write checkpoint `DONE: requirements package approved`. Write artifact paths to `.planning/tasks/<active_task>.md`:
 ```
 - requirements file: {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
 - corner cases: {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md

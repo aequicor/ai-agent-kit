@@ -9,9 +9,10 @@
 
 | Path | Owner | Purpose |
 |------|-------|---------|
-| `.planning/CURRENT.md` | @Main | Active task, checkpoint entries |
+| `.planning/CURRENT.md` | @Main | **Local session pointer (gitignored).** Holds `active_task: <slug>`. Each developer has their own. |
+| `.planning/tasks/<slug>.md` | @Main | **Per-task state (committed).** Type, Module, Description, Timeline (DONE/NEXT/BLOCKED). One file per active task — no merge conflicts between team members. |
+| `.planning/tasks/done/<slug>.md` | @Main | Archived task files after CLOSE. |
 | `.planning/DECISIONS.md` | @Main, humans | ADR — architectural decisions |
-| `.planning/HISTORY.md` | @Main | CURRENT.md archive (rotation on >10 entries) |
 | `.planning/bugs/BUG-NNN.md` | @debugger | Bug investigation report (root cause + failing test) |
 
 ---

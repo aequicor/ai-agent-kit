@@ -1,4 +1,32 @@
 versions:
+  - version: "2.1.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Added multilingual support (English + Russian).
+
+      New optional manifest field `language_code` (default: `en`) controls the
+      `OPPENCODE_LANG` environment variable that is now automatically written into
+      `opencode.json`. Agents read this variable at startup to use the matching
+      locale file from `.opencode/i18n/<locale>.yaml`.
+
+      setup.md gains a new Q0 that asks PO for the preferred language before
+      any other question. The answer is stored in the manifest and rendered into
+      `opencode.json` during installation.
+
+      ru.yaml is now complete — all task names, commands, and statuses are
+      translated. Previous installs that already set `OPPENCODE_LANG` manually
+      in `opencode.json` are unaffected; the new field simply automates that step.
+    files_changed:
+      - kit/opencode.json.template
+      - kit/manifest.schema.json
+      - kit/.opencode/i18n/ru.yaml
+    manifest_changes:
+      added_fields:
+        - path: "language_code"
+          default: "en"
+          description: "Agent output language code — sets OPPENCODE_LANG in opencode.json. Supported: en, ru."
+
   - version: "2.0.0"
     released: "2026-05-05"
     breaking: true

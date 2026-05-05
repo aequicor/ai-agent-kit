@@ -137,14 +137,14 @@ You never have to leave the markdown file — it's the source of truth.
 ### Add a profile
 
 1. Pick the right axis (`language`, `framework`, `provider`, or `capability`) — see the table above.
-2. Create `profiles/<name>.yaml` with the front-matter:
+2. Create `profiles/<axis>/<name>.yaml` (the directory name *is* the axis). Include the front-matter:
    ```yaml
    _profile_name: <name>
    _profile_description: "<one line>"
-   _profile_axis: <axis>
+   _profile_axis: <axis>      # must match the directory name
    ```
-3. Populate **only** fields the chosen axis is allowed to set. Refer to [`kit/profile.schema.json`](kit/profile.schema.json) — it enforces this at validation time.
-4. Reference it in a manifest: `stack.profiles: [..., <name>, ...]`.
+3. Populate **only** fields the chosen axis is allowed to set. Refer to [`kit/profile.schema.json`](kit/profile.schema.json) — it enforces this at validation time, and setup.md cross-checks that `_profile_axis` matches the directory.
+4. Reference it in a manifest: `stack.profiles: [..., <name>, ...]`. Names are bare (no axis prefix) and must be unique across all axes.
 
 If you find yourself wanting to set a field outside your axis, that's a sign the work belongs in a separate profile on a different axis.
 
@@ -177,16 +177,20 @@ ai-agent-kit/
 │   │   ├── setup.md                       # AI-driven install (no scripts)
 │   │   └── update.md                      # AI-driven update (no scripts)
 │   └── migration/changelog.yaml           # version history + breaking changes + new fields
-├── profiles/                              # axis-organised profiles (language/framework/provider/capability)
-│   ├── kotlin-gradle.yaml                 #   language
-│   ├── make-generic.yaml                  #   language
-│   ├── compose-multiplatform.yaml         #   framework
-│   ├── paper-plugin.yaml                  #   framework
-│   ├── routerai.yaml                      #   provider
-│   ├── ollama-cloud.yaml                  #   provider
-│   ├── security-baseline.yaml             #   capability (auto-added)
-│   ├── solid.yaml                         #   capability
-│   └── requirements-pipeline.yaml         #   capability
+├── profiles/                              # one subdirectory per axis — directory name == _profile_axis
+│   ├── language/
+│   │   ├── kotlin-gradle.yaml
+│   │   └── make-generic.yaml
+│   ├── framework/
+│   │   ├── compose-multiplatform.yaml
+│   │   └── paper-plugin.yaml
+│   ├── provider/
+│   │   ├── routerai.yaml                  #   default
+│   │   └── ollama-cloud.yaml
+│   └── capability/
+│       ├── security-baseline.yaml         #   auto-added on every install
+│       ├── solid.yaml
+│       └── requirements-pipeline.yaml
 └── kit/                                   # everything that gets rendered into your project
     ├── _index.txt                         # complete file list — AI reads this to know what to fetch
     ├── manifest.schema.json               # JSON Schema for the assembled manifest

@@ -18,7 +18,7 @@ Type: FEATURE (or clarify if this is BUG/TECH)
 1. CLASSIFY & CLARIFY — ask minimal clarifying questions (module, description, UI?, constraints).
 2. REQUIREMENTS PHASE — run requirements-pipeline skill: BA → CCR loop → QA → CoverageChecker →
    SystemAnalyst → CCR technical loop → ConsistencyChecker → PO sign-off.
-   (Skipped if a pre-made requirements package is already in .planning/CURRENT.md)
+   (Skipped if a pre-made requirements package is already in the active task file)
 3. SEARCH — search KnowledgeOS for existing code patterns and guidelines.
 4. PLAN — create implementation plan + stage files (requirements and spec come from step 2).
 5. QA DRAFT — create implementation test-plan via @QA.

@@ -96,7 +96,7 @@ If fetch fails on both raw and `https://github.com/{KIT_REPO}/blob/master/docs/m
    <Union of files_changed across all MIGRATION_PATH entries. List relative paths.
     These files will be REWRITTEN — local customizations will be lost unless committed.
     PO-managed content in <vault_path>/ (anything outside <vault_path>/_templates/ and <vault_path>/_INDEX.md,
-    where vault_path = manifest.vault_path, default "vault") and .planning/CURRENT.md / HISTORY.md will NOT be touched.>
+    where vault_path = manifest.vault_path, default "vault"), .planning/CURRENT.md, .planning/tasks/, and .planning/HISTORY.md will NOT be touched.>
    ```
 
 9. Ask PO: "Proceed with update? (yes / no)". Stop on no.
@@ -137,6 +137,7 @@ For each kit file:
 5. **Skip these target paths even if they appear in the index** (PO-managed runtime state):
    - `<target>/.planning/CURRENT.md`
    - `<target>/.planning/HISTORY.md`
+   - `<target>/.planning/tasks/*.md` and `<target>/.planning/tasks/done/*.md` — active and archived task state files, never overwrite.
    - Any content under `<target>/<vault_path>/concepts/**`, `<target>/<vault_path>/reference/**`, `<target>/<vault_path>/how-to/**`, `<target>/<vault_path>/tutorials/**`, `<target>/<vault_path>/guidelines/**` created by PO/agents (where `vault_path = manifest.vault_path`, default `vault`) — but the **templates** under `<target>/<vault_path>/_templates/` and `<target>/<vault_path>/_INDEX.md` ARE kit-managed and DO get overwritten.
    - Any file the manifest explicitly marks as `merge_skip` (future extension; ignore for now).
 6. Write the file. Create parent dirs as needed.
@@ -163,11 +164,15 @@ Re-run the directory scaffold from setup.md 3.7. Skip any directory that already
 
    Operate on `manifest.stack.profiles` (a list of profile name strings). Treat the list as ordered but deduplicated; preserve order on insert.
 
+   **First, build a name→axis map** by fetching `https://api.github.com/repos/{KIT_REPO}/git/trees/master?recursive=1` and filtering paths matching `^profiles/(language|framework|provider|capability)/([^/]+)\.yaml$` (axis = group 1, name = group 2). One call resolves every profile's axis without parsing YAML.
+
+   Then apply each transform:
+
    - `rename: {from: <X>, to: [<Y1>, <Y2>, ...]}` — find the first occurrence of `<X>` in the list and replace it in place with `<Y1>, <Y2>, ...`. If `<X>` is not in the list → no-op. After substitution, dedupe while preserving order. Log: `"profile rename: <X> → <Y1>, <Y2>"`.
    - `ensure: [<P1>, <P2>, ...]` — for each `<Pn>`, if it is not already in the list, append it. Log: `"profile added: <Pn>"`.
-   - `ensure_axis: {axis: <A>, default: <P>}` — fetch each currently-listed profile's `_profile_axis` from `RAW_BASE/profiles/<name>.yaml` (front-matter only). If none of them belong to axis `<A>`, append `<P>`. Log: `"axis <A> was empty — added <P>"`.
+   - `ensure_axis: {axis: <A>, default: <P>}` — using the name→axis map, check whether any profile currently in the list belongs to axis `<A>`. If none → append `<P>`. Log: `"axis <A> was empty — added <P>"`.
 
-   After processing all transforms, re-fetch `RAW_BASE/kit/profile.schema.json` and validate every name in `stack.profiles` resolves to a real profile YAML (HEAD request to `RAW_BASE/profiles/<name>.yaml`). If any 404 → STOP and report.
+   After processing all transforms, validate every name in `stack.profiles` resolves to a real profile YAML: look up its axis in the map and HEAD `RAW_BASE/profiles/<axis>/<name>.yaml`. If any name is missing from the map or the HEAD 404s → STOP and report.
 
 12. Write the updated manifest back to its original file.
 
@@ -233,7 +238,7 @@ Then return control.
 - **NEVER modify files outside the target project root.**
 - **NEVER delete user files.** Merge mode only overwrites kit-managed files.
 - **NEVER touch `<vault_path>/` content created by PO/agents** — only `<vault_path>/_templates/` and `<vault_path>/_INDEX.md` are kit-managed (vault_path = `manifest.vault_path`, default `vault`).
-- **NEVER touch `.planning/CURRENT.md` or `.planning/HISTORY.md`** — runtime state, not kit content.
+- **NEVER touch `.planning/CURRENT.md`, `.planning/tasks/*.md`, `.planning/tasks/done/*.md`, or `.planning/HISTORY.md`** — runtime state, not kit content.
 - **ALWAYS preserve `kit_version`** by explicitly setting it in PHASE 4.
 - **STOP if `provider.api_key_env` looks like a real key** (32+ chars with letters+digits+special, or matches `sk-`, `ghp_`, `glpat-`, `AKIA*`, `xox[bp]-`).
 - **STOP if any kit file 404s** — report the exact URL and ask PO whether `KIT_REPO` is correct.

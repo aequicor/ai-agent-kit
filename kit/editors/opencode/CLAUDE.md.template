@@ -14,17 +14,19 @@
 
 Before reading the user request, before any tool call:
 
-1. READ `.planning/CURRENT.md` — active task and where we stopped last session.
-2. READ `.planning/DECISIONS.md` — existing architectural decisions.
-3. If CURRENT.md references a `{{VAULT_PATH}}/concepts/[module]/plans/` path — read that plan file.
-4. If those files contradict the user's new request → STOP, surface the conflict, ask.
+1. READ `.planning/CURRENT.md` — local session pointer with `active_task: <slug>`.
+2. If `active_task` is set → READ `.planning/tasks/<active_task>.md` — full task state and where we stopped.
+3. READ `.planning/DECISIONS.md` — existing architectural decisions.
+4. If the task file references a `{{VAULT_PATH}}/concepts/[module]/plans/` path — read that plan file.
+5. If those files contradict the user's new request → STOP, surface the conflict, ask.
 
 **Single entry point: always start work through `@Main`.** Do not invoke @CodeWriter,
 @BugFixer, or @CodeReviewer directly — always through @Main orchestration.
 
 If the user says **"continue"**, **"continue work"**, **"продолжай"**, **"go on"**
 → invoke `/resume`:
-- `/resume` reads CURRENT.md + git state, shows resume context, waits for confirmation.
+- `/resume` reads CURRENT.md + active task file + git state, shows resume context, waits for confirmation.
+- `/resume <task-slug>` switches the active task explicitly.
 - Do NOT act on bare "continue" — run `/resume` first, always.
 
 ---
@@ -34,7 +36,7 @@ If the user says **"continue"**, **"continue work"**, **"продолжай"**, 
 | Symptom | Response |
 |---------|----------|
 | Same tool call with same args 3× | STOP. Surface to user. Do not retry. |
-| Reasoning block > ~2000 tokens without progress | STOP. Write "BLOCKED" to CURRENT.md. Return. |
+| Reasoning block > ~2000 tokens without progress | STOP. Write "BLOCKED" to the active task file. Return. |
 | Same compile error after 2 fix attempts | STOP. Report root cause. Ask user. |
 | Same review issue raised 3× across stages | STOP. Escalate to user with full context. |
 
@@ -67,10 +69,10 @@ For any non-trivial change:
 4. VERIFY     → {{COMPILE_COMMAND}} && {{TEST_COMMAND_TEMPLATE}}
 5. LINT       → {{LINT_COMMAND}}
 6. COMMIT     → git add + git commit (one logical change per commit)
-7. CHECKPOINT → update .planning/CURRENT.md
+7. CHECKPOINT → update .planning/tasks/<active_task>.md (and refresh `summary` line in CURRENT.md)
 ```
 
-Skip steps only if the user explicitly says so. Document the skip in `CURRENT.md`.
+Skip steps only if the user explicitly says so. Document the skip in the active task file.
 
 **Parallel write safety:**
 - 1–2 files: OK in one turn.
@@ -91,7 +93,7 @@ Skip steps only if the user explicitly says so. Document the skip in `CURRENT.md
 
 ## 5. END OF EVERY RESPONSE
 
-`@Main` appends to `.planning/CURRENT.md` after every significant step:
+`@Main` appends to `.planning/tasks/<active_task>.md` after every significant step:
 
 ```markdown
 ## <ISO timestamp>
@@ -100,5 +102,7 @@ Skip steps only if the user explicitly says so. Document the skip in `CURRENT.md
 - BLOCKED: <only if blocked, otherwise omit>
 ```
 
+Then refreshes the `summary` line in `.planning/CURRENT.md` to reflect current state.
+
 **Subagents** (@CodeWriter, @BugFixer, @debugger, @Designer, @QA, @CodeReviewer)
-do NOT write to CURRENT.md directly — they return output to @Main, who writes the checkpoint.
+do NOT write to CURRENT.md or task files directly — they return output to @Main, who writes the checkpoint.

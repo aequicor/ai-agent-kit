@@ -1,4 +1,8 @@
 # Prompts — Russian (Русский)
+# Translation of en.yaml. All keys must match en.yaml exactly.
+
+language: Russian
+locale: ru
 
 > Локализованные версии промптов для русскоязычных пользователей.
 > Локализует промпты агентов и системные сообщения.
@@ -18,6 +22,11 @@
 | `checkpoint` | "Checkpoint" | "Контрольная точка" |
 | `resume_work` | "Resume work" | "Продолжить работу" |
 | `new_feature` | "New feature" | "Новая функция" |
+| `lint` | "Lint" | "Линтинг" |
+| `fix` | "Fix" | "Исправить" |
+| `review` | "Review" | "Ревью" |
+| `update_deps` | "Update dependencies" | "Обновить зависимости" |
+| `deploy` | "Deploy" | "Деплой" |
 
 ## Модули (module → модуль)
 
@@ -39,6 +48,11 @@
 | `/new-feature` | `/новая-функция` |
 | `/resume` | `/продолжить` |
 | `/checkpoint` | `/контрольная-точка` |
+| `/lint` | `/линтинг` |
+| `/fix` | `/исправить` |
+| `/review` | `/ревью` |
+| `/update-deps` | `/обновить-зависимости` |
+| `/deploy` | `/деплой` |
 
 ## Статусы (statuses)
 

@@ -9,6 +9,13 @@
 kit_version: "2.0.0"
 
 # ─────────────────────────────────────────────
+# LANGUAGE
+# ─────────────────────────────────────────────
+# Agent output language. Controls OPPENCODE_LANG environment variable in opencode.json.
+# Supported: en (English), ru (Russian). Default: en
+language_code: en
+
+# ─────────────────────────────────────────────
 # EDITORS
 # ─────────────────────────────────────────────
 # ai-agent-kit currently supports only opencode (CLAUDE.md generation).

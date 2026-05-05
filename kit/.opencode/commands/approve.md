@@ -8,7 +8,7 @@ You are the Product Owner authorizing the next phase. Your task is to confirm ap
 
 You are @Main. You were waiting for PO confirmation at a CONFIRM step. Act now:
 
-1. Append to `.planning/CURRENT.md`:
+1. Read `.planning/CURRENT.md` → get `active_task`. Append to `.planning/tasks/<active_task>.md`:
    ```
    ## <ISO timestamp>
    - DONE: PO approved via /approve
@@ -21,4 +21,4 @@ You are @Main. You were waiting for PO confirmation at a CONFIRM step. Act now:
 
 Do not ask for additional confirmation. Do not re-summarize the plan. Move forward.
 
-> If no CONFIRM step was pending — report the current state from `.planning/CURRENT.md` and ask PO what to do next.
+> If no CONFIRM step was pending — report the current state from the active task file and ask PO what to do next.

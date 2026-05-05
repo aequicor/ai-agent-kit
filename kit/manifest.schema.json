@@ -27,6 +27,12 @@
       "default": "vault",
       "minLength": 1
     },
+    "language_code": {
+      "type": "string",
+      "description": "Agent output language (IETF language tag). Sets OPPENCODE_LANG in opencode.json. Supported: en (English), ru (Russian).",
+      "enum": ["en", "ru"],
+      "default": "en"
+    },
     "project": {
       "type": "object",
       "required": ["name"],
