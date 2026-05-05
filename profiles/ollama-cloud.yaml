@@ -1,4 +1,4 @@
-# opencode-kit profile: Ollama Cloud
+# ai-agent-kit profile: Ollama Cloud
 # Usage: add ollama-cloud to stack.profiles in your manifest
 # Overrides provider and models for Ollama's cloud-hosted LLMs.
 

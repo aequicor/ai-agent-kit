@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/aequicor/opencode-kit/manifest.schema.json",
-  "title": "OpenCode Kit Manifest",
-  "description": "Schema for opencode-kit manifest YAML files",
+  "$id": "https://github.com/aequicor/ai-agent-kit/manifest.schema.json",
+  "title": "AI Agent Kit Manifest",
+  "description": "Schema for ai-agent-kit manifest YAML files",
   "type": "object",
   "required": ["kit_version", "project", "stack", "modules", "provider", "models"],
   "properties": {
@@ -16,7 +16,7 @@
       "description": "Editor-specific config files to generate",
       "items": {
         "type": "string",
-        "enum": ["opencode", "cursor", "copilot"]
+        "enum": ["opencode"]
       },
       "minItems": 1,
       "uniqueItems": true

@@ -1,4 +1,4 @@
-# opencode-kit profile: Generic (language-agnostic baseline)
+# ai-agent-kit profile: Generic (language-agnostic baseline)
 # Usage: add generic to stack.profiles in your manifest
 # Minimal configuration — no LSP, no serena, no Designer agent.
 

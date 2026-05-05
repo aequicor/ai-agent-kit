@@ -1,4 +1,4 @@
-# opencode-kit profile: Minecraft Paper Plugin (Kotlin / Gradle Kotlin DSL)
+# ai-agent-kit profile: Minecraft Paper Plugin (Kotlin / Gradle Kotlin DSL)
 # Usage: add minecraft-paper-plugin to stack.profiles in your manifest
 
 _profile_name: minecraft-paper-plugin

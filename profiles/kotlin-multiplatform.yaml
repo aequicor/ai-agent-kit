@@ -1,4 +1,4 @@
-# opencode-kit profile: Kotlin Multiplatform
+# ai-agent-kit profile: Kotlin Multiplatform
 # Usage: add kotlin-multiplatform to stack.profiles in your manifest
 
 _profile_name: kotlin-multiplatform
