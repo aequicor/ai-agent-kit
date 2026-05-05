@@ -156,8 +156,8 @@ Re-run the directory scaffold from setup.md 3.7. Skip any directory that already
 
 14. Read the updated `<target>/opencode.json`. Verify `apiKey` uses `{env:VAR}` syntax — NOT a literal key. If literal — SECURITY ERROR, abort and warn PO.
 
-15. List `<target>/.opencode/agents/` — verify the 9 base agents still exist:
-    Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, Designer (optional), PromptEngineer, AutoApprover.
+15. List `<target>/.opencode/agents/` — verify the 10 base agents still exist:
+    Main, CodeWriter, CodeReviewer, BugFixer, debugger, QA, TestRunner, Designer (optional), PromptEngineer, AutoApprover.
     If `requirements-pipeline` is in `manifest.stack.profiles`, also: BusinessAnalyst, CornerCaseReviewer, SystemAnalyst, CoverageChecker, ConsistencyChecker.
     `RequirementsQA.md` should NOT exist anymore (merged into QA.md as of v1.0.0+).
 

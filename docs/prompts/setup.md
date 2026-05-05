@@ -412,8 +412,8 @@ Plus `<target>/{VAULT_PATH}/guidelines/libs/.gitkeep`.
 
 ## PHASE 4 — Verify
 
-1. **Mandatory agents.** Check that all 9 base agents exist in `<target>/.opencode/agents/`:
-   `Main.md, CodeWriter.md, CodeReviewer.md, BugFixer.md, debugger.md, QA.md, Designer.md, PromptEngineer.md, AutoApprover.md`.
+1. **Mandatory agents.** Check that all 10 base agents exist in `<target>/.opencode/agents/`:
+   `Main.md, CodeWriter.md, CodeReviewer.md, BugFixer.md, debugger.md, QA.md, TestRunner.md, Designer.md, PromptEngineer.md, AutoApprover.md`.
    Designer.md may be absent if `models.designer == null` — that's OK.
    If the `requirements-pipeline` profile was selected, additionally check: `BusinessAnalyst.md, CornerCaseReviewer.md, SystemAnalyst.md, CoverageChecker.md, ConsistencyChecker.md`.
    `RequirementsQA.md` should NOT exist (it has been merged into `QA.md`).
