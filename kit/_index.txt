@@ -24,6 +24,7 @@ kit/.opencode/commands/new-feature.md
 kit/.opencode/commands/requirements-pipeline.md
 kit/.opencode/commands/resume.md
 kit/.opencode/commands/review.md
+kit/.opencode/commands/uninstall.md
 kit/.opencode/commands/update-deps.md
 kit/.opencode/commands/update.md
 kit/.opencode/i18n/en.yaml
