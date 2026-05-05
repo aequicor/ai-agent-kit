@@ -1,4 +1,37 @@
 versions:
+  - version: "4.3.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Make @CodeReviewer dispatch mandatory in EXECUTE; demote superpowers:executing-plans
+      to a helper.
+
+      Problem: in Claude Code installs, the main session (acting as @Main) was
+      consistently skipping @CodeReviewer between @CodeWriter and the stage
+      checkpoint. Observed pattern: @CodeWriter implements a stage → @Main reads
+      a couple of changed files itself → marks "Stage N looks correct" → checkpoint.
+      No independent review pass ever ran.
+
+      Root cause: step 7's wording — `call superpowers:executing-plans. For each
+      incomplete stage:` followed by sub-bullets a–h — read as "delegate to the
+      external skill; sub-bullets are descriptive". superpowers:executing-plans does
+      not include a code-review step, so @CodeReviewer fell off the loop. Combined
+      with the main session's natural Read tool access, self-verification replaced
+      the dispatch.
+
+      Fix: rewrote step 7 in Main.body.md.template as an explicit MANDATORY loop
+      (7.1–7.6) owned by @Main. superpowers:executing-plans is now described as
+      an optional helper that does NOT replace the @CodeReviewer step. Added an
+      anti-loop entry that flags the missing-reviewer state, and three new entries
+      in "What NOT to do" forbidding self-verification, helper-delegation of the
+      loop, and skipping the reviewer.
+
+      No manifest changes. No host wrapper changes. Affects @Main behavior only.
+    files_changed:
+      - kit/_shared/agents/Main.body.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.2.1"
     released: "2026-05-05"
     breaking: false
