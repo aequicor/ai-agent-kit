@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ai-agent-kit — Kit Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root {
+    --bg:           #0f1117;
+    --card:         #161922;
+    --card2:        #1c2030;
+    --border:       #252a3a;
+    --accent:       #6366f1;
+    --accent-h:     #4f52d4;
+    --text:         #dde1f5;
+    --muted:        #7a7f9a;
+    --inp:          #1a1f2e;
+    --ok:           #22c55e;
+    --err:          #ef4444;
+    --warn:         #f59e0b;
+    --radius:       10px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.55;
+    min-height: 100vh;
+  }
+
+  /* ── layout ── */
+  .wrap { max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
+  header { margin-bottom: 36px; }
+  header h1 { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.01em; }
+  header p  { color: var(--muted); font-size: 0.875rem; margin-top: 4px; }
+  header a  { color: var(--accent); text-decoration: none; }
+  header a:hover { text-decoration: underline; }
+
+  /* ── cards ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 24px; margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 0.875rem; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .badge {
+    font-size: 0.6875rem; font-weight: 500; text-transform: none; letter-spacing: 0;
+    background: #252a3a; color: var(--muted); padding: 2px 7px;
+    border-radius: 20px; border: 1px solid var(--border);
+  }
+  .badge.required { background: #2d1f4a; color: #a78bfa; border-color: #4f3a7a; }
+
+  /* ── fields ── */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label {
+    display: block; font-size: 0.8rem; font-weight: 500;
+    color: var(--muted); margin-bottom: 5px;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 540px) { .row, .row3 { grid-template-columns: 1fr; } }
+
+  input[type=text], select, textarea {
+    width: 100%; padding: 8px 11px;
+    background: var(--inp); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text);
+    font-size: 0.875rem; font-family: inherit;
+    outline: none; transition: border-color 0.12s;
+  }
+  input[type=text]:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  input[type=text]::placeholder, textarea::placeholder { color: var(--muted); }
+  textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
+  select option { background: #1a1f2e; }
+  .hint { font-size: 0.73rem; color: var(--muted); margin-top: 4px; }
+  code { font-family: 'SF Mono', ui-monospace, monospace; font-size: 0.8em;
+         background: #252a3a; padding: 1px 5px; border-radius: 4px; }
+
+  /* ── profile pills ── */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    position: relative; cursor: pointer;
+  }
+  .pill input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .pill-body {
+    display: flex; flex-direction: column; gap: 1px;
+    padding: 8px 13px; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--inp);
+    transition: border-color 0.12s, background 0.12s;
+    user-select: none;
+  }
+  .pill:hover .pill-body { border-color: #3d4268; }
+  .pill input:checked + .pill-body {
+    border-color: var(--accent); background: #1e1f3a;
+  }
+  .pill-name { font-size: 0.8125rem; font-weight: 500; }
+  .pill-desc { font-size: 0.72rem; color: var(--muted); max-width: 240px; line-height: 1.3; }
+  .pill-lock .pill-body { opacity: 0.55; cursor: default; }
+
+  /* ── divider ── */
+  .sep { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  /* ── generate card ── */
+  .card-generate {
+    background: linear-gradient(135deg, #1a1d30 0%, #161922 100%);
+    border-color: #2d3060;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 22px; background: var(--accent); color: #fff;
+    border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600;
+    cursor: pointer; transition: background 0.12s, opacity 0.12s;
+  }
+  .btn:hover:not(:disabled) { background: var(--accent-h); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .spinner {
+    width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.55s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-line {
+    margin-top: 12px; font-size: 0.8125rem; min-height: 1.4em;
+    color: var(--muted); display: flex; align-items: center; gap: 6px;
+  }
+  .status-line.ok   { color: var(--ok); }
+  .status-line.err  { color: var(--err); }
+  .progress {
+    margin-top: 10px; height: 3px; background: var(--border);
+    border-radius: 2px; overflow: hidden; display: none;
+  }
+  .progress-bar {
+    height: 100%; background: var(--accent); width: 0%;
+    transition: width 0.2s; border-radius: 2px;
+  }
+
+  /* ── loading skeleton ── */
+  .loading-card {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--muted); font-size: 0.875rem;
+  }
+  .sk-spin {
+    width: 16px; height: 16px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.55s linear infinite; flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>ai-agent-kit — Kit Generator</h1>
+    <p>Select profiles, describe your project and module, then download a ready-to-copy <code>.zip</code>.
+       Source: <a href="https://github.com/aequicor/ai-agent-kit" target="_blank">aequicor/ai-agent-kit</a></p>
+  </header>
+
+  <!-- Loading state -->
+  <div id="loading" class="card loading-card">
+    <span class="sk-spin"></span>
+    Loading profiles from GitHub…
+  </div>
+
+  <!-- Main form (hidden until profiles load) -->
+  <form id="form" style="display:none" novalidate>
+
+    <!-- ── Project ───────────────────────────────────── -->
+    <div class="card">
+      <h2>Project</h2>
+      <div class="row">
+        <div class="field">
+          <label for="p-name">Project name <span style="color:var(--err)">*</span></label>
+          <input type="text" id="p-name" placeholder="My Project" required>
+        </div>
+        <div class="field">
+          <label for="p-vault">Vault path</label>
+          <input type="text" id="p-vault" value="vault" placeholder="vault">
+          <p class="hint">Relative dir for the knowledge vault (default: <code>vault</code>)</p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="p-desc">Description</label>
+        <textarea id="p-desc" placeholder="One-line project description"></textarea>
+      </div>
+      <div class="field" style="max-width:260px">
+        <label for="p-lang">Agent output language</label>
+        <select id="p-lang">
+          <option value="en">English (en)</option>
+          <option value="ru">Русский (ru)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── Provider ──────────────────────────────────── -->
+    <div class="card">
+      <h2>Provider <span class="badge required">exactly 1</span></h2>
+      <div id="g-provider" class="pills"></div>
+    </div>
+
+    <!-- ── Language stack ────────────────────────────── -->
+    <div class="card">
+      <h2>Language stack <span class="badge required">exactly 1</span></h2>
+      <div id="g-language" class="pills"></div>
+    </div>
+
+    <!-- ── Frameworks ────────────────────────────────── -->
+    <div class="card">
+      <h2>Framework <span class="badge">0 or more</span></h2>
+      <div id="g-framework" class="pills"></div>
+    </div>
+
+    <!-- ── Capabilities ──────────────────────────────── -->
+    <div class="card">
+      <h2>Capabilities <span class="badge">0 or more</span></h2>
+      <div id="g-capability" class="pills"></div>
+      <p class="hint" style="margin-top:10px"><code>security-baseline</code> is always included.</p>
+    </div>
+
+    <!-- ── Module ────────────────────────────────────── -->
+    <div class="card">
+      <h2>Module</h2>
+
+      <div class="row">
+        <div class="field">
+          <label for="m-name">Module name <span style="color:var(--err)">*</span></label>
+          <input type="text" id="m-name" placeholder="app" required>
+        </div>
+        <div class="field">
+          <label for="m-resp">Responsibility</label>
+          <input type="text" id="m-resp" placeholder="Main application logic">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="m-src">Source root <span style="color:var(--err)">*</span></label>
+          <input type="text" id="m-src" placeholder="src/main/kotlin/com/example/app" required>
+        </div>
+        <div class="field">
+          <label for="m-test">Test root <span style="color:var(--err)">*</span></label>
+          <input type="text" id="m-test" placeholder="src/test/kotlin/com/example/app" required>
+        </div>
+      </div>
+
+      <div class="field" style="max-width:360px">
+        <label for="m-docs">Docs path <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <input type="text" id="m-docs" placeholder="vault/app">
+        <p class="hint">Defaults to <code>vault/{module-name}</code></p>
+      </div>
+
+      <hr class="sep">
+
+      <div class="row">
+        <div class="field">
+          <label for="m-conv">Module conventions</label>
+          <textarea id="m-conv" placeholder="e.g. Use Repository pattern for all data access…"></textarea>
+        </div>
+        <div class="field">
+          <label for="m-deps">Module dependencies</label>
+          <textarea id="m-deps" placeholder="e.g. :core:common, :feature:auth"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Generate ──────────────────────────────────── -->
+    <div class="card card-generate">
+      <h2>Generate</h2>
+      <button type="submit" class="btn" id="gen-btn">
+        <span id="gen-spin" class="spinner" style="display:none"></span>
+        Download ZIP
+      </button>
+      <div class="progress" id="progress"><div class="progress-bar" id="pbar"></div></div>
+      <div class="status-line" id="status"></div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+'use strict';
+
+const KIT_REPO = 'aequicor/ai-agent-kit';
+const RAW      = `https://raw.githubusercontent.com/${KIT_REPO}/master`;
+const API      = `https://api.github.com/repos/${KIT_REPO}`;
+
+let profiles = [];   // [{axis, name, desc, data}]
+
+// ── profile loading ──────────────────────────────────────────────────────────
+
+async function fetchProfiles() {
+  const res  = await fetch(`${API}/git/trees/master?recursive=1`);
+  const body = await res.json();
+  const paths = (body.tree || [])
+    .map(e => e.path)
+    .filter(p => /^profiles\/(language|framework|provider|capability)\/[^/]+\.yaml$/.test(p));
+
+  return Promise.all(paths.map(async path => {
+    const text = await fetch(`${RAW}/${path}`).then(r => r.text());
+    const data = jsyaml.load(text);
+    return { axis: data._profile_axis, name: data._profile_name, desc: data._profile_description, data };
+  }));
+}
+
+function renderProfiles(all) {
+  const byAxis = { language: [], framework: [], provider: [], capability: [] };
+  all.forEach(p => { if (byAxis[p.axis]) byAxis[p.axis].push(p); });
+
+  // Provider — radio
+  document.getElementById('g-provider').innerHTML =
+    byAxis.provider.map((p, i) => pill('provider', 'radio', p, i === 0)).join('');
+
+  // Language — radio
+  document.getElementById('g-language').innerHTML =
+    byAxis.language.map((p, i) => pill('language', 'radio', p, i === 0)).join('');
+
+  // Framework — checkboxes
+  const fwEl = document.getElementById('g-framework');
+  fwEl.innerHTML = byAxis.framework.length
+    ? byAxis.framework.map(p => pill('framework', 'checkbox', p, false)).join('')
+    : '<span style="color:var(--muted);font-size:0.875rem">No framework profiles found.</span>';
+
+  // Capability — checkboxes (security-baseline locked+checked)
+  const capOther = byAxis.capability.filter(p => p.name !== 'security-baseline');
+  const sbLocked = byAxis.capability.find(p => p.name === 'security-baseline');
+  document.getElementById('g-capability').innerHTML =
+    (sbLocked ? pillLocked(sbLocked) : '') +
+    capOther.map(p => pill('capability', 'checkbox', p, false)).join('');
+}
+
+function pill(group, type, p, checked) {
+  return `<label class="pill">
+    <input type="${type}" name="${group}" value="${esc(p.name)}"${checked ? ' checked' : ''}>
+    <span class="pill-body">
+      <span class="pill-name">${esc(p.name)}</span>
+      <span class="pill-desc">${esc(p.desc)}</span>
+    </span>
+  </label>`;
+}
+function pillLocked(p) {
+  return `<label class="pill pill-lock">
+    <input type="checkbox" name="capability" value="${esc(p.name)}" checked disabled>
+    <span class="pill-body">
+      <span class="pill-name">${esc(p.name)} 🔒</span>
+      <span class="pill-desc">${esc(p.desc)}</span>
+    </span>
+  </label>`;
+}
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── variable builder ─────────────────────────────────────────────────────────
+
+function buildVars() {
+  const form = document.getElementById('form');
+  const byName = Object.fromEntries(profiles.map(p => [p.name, p]));
+
+  const provName  = form.querySelector('[name=provider]:checked')?.value  || '';
+  const langName  = form.querySelector('[name=language]:checked')?.value  || '';
+  const fwNames   = [...form.querySelectorAll('[name=framework]:checked')].map(e => e.value);
+  const capNames  = ['security-baseline',
+                     ...[...form.querySelectorAll('[name=capability]:checked')]
+                       .map(e => e.value)
+                       .filter(v => v !== 'security-baseline')];
+
+  const prov  = byName[provName]?.data || {};
+  const lang  = byName[langName]?.data || {};
+  const fws   = fwNames.map(n => byName[n]?.data || {});
+  const caps  = capNames.map(n => byName[n]?.data || {});
+
+  const stack = lang.stack  || {};
+  const lsp   = lang.lsp    || {};
+  const fmt   = lang.formatter || {};
+  const mcp   = lang.mcp    || {};
+
+  // ── forbidden patterns (aggregate all profiles) ──
+  const patterns = [
+    ...(lang.code_quality?.forbidden_patterns || []),
+    ...fws.flatMap(f  => f.code_quality?.forbidden_patterns || []),
+    ...caps.flatMap(c => c.code_quality?.forbidden_patterns || []),
+  ];
+  const FORBIDDEN_PATTERNS_LIST = patterns.map(p => `- ${p}`).join('\n');
+
+  // ── LSP block (JSON fragment, trailing comma) ──
+  const LSP_BLOCK = lsp.enabled ? `"lsp": {
+    "command": "${lsp.command}",
+    "extensions": ${JSON.stringify(lsp.extensions)},
+    "enabled": true
+  },` : '';
+
+  // ── formatter block (JSON fragment, trailing comma) ──
+  const FORMATTER_BLOCK = fmt.enabled ? `"formatter": {
+    "name": "${fmt.name}",
+    "command": ${JSON.stringify(fmt.command)},
+    "extensions": ${JSON.stringify(fmt.extensions)},
+    "enabled": true
+  },` : '';
+
+  // ── form values ──
+  const PROJECT_NAME        = v('p-name')    || 'My Project';
+  const PROJECT_DESCRIPTION = v('p-desc')    || '';
+  const VAULT_PATH          = v('p-vault')   || 'vault';
+  const OPENCODE_LANG       = v('p-lang')    || 'en';
+
+  const MOD_NAME  = v('m-name')  || 'app';
+  const MOD_RESP  = v('m-resp')  || 'Main application module';
+  const MOD_SRC   = v('m-src')   || 'src/main';
+  const MOD_TEST  = v('m-test')  || 'src/test';
+  const MOD_DOCS  = v('m-docs')  || `${VAULT_PATH}/${MOD_NAME}`;
+  const MOD_CONV  = v('m-conv')  || '(none yet — agents will populate this)';
+  const MOD_DEPS  = v('m-deps')  || '(none yet — agents will populate this)';
+
+  // ── module tables ──
+  const MODULE_TABLE = [
+    '| Module | Responsibility | Source root |',
+    '|--------|---------------|-------------|',
+    `| ${MOD_NAME} | ${MOD_RESP} | \`${MOD_SRC}\` |`,
+  ].join('\n');
+
+  const MODULE_SOURCE_TABLE = [
+    '| Module | Source root |',
+    '|--------|-------------|',
+    `| ${MOD_NAME} | \`${MOD_SRC}\` |`,
+  ].join('\n');
+
+  const MODULE_TEST_TABLE = [
+    '| Module | Test root |',
+    '|--------|----------|',
+    `| ${MOD_NAME} | \`${MOD_TEST}\` |`,
+  ].join('\n');
+
+  // ── module build derivations ──
+  const buildCmd   = stack.build_command   || 'make';
+  const compileCmd = stack.compile_command || 'make check';
+  const lintCmd    = stack.lint_command    || 'make lint';
+  const testTpl    = stack.test_command    || 'make test';
+  const testCmd    = testTpl.replace(/\[module\]/g, `:${MOD_NAME}`);
+
+  const MODULE_BUILD_TABLE = [
+    `| \`${buildCmd} :${MOD_NAME}:build\` | Build module |`,
+    `| \`${testCmd}\` | Run module tests |`,
+    `| \`${lintCmd}\` | Lint |`,
+  ].join('\n');
+
+  const MODULE_BUILD_COMMANDS = [
+    `${buildCmd} :${MOD_NAME}:build`,
+    testCmd,
+  ].join('\n');
+
+  const MODULE_GRADLE_LINE = langName === 'kotlin-gradle'
+    ? `**Gradle module:** \`:${MOD_NAME}\``
+    : '';
+
+  // ── UI framework (from first framework profile that defines it) ──
+  const fwUI = fws.find(f => f.ui?.framework);
+  const UI_FRAMEWORK = fwUI?.ui?.framework || 'Generic';
+  const PLATFORMS    = (fwUI?.ui?.platforms || []).join(', ') || 'All';
+
+  // ── stack description ──
+  const STACK_DESCRIPTION = [
+    lang._profile_description,
+    ...fws.map(f => f._profile_description),
+  ].filter(Boolean).join(' · ');
+
+  // ── dependency files (used by /update-deps command) ──
+  const DEPENDENCY_FILES_LIST = langName === 'kotlin-gradle'
+    ? '- `build.gradle.kts` — dependency declarations\n   - `gradle/libs.versions.toml` — version catalog'
+    : '- `Makefile` — build and dependency definitions';
+
+  const ISO_TIMESTAMP_PLACEHOLDER = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+  return {
+    PROJECT_NAME, PROJECT_DESCRIPTION, VAULT_PATH, OPENCODE_LANG, KIT_REPO,
+
+    PROVIDER_ID:          prov.provider?.name    || 'routerai',
+    PROVIDER_NAME:        prov.provider?.name    || 'RouterAI',
+    PROVIDER_BASE_URL:    prov.provider?.base_url || '',
+    PROVIDER_API_KEY_ENV: prov.provider?.api_key_env || 'API_KEY',
+    DEFAULT_MODEL:        prov.models?.default   || 'model/default',
+    CODER_MODEL:          prov.models?.coder     || 'model/coder',
+    REVIEWER_MODEL:       prov.models?.reviewer  || 'model/reviewer',
+    DESIGNER_MODEL:       prov.models?.designer  || 'model/designer',
+    SMALL_MODEL:          prov.models?.small     || 'model/small',
+
+    BUILD_COMMAND:        buildCmd,
+    COMPILE_COMMAND:      compileCmd,
+    LINT_COMMAND:         lintCmd,
+    TEST_COMMAND_TEMPLATE: testTpl,
+
+    SERENA_ENABLED:       String(mcp.serena?.enabled ?? false),
+    LSP_BLOCK,
+    FORMATTER_BLOCK,
+    FORBIDDEN_PATTERNS_LIST,
+    STACK_DESCRIPTION,
+    UI_FRAMEWORK, PLATFORMS,
+
+    MODULE_NAME:           MOD_NAME,
+    MODULE_RESPONSIBILITY: MOD_RESP,
+    MODULE_SOURCE_ROOT:    MOD_SRC,
+    MODULE_TEST_ROOT:      MOD_TEST,
+    MODULE_DOCS_PATH:      MOD_DOCS,
+    MODULE_TABLE, MODULE_SOURCE_TABLE, MODULE_TEST_TABLE,
+    MODULE_BUILD_TABLE, MODULE_BUILD_COMMANDS,
+    MODULE_GRADLE_LINE,
+    MODULE_CONVENTIONS:    MOD_CONV,
+    MODULE_DEPENDENCIES:   MOD_DEPS,
+
+    // color palette placeholder (Designer agent)
+    COLOR_TABLE: '| Color | Hex | Usage |\n|-------|-----|-------|\n| Primary | #6366f1 | (update with your palette) |',
+
+    // MCP defaults (disabled — user enables in opencode.json after install)
+    CONTEXT7_API_KEY_ENV: 'CONTEXT7_API_KEY',
+    CONTEXT7_ENABLED:     'false',
+    KNOWLEDGE_ENABLED:    'false',
+    KNOWLEDGE_URL:        'https://mcp.knowledge.example.com/mcp',
+
+    DEPENDENCY_FILES_LIST,
+    ISO_TIMESTAMP_PLACEHOLDER,
+    TASK_SLUG: 'task-001',
+  };
+}
+
+function v(id) { return document.getElementById(id)?.value.trim() || ''; }
+
+// ── template rendering ───────────────────────────────────────────────────────
+
+function substitute(content, vars) {
+  return content.replace(/\{\{([A-Z_]+)\}\}/g, (_, key) =>
+    key in vars ? vars[key] : `{{${key}}}`
+  );
+}
+
+// kit/ → output path mapping
+const SKIP = new Set(['kit/manifest.schema.json', 'kit/profile.schema.json', 'kit/_index.txt']);
+
+function mapPath(kitPath, vars) {
+  // Remove kit/ prefix
+  let p = kitPath.replace(/^kit\//, '');
+
+  // nested module AGENTS.md — goes to module source root
+  if (p.startsWith('nested/')) {
+    return `${vars.MODULE_SOURCE_ROOT}/AGENTS.md`;
+  }
+
+  // .vault/ → configured vault path
+  p = p.replace(/^\.vault\//, `${vars.VAULT_PATH}/`);
+
+  // strip template/nested suffixes
+  p = p.replace(/\.nested\.template$/, '').replace(/\.template$/, '');
+
+  return p;
+}
+
+// ── zip generation ───────────────────────────────────────────────────────────
+
+async function generate() {
+  const vars = buildVars();
+
+  setStatus('loading', 'Fetching file list…');
+  const indexText = await fetch(`${RAW}/kit/_index.txt`).then(r => r.text());
+  const kitFiles  = indexText.trim().split('\n').filter(p => p && !SKIP.has(p));
+
+  const zip     = new JSZip();
+  let   done    = 0;
+  const total   = kitFiles.length;
+  const progEl  = document.getElementById('pbar');
+  document.getElementById('progress').style.display = 'block';
+
+  await Promise.all(kitFiles.map(async kitPath => {
+    let content;
+    if (kitPath.endsWith('.gitkeep')) {
+      content = '';
+    } else {
+      content = await fetch(`${RAW}/${kitPath}`).then(r => r.text());
+      content = substitute(content, vars);
+    }
+    zip.file(mapPath(kitPath, vars), content);
+    done++;
+    progEl.style.width = `${Math.round(done / total * 100)}%`;
+  }));
+
+  setStatus('loading', 'Packing ZIP…');
+  const blob  = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  const fname = `${vars.PROJECT_NAME.toLowerCase().replace(/\s+/g, '-')}-kit.zip`;
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement('a');
+  a.href = url; a.download = fname; a.click();
+  URL.revokeObjectURL(url);
+
+  setStatus('ok', `✓ Downloaded ${fname} (${kitFiles.length} files)`);
+  document.getElementById('progress').style.display = 'none';
+}
+
+// ── UI helpers ───────────────────────────────────────────────────────────────
+
+function setStatus(cls, msg) {
+  const el = document.getElementById('status');
+  el.className = 'status-line' + (cls === 'ok' ? ' ok' : cls === 'err' ? ' err' : '');
+  el.textContent = msg;
+}
+
+// ── init ─────────────────────────────────────────────────────────────────────
+
+async function init() {
+  try {
+    profiles = await fetchProfiles();
+    renderProfiles(profiles);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('form').style.display    = '';
+  } catch (e) {
+    document.getElementById('loading').innerHTML =
+      `<span style="color:var(--err)">Failed to load profiles: ${e.message}. ` +
+      `Check your network or open browser console.</span>`;
+  }
+}
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const btn     = document.getElementById('gen-btn');
+  const spinner = document.getElementById('gen-spin');
+
+  // basic validation
+  const name = v('p-name');
+  if (!name) { setStatus('err', 'Project name is required.'); return; }
+  if (!v('m-name')) { setStatus('err', 'Module name is required.'); return; }
+  if (!v('m-src'))  { setStatus('err', 'Source root is required.'); return; }
+  if (!v('m-test')) { setStatus('err', 'Test root is required.'); return; }
+
+  btn.disabled = true;
+  spinner.style.display = '';
+  setStatus('', 'Starting…');
+
+  try {
+    await generate();
+  } catch (err) {
+    setStatus('err', `Error: ${err.message}`);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+});
+
+init();
+</script>
+</body>
+</html>
