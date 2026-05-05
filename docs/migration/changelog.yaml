@@ -1,4 +1,38 @@
 versions:
+  - version: "4.0.1"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix YAML frontmatter for five OpenCode agent wrappers.
+
+      The wrapper templates for `BugFixer`, `CodeWriter`, `Designer`,
+      `PromptEngineer` and `debugger` started with a `# Tool categories ...`
+      comment block BEFORE the opening `---` delimiter. Strict YAML
+      frontmatter parsers expect `---` at byte 0, so these wrappers risked
+      having their `description`, `mode`, `model`, `permission` block etc.
+      silently ignored, falling back to defaults.
+
+      The comments are preserved — moved INSIDE the frontmatter block where
+      `#` is a valid YAML comment marker. Agent behaviour is unchanged; only
+      the file layout becomes spec-compliant. The 10 wrappers that already
+      began with `---` at byte 0, and all 14 Claude Code wrappers, were not
+      affected.
+
+      Also corrects two stale `# Tool categories (N specialized domains)`
+      counts inside the comment block (`Designer`: 5→4, `debugger`: 4→2)
+      so the declared number matches the listed items. Comment-only.
+
+      No manifest changes. Existing installs do not need to re-run
+      `/kit-update` for this fix unless they observed the symptom.
+    files_changed:
+      - kit/.opencode/agents/BugFixer.md.template
+      - kit/.opencode/agents/CodeWriter.md.template
+      - kit/.opencode/agents/Designer.md.template
+      - kit/.opencode/agents/PromptEngineer.md.template
+      - kit/.opencode/agents/debugger.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.0.0"
     released: "2026-05-05"
     breaking: true

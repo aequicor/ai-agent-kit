@@ -1,7 +1,7 @@
-# Tool categories (4 specialized domains, per AgentRequirements):
+---
+# Tool categories (2 specialized domains, per AgentRequirements):
 # 1. Code ops: bash, lsp, serena_*
 # 2. Discovery: read, grep, glob
----
 description: Debugger — reproduces a bug, isolates root cause, writes failing test. Passes to @BugFixer for the fix. Read-only.
 mode: all
 model: {{PROVIDER_ID}}/{{CODER_MODEL}}
