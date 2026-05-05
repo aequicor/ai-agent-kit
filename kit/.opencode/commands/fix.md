@@ -13,9 +13,9 @@ PO marks Status ❌ for known bugs and may add new TC rows there at any time. `/
 ## Routing
 
 1. **No argument** → SCAN mode:
-   - Read `.planning/CURRENT.md` to find the current feature + module.
+   - Read `.planning/CURRENT.md` → get `active_task` → read `.planning/tasks/<active_task>.md` to find the current feature + module.
    - Dispatch `@TestRunner` (Mode=SCAN) on the test-cases file.
-   - Show PO the list of ❌ Failing and ⏸ Pending TCs (highlight PO-added rows).
+   - Show PO the list of FAIL and PEND TCs (highlight PO-added rows).
    - Ask PO: "Fix all failing? Pick TC-ids? Or none?"
    - For each chosen TC-id → enter BUG pipeline.
 
@@ -27,7 +27,7 @@ PO marks Status ❌ for known bugs and may add new TC rows there at any time. `/
    - Dispatch `@TestRunner` (Mode=APPEND) with the text:
      - Type: error (default — adjust if PO's text clearly indicates another type)
      - Source: bug-fix
-     - Initial Status: ❌ Fail
+     - Initial Status: FAIL
      - Steps + Expected: derive from PO's text (best-effort; ask if ambiguous)
    - Enter BUG pipeline at TRIAGE with the new TC-id.
 
@@ -44,21 +44,21 @@ DISPATCH — task @BugFixer:
              Test-cases file: <path>
              Bug Ref: <DEF-id or empty>
            @BugFixer: ANALYZE → REPRODUCE (failing test) → FIX → REGRESSION TEST →
-             @CodeReviewer → BUILD → update test-cases.md (Status ❌→✅, Defects log 🔴→🟢)
+             @CodeReviewer → BUILD → update test-cases.md (Status FAIL→PASS, Defects log OPEN→FIXED)
              → commit → write report to {{VAULT_PATH}}/guidelines/<module>/reports/<bug-name>.md.
 
 RE-VERIFY — task @TestRunner (Mode=RERUN) with the TC-id.
-           PO confirms ✅ → DEF promoted 🟢 Fixed → ✅ Verified.
-           PO confirms ❌ → Status reverts, retry counter incremented. Max 3 retries per DEF.
+           PO confirms PASS → DEF promoted FIXED → VERF.
+           PO confirms FAIL → Status reverts, retry counter incremented. Max 3 retries per DEF.
 
-REPORT   — to PO: list of TCs fixed (❌→✅), defects closed (DEF-ids), links to reports.
+REPORT   — to PO: list of TCs fixed (FAIL→PASS), defects closed (DEF-ids), links to reports.
 ```
 
 ## Stop rules
 
 - **Max 2 fix attempts per same compile/test error** inside @BugFixer → STOP, escalate to PO with full error history.
 - **Max 3 RERUN cycles per defect** → STOP, escalate to PO.
-- **No CURRENT.md or no test-cases file**, and no argument given → STOP. Tell PO: "No active feature. Run `/new-feature` or `/requirements-pipeline` first, or pass a TC-id or description directly."
+- **No active task in CURRENT.md or no test-cases file**, and no argument given → STOP. Tell PO: "No active feature. Run `/new-feature` or `/requirements-pipeline` first, or pass a TC-id or description directly."
 
 ## Build verification commands (used by @BugFixer)
 

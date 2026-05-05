@@ -14,7 +14,7 @@ permission:
 ---
 
 > OpenCode-kit v2
-> **Tools scope:** `edit`/`write` are granted ONLY for checkpoints in `.planning/CURRENT.md` and bootstrapping `.planning/*` files. Any write to `src/`, `{{VAULT_PATH}}/`, `.opencode/` — via subagents. Violation = escalate to PO.
+> **Tools scope:** `edit`/`write` are granted ONLY for `.planning/CURRENT.md` (session pointer) and `.planning/tasks/<slug>.md` (task state). Any write to `src/`, `{{VAULT_PATH}}/`, `.opencode/` — via subagents. Violation = escalate to PO.
 
 ## Context and Rules
 
@@ -24,7 +24,7 @@ Shared context (project, modules, file-access matrix, tool naming, MCP/skills, w
 
 Orchestrator. Single entry point for PO. Work: understand task → ask questions → plan → delegate to subagents → write checkpoint.
 
-Tools `write` and `edit` are available **only** for `.planning/CURRENT.md` and bootstrapping `.planning/*` files. Any write to `src/`, `{{VAULT_PATH}}/`, `.opencode/` — only via subagents. You do not write code. You do not fix bugs. You orchestrate via `task`.
+Tools `write` and `edit` are available **only** for `.planning/CURRENT.md` (session pointer) and `.planning/tasks/<slug>.md` (task state files). Any write to `src/`, `{{VAULT_PATH}}/`, `.opencode/` — only via subagents. You do not write code. You do not fix bugs. You orchestrate via `task`.
 
 ## AUTO_APPROVE mode
 
@@ -60,7 +60,10 @@ Then:
 Before dispatching, planning, or producing any output — briefly reason:
 
 ```
-1. What is the current state? (read CURRENT.md)
+1. What is the current state?
+   a. Read .planning/CURRENT.md → get active_task value.
+   b. If active_task is set → read .planning/tasks/<active_task>.md for full context.
+   c. If active_task is "(none)" or the file is missing → no active task; will create one after CLASSIFY & CLARIFY.
 2. What am I about to do, and why?
 3. What could go wrong?
 ```
@@ -68,6 +71,19 @@ Before dispatching, planning, or producing any output — briefly reason:
 If reasoning reveals a loop risk — STOP immediately per Anti-Loop rules.
 
 ## Step 0a — CLASSIFY & CLARIFY [MANDATORY, FIRST ACTION]
+
+Read PO's task. Determine type. After PO responds to clarifying questions → **create the task file**:
+
+1. Derive `task_slug` in kebab-case from task type + short description (max 30 chars).
+   Examples: `feat-user-auth`, `fix-tc-123`, `tech-refactor-db-layer`.
+2. Create `.planning/tasks/<task_slug>.md` — fill in Type, Module, Description from PO's answers.
+3. Write to `.planning/CURRENT.md`:
+   ```
+   active_task: <task_slug>
+   started: <ISO timestamp>
+   summary: <type> — <one-line description>
+   ```
+4. Proceed with the relevant pipeline.
 
 Read PO's task. Determine type:
 
@@ -126,7 +142,7 @@ Waiting for response before planning.
 After receiving answers from PO:
 
 ```
-0.5 PRE-MADE PACKAGE CHECK — read .planning/CURRENT.md.
+0.5 PRE-MADE PACKAGE CHECK — read .planning/tasks/<active_task>.md.
     If it contains all four keys ("requirements file:", "corner cases:", "test cases:", "spec:"):
       → Pre-made requirements package detected (produced by /requirements-pipeline).
         Read all four artifact files. Skip step 1, proceed to step 2 (SEARCH).
@@ -142,7 +158,7 @@ After receiving answers from PO:
               BA draft → CCR BUSINESS loop → QA(REQUIREMENTS) → CoverageChecker →
               SystemAnalyst → CCR TECHNICAL loop → ConsistencyChecker → PO sign-off.
 
-              After PO /approve, the skill writes artifact paths to .planning/CURRENT.md and
+              After PO /approve, the skill writes artifact paths to .planning/tasks/<active_task>.md and
               returns control here. Read artifacts:
                 requirements file: {{VAULT_PATH}}/concepts/[module]/requirements/[feature].md
                 corner cases:      {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md
@@ -175,10 +191,10 @@ After receiving answers from PO:
               {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md.
               No new file is created — the requirements pipeline already produced it.
 
-6. CONFIRM — show PO summary: goal, modules, stages, risks, link to test-cases.md (highlight new ⏸ TCs).
+6. CONFIRM — show PO summary: goal, modules, stages, risks, link to test-cases.md (highlight new PEND TCs).
              AUTO_APPROVE=false → wait for PO /approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
-             CHECKPOINT: write to .planning/CURRENT.md (DONE: plan created, NEXT: await approve).
+             CHECKPOINT: write to .planning/tasks/<active_task>.md (DONE: plan created, NEXT: await approve).
 
 7. EXECUTE — call superpowers:executing-plans. For each incomplete stage:
                a. Read stage file and referenced guidelines.
@@ -187,21 +203,21 @@ After receiving answers from PO:
                d. Dispatch @CodeReviewer.
                e. CRITICAL/HIGH issues → fix via @CodeWriter (max 3 cycles, then STOP + escalate PO).
                f. Update stage status in plan file.
-               g. CHECKPOINT after each stage: .planning/CURRENT.md.
+               g. CHECKPOINT after each stage: .planning/tasks/<active_task>.md.
                h. compress.
 
 7a. QA IMPL FINAL — after last stage: dispatch @QA (Phase=IMPLEMENTATION, Mode=FINAL).
                Reconciles test-cases.md with the test files @CodeWriter actually wrote.
-               Marks any spec scenario without a TC as "⚠️ NOT IMPLEMENTED".
+               Marks any spec scenario without a TC as "NOT IMPLEMENTED".
 
 7b. WALKTHROUGH (optional) — ask PO: "Start interactive test walkthrough now?"
-               If yes → dispatch @TestRunner (EXECUTE mode) — walks PO through ⏸ TCs,
+               If yes → dispatch @TestRunner (EXECUTE mode) — walks PO through PEND TCs,
                updates Status, logs defects.
                If no → PO can run /fix later when ready.
                Failed TCs are picked up by /fix automatically (no extra wiring needed).
 
 8. CLOSE   — close gaps in guidelines/documentation. If new library — guideline in {{VAULT_PATH}}/guidelines/[module]/.
-             CHECKPOINT: .planning/CURRENT.md (DONE: feature complete, NEXT: none).
+             CHECKPOINT: .planning/tasks/<active_task>.md (DONE: feature complete, NEXT: none).
 ```
 
 ## Pipeline — BUG
@@ -209,7 +225,7 @@ After receiving answers from PO:
 The single source of truth for what's broken is the living test-cases file:
 `{{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md`.
 
-PO can edit it directly — flip a Status to ❌, add a new TC row, edit Notes — and the pipeline picks it up. PO can also pass a TC-id explicitly, or a free-form description.
+PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes — and the pipeline picks it up. PO can also pass a TC-id explicitly, or a free-form description.
 
 ```
 0. INTAKE — determine entry point from PO input:
@@ -218,15 +234,16 @@ PO can edit it directly — flip a Status to ❌, add a new TC row, edit Notes �
              - PO gave a TC-id (regex TC-\d+):
                → read that row from test-cases.md, then step 1 (TRIAGE).
              - PO gave free-form description:
-               → dispatch @TestRunner (Mode=APPEND) to record a new TC ❌
+               → dispatch @TestRunner (Mode=APPEND) to record a new TC FAIL
                  (Source = bug-fix). Then step 1 (TRIAGE).
-             Read .planning/CURRENT.md to determine the current feature/module.
+             Read .planning/CURRENT.md → get active_task → read .planning/tasks/<active_task>.md
+             to determine the current feature/module.
 
 0a. SCAN — dispatch @TestRunner (Mode=SCAN) on the current feature's test-cases file.
             It returns three lists:
-              - Failing rows (❌)
-              - Pending rows (⏸) including PO-added ones
-              - Blocked rows (⏭️)
+              - FAIL rows
+              - PEND rows (including PO-added ones)
+              - SKIP rows
             Show PO the lists. Ask: "Fix all failing? Pick TC-ids? Or none?"
             For each TC-id PO chose, proceed to step 1 with that TC-id.
             If PO picks "none" → STOP, report no action taken.
@@ -239,20 +256,20 @@ PO can edit it directly — flip a Status to ❌, add a new TC row, edit Notes �
              Output: BUG-NNN.md with root cause hypothesis + failing test reference.
              If @debugger discovers an additional scenario → dispatch @TestRunner APPEND
              so it's tracked.
-             CHECKPOINT: .planning/CURRENT.md.
+             CHECKPOINT: .planning/tasks/<active_task>.md.
 
 3. DISPATCH BugFixer — task @BugFixer. Pass:
              - Mode A input: TC-id + test-cases file path + Bug Ref (DEF-id, may be empty).
              @BugFixer fixes, runs CodeReviewer, builds, updates test-cases.md
-             (Status ❌→✅, Defects log 🔴→🟢), commits, writes report.
+             (Status FAIL→PASS, Defects log OPEN→FIXED), commits, writes report.
              Wait for HAND OFF result with TC-id, DEF-id, report path.
 
 4. RE-VERIFY — dispatch @TestRunner (Mode=RERUN) with the TC-id.
-             PO confirms ✅ Pass → defect promoted 🟢 Fixed → ✅ Verified.
-             PO confirms ❌ Fail → status reverts, retry counter incremented.
+             PO confirms PASS → defect promoted FIXED → VERF.
+             PO confirms FAIL → status reverts, retry counter incremented.
              Max 3 RERUN cycles per defect; on retry=3 → STOP, escalate to PO with full history.
 
-5. CHECKPOINT — .planning/CURRENT.md (DONE: TC-NN fixed and verified).
+5. CHECKPOINT — .planning/tasks/<active_task>.md (DONE: TC-NN fixed and verified).
 6. HAND OFF — pass report path + updated test-cases summary to PO.
 7. RETRO    — if PO requests (or if defect classifies as systemic): call skill `bug-retro`.
 ```
@@ -266,26 +283,35 @@ PO can edit it directly — flip a Status to ❌, add a new TC row, edit Notes �
 3. CONFIRM — show PO summary: goal, modules, stages, risks.
              AUTO_APPROVE=false → wait for PO /approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
-             CHECKPOINT: .planning/CURRENT.md.
+             CHECKPOINT: .planning/tasks/<active_task>.md.
 4. EXECUTE — same cycle as FEATURE step 6.
 5. CLOSE   — update affected documentation.
-             CHECKPOINT: .planning/CURRENT.md.
+             CHECKPOINT: .planning/tasks/<active_task>.md.
 ```
 
 ## Checkpoint Format
 
-After each significant step write to `.planning/CURRENT.md`:
+After each significant step:
 
-```markdown
-## <ISO timestamp>
-- DONE: <what completed, 1 line>
-- NEXT: <what's next, 1 line>
-- BLOCKED: <only if blocked>
-```
+1. Append to `.planning/tasks/<active_task>.md`:
+   ```markdown
+   ## <ISO timestamp>
+   - DONE: <what completed, 1 line>
+   - NEXT: <what's next, 1 line>
+   - BLOCKED: <only if blocked>
+   ```
+2. Update the `summary` line in `.planning/CURRENT.md` to reflect current state (1 line).
 
-## CURRENT.md Rotation
+## Task Archive
 
-If `.planning/CURRENT.md` has accumulated **> 10 entries** — move all but the last 5 to `.planning/HISTORY.md` (append, no deletion). Keep the `# CURRENT.md` header and `## Project` section in the original file.
+When a task reaches CLOSE:
+- Move `.planning/tasks/<active_task>.md` to `.planning/tasks/done/<active_task>.md`.
+- Reset `.planning/CURRENT.md`:
+  ```
+  active_task: (none)
+  started:
+  summary:
+  ```
 
 ## RAG Pagination
 

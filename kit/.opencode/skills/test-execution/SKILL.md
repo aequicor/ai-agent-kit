@@ -76,7 +76,7 @@ Each test case follows the template format:
 | **Steps** | 1. Step one<br>2. Step two<br>3. Step three |
 | **Expected Result** | What should happen |
 | **Actual Result** | [FILLED DURING EXECUTION] |
-| **Status** | ⬜ Not Run |
+| **Status** | PEND |
 | **Defect** | — |
 | **Notes** | — |
 ```
@@ -132,22 +132,18 @@ Steps:
 Expected: ...
 
 Please enter result:
-  ✅ Pass — actual result matches expected
-  ❌ Fail — describe what went wrong
-  ⏭️ Blocked — describe what blocks execution
-  ⚠️ Partial — describe what partially works
-  ⏭️ Skip — with reason
+  PASS — actual result matches expected
+  FAIL — describe what went wrong
+  SKIP — with reason
 ```
 
 ### 2.3 Record results
 
 For each test case result, update the file:
 
-- **✅ Pass:** Set Status to ✅ Pass, fill Actual Result.
-- **❌ Fail:** Set Status to ❌ Fail, fill Actual Result, add a new DEF-NNN to Defects Log, link it from the TC's Defect field.
-- **⏭️ Blocked:** Set Status to ⏭️ Blocked, add a new DEF-NNN if the blocker is a defect.
-- **⚠️ Partial:** Set Status to ⚠️ Partial, fill Actual Result, add notes.
-- **Skip:** Set Status to ⬜ Not Run, add note "Skipped: [reason]".
+- **PASS:** Set Status to PASS, fill Actual Result.
+- **FAIL:** Set Status to FAIL, fill Actual Result, add a new DEF-NNN to Defects Log, link it from the TC's Defect field.
+- **SKIP:** Set Status to SKIP, add note with reason.
 
 ### 2.4 Defect creation protocol
 
@@ -165,7 +161,7 @@ When a defect is found, create a new entry in the Defects Log section:
 | **Steps to Reproduce** | 1. ...<br>2. ... |
 | **Expected Behavior** | What should happen |
 | **Actual Behavior** | What actually happened |
-| **Fix Status** | 🔴 Open |
+| **Fix Status** | OPEN |
 | **Fixed By** | — |
 | **Fix Commit** | — |
 | **Verification TC** | — |
@@ -177,8 +173,8 @@ When a defect is found, create a new entry in the Defects Log section:
 After recording each result or batch of results:
 
 ```
-| N | [timestamp] | UPDATE | @TestRunner | TC-NNN: ⬜→✅ Pass |
-| N | [timestamp] | DEFECT_ADD | @TestRunner | DEF-NNN added — TC-NNN: ⬜→❌ Fail |
+| N | [timestamp] | UPDATE | @TestRunner | TC-NNN: PEND→PASS |
+| N | [timestamp] | DEFECT_ADD | @TestRunner | DEF-NNN added — TC-NNN: PEND→FAIL |
 ```
 
 ### 2.6 Handle mid-execution changes
@@ -187,7 +183,7 @@ If during execution the PO discovers a new edge case or scenario that is NOT cov
 
 1. **Add a new test case** (TC_ADD transaction):
    - Create a new TC-NNN with sequential numbering
-   - Set status to ⬜ Not Run
+   - Set status to PEND
    - Immediately walk the PO through it
    - Add transaction log entry: `| N | timestamp | TC_ADD | [author] | TC-NNN: New test case for [reason] |`
 
@@ -205,8 +201,8 @@ After defects are fixed (by @BugFixer or @CodeWriter), re-execute relevant test 
 ### 3.1 Identify test cases for rerun
 
 Read the test cases file. Identify:
-- All test cases with status ❌ Fail or ⏭️ Blocked
-- All test cases linked to defects that are now 🟢 Fixed
+- All test cases with status FAIL
+- All test cases linked to defects that are now FIXED
 
 ### 3.2 Re-present test cases
 
@@ -218,7 +214,7 @@ For each identified test case:
 ### 3.3 Update defect verification
 
 For each defect that is being verified:
-- Update Fix Status from 🟡 In Progress to 🟢 Fixed (if fix confirmed) or keep 🔴 Open (if still failing)
+- Update Fix Status to VERF (if fix confirmed) or revert to OPEN (if still failing)
 - Fill Fixed By, Fix Commit, and Verification TC fields
 
 ### 3.4 Update Execution Summary
@@ -228,7 +224,7 @@ Recalculate all counts and pass rate.
 ### 3.5 Transaction log entry
 
 ```
-| N | [timestamp] | RERUN | @TestRunner | Rerun after DEF-001 fixed — TC-003: ❌→✅ |
+| N | [timestamp] | RERUN | @TestRunner | Rerun after DEF-001 fixed — TC-003: FAIL→PASS |
 ```
 
 ### 3.6 Check resolution
@@ -296,8 +292,8 @@ The test cases document uses an **append-only transaction log**. Key rules:
 2. **Immutability:** Never delete or overwrite a transaction log entry. Append only.
 3. **Sequential numbering:** Transaction # increments monotonically. No gaps.
 4. **Traceability:** Every TC status change, defect addition, and defect fix update has a corresponding transaction log entry.
-5. **Defect lifecycle:** 🔴 Open → 🟡 In Progress → 🟢 Fixed → verification TC passes → done. If verification fails, defect goes back to 🔴 Open.
-6. **TC lifecycle:** ⬜ Not Run → ✅ Pass / ❌ Fail / ⏭️ Blocked / ⚠️ Partial. If ❌ Fail, the TC can only go to ✅ Pass after a RERUN transaction that verifies the fix.
+5. **Defect lifecycle:** OPEN → FIXED → verification TC passes → VERF. If verification fails, defect goes back to OPEN.
+6. **TC lifecycle:** PEND → PASS / FAIL / SKIP. If FAIL, the TC can only go to PASS after a RERUN transaction that verifies the fix.
 
 ---
 

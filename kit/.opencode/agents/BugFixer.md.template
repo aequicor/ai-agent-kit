@@ -47,7 +47,7 @@ TC: TC-NN
 Test-cases file: {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 Bug Ref: DEF-NN  (optional — may be empty if PO added the row manually without a defect entry)
 ```
-Read the TC row from the file. Use Steps + Expected + Notes as the bug description. If `Bug Ref` is empty, allocate the next DEF-id and add a `🔴 Open` entry to the Defects log before fixing.
+Read the TC row from the file. Use Steps + Expected + Notes as the bug description. If `Bug Ref` is empty, allocate the next DEF-id and add an `OPEN` entry to the Defects log before fixing.
 
 **B) Free-form description (when caller has no TC-id):**
 ```
@@ -56,11 +56,11 @@ Stacktrace: <optional>
 Module: <module>
 Feature: <feature> (so we know which test-cases file to update)
 ```
-Before fixing — dispatch `@TestRunner` (Mode=APPEND) to create a row for this scenario with `Initial Status: ❌ Fail`, allocate a DEF-id, and add a `🔴 Open` entry to the Defects log. Then proceed as in mode A.
+Before fixing — dispatch `@TestRunner` (Mode=APPEND) to create a row for this scenario with `Initial Status: FAIL`, allocate a DEF-id, and add an `OPEN` entry to the Defects log. Then proceed as in mode A.
 
 After a successful fix, **always** update the test-cases file:
-- Status column: `❌ Fail` → `✅ Pass`
-- Defects log: change linked DEF-id from `🔴 Open` → `🟢 Fixed` (RERUN by @TestRunner promotes it to `✅ Verified`).
+- Status column: `FAIL` → `PASS`
+- Defects log: change linked DEF-id from `OPEN` → `FIXED` (RERUN by @TestRunner promotes it to `VERF`).
 - Optional: append commit SHA or report path to Notes.
 
 Do NOT touch other rows or other columns.
@@ -95,7 +95,7 @@ When calling `knowledge-my-app_search_docs`:
 1. RECEIVE — input is either TC-id reference (mode A) or free-form (mode B).
              In mode B → first dispatch @TestRunner APPEND to create the TC row, then continue
              as if mode A. Now you always have a TC-id and a Defects log entry to track.
-             If Defects log entry is missing for the TC → add a "🔴 Open" entry before fixing.
+             If Defects log entry is missing for the TC → add an "OPEN" entry before fixing.
 
 2. ANALYZE root cause — read code from stacktrace and TC Steps, trace call chain.
 3. REPRODUCE — write failing test demonstrating the bug (must FAIL before fix).
@@ -106,10 +106,10 @@ When calling `knowledge-my-app_search_docs`:
 8. BUILD modules.
 9. UPDATE test-cases file (mandatory before reporting):
    a. Locate the TC row by TC-id.
-   b. Set Status: ❌ Fail → ✅ Pass.
+   b. Set Status: FAIL → PASS.
    c. Append to Notes: "Fix: <report path>" (path from step 11) and optionally "commit: <sha>".
-   d. In Defects log, find the DEF-id for this TC. Change status: 🔴 Open → 🟢 Fixed.
-      (TestRunner RERUN by PO will later promote 🟢 Fixed → ✅ Verified.)
+   d. In Defects log, find the DEF-id for this TC. Change status: OPEN → FIXED.
+      (TestRunner RERUN by PO will later promote FIXED → VERF.)
    e. Bump "Last updated" date.
 10. COMMIT — `git add` affected files + `git commit -m "fix: <brief description> (TC-NN, DEF-NN)"`.
 11. COMPRESS context.
@@ -285,7 +285,7 @@ After saving — `knowledge-my-app_write_guideline`.
 - DO NOT skip the test-cases.md update (Step 9). Status and Defects log MUST be updated before HAND OFF.
 - DO NOT touch test-cases.md columns other than Status, Notes, Bug Ref.
 - DO NOT modify other rows in test-cases.md — only the TC you fixed.
-- DO NOT promote a defect to ✅ Verified yourself — that's @TestRunner RERUN with PO confirmation.
+- DO NOT promote a defect to VERF yourself — that's @TestRunner RERUN with PO confirmation.
 - DO NOT guess API — vault → context7 → webfetch or escalate.
 - DO NOT leave TODO() / empty stubs — implement or escalate.
 - DO NOT output system tags.

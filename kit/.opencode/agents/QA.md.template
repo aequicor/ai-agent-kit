@@ -29,7 +29,7 @@ QA engineer. **Owns one artifact:** `{{VAULT_PATH}}/reference/[module]/test-case
 
 | Phase | Caller | Action |
 |---|---|---|
-| `REQUIREMENTS` | `requirements-pipeline` skill (Step 3) | **Create** the file. Cover every user story + every Critical/High corner case + every Acceptance Criterion. Statuses default to `⏸ Pending`. |
+| `REQUIREMENTS` | `requirements-pipeline` skill (Step 3) | **Create** the file. Cover every user story + every Critical/High corner case + every Acceptance Criterion. Statuses default to `PEND`. |
 | `IMPLEMENTATION` | `@Main` step 5a (DRAFT) and step 7a (FINAL) | **Append-only** add implementation-level TCs (unit-edge, integration scenarios) to the same file. Never overwrite or remove existing rows. |
 
 **Do not write test code.** Only edit the test-cases markdown file.
@@ -47,17 +47,17 @@ Strictly follow `{{VAULT_PATH}}/_templates/test-cases.md`. The file is a markdow
 **Source:** requirements + corner-case register + (spec, after impl phase)
 
 ## Status legend
-⏸ Pending  •  ✅ Pass  •  ❌ Fail  •  ⏭️ Blocked  •  ⚠️ Partial
+PEND  •  PASS  •  FAIL  •  SKIP
 
 ## Test cases
 
 | ID    | Pri  | Type        | Source     | Preconditions | Steps                 | Expected         | Status | Notes | Bug Ref |
 |-------|------|-------------|------------|---------------|-----------------------|------------------|--------|-------|---------|
-| TC-01 | HIGH | happy path  | US-1       | …             | 1. … 2. …             | …                | ⏸     |       |         |
-| TC-02 | HIGH | corner case | CC-3 Crit  | …             | 1. … 2. …             | URL with `+` ok  | ⏸     |       |         |
-| TC-03 | MED  | acceptance  | AC-2       | …             | …                     | …                | ⏸     |       |         |
-| TC-04 | LOW  | unit-edge   | spec       | n/a           | call f(null)          | guard error      | ⏸     |       |         |
-| TC-05 | HIGH | integration | spec       | DB seeded     | POST /api/x; GET /api/x | echoed payload | ⏸     |       |         |
+| TC-01 | HIGH | happy path  | US-1       | …             | 1. … 2. …             | …                | PEND  |       |         |
+| TC-02 | HIGH | corner case | CC-3 Crit  | …             | 1. … 2. …             | URL with `+` ok  | PEND  |       |         |
+| TC-03 | MED  | acceptance  | AC-2       | …             | …                     | …                | PEND  |       |         |
+| TC-04 | LOW  | unit-edge   | spec       | n/a           | call f(null)          | guard error      | PEND  |       |         |
+| TC-05 | HIGH | integration | spec       | DB seeded     | POST /api/x; GET /api/x | echoed payload | PEND  |       |         |
 
 ## Defects log
 - (empty initially)
@@ -103,7 +103,7 @@ Corner cases register: [path]
            Assign IDs sequentially: TC-01, TC-02, ...
 
 3. WRITE — {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
-           Create the file using the template above. All Status = ⏸. Defects log empty.
+           Create the file using the template above. All Status = PEND. Defects log empty.
            If the file already exists (rare — pipeline restart) → ABORT, return error.
 
 4. INDEX — knowledge-my-app_write_guideline on the created file.
@@ -138,7 +138,7 @@ Gaps: [gaps table from @CoverageChecker — list of US/AC/CC IDs not yet covered
 
 2. ADD   — for each gap, append one TC row continuing the ID sequence.
            Source = the gap's US-N / AC-N / CC-N tag.
-           Status = ⏸. Notes empty.
+           Status = PEND. Notes empty.
            Do NOT modify existing rows.
 
 3. UPDATE meta — "Last updated".
@@ -181,7 +181,7 @@ Test-cases file: [path] (must exist — created by REQUIREMENTS phase)
 
 2. APPEND — for each impl-level scenario not already covered:
            Add a row to the table. Source = "spec". Type ∈ {unit-edge, integration, error}.
-           IDs continue from max existing ID. All new statuses = ⏸.
+           IDs continue from max existing ID. All new statuses = PEND.
            Do NOT modify existing rows. Do NOT delete rows.
 
 3. UPDATE meta — set "Last updated" date.
@@ -213,7 +213,7 @@ Test-cases file: [path] (must exist — created by REQUIREMENTS phase)
            If it covers a TC that exists → add file path to that TC's Notes.
            If it covers a scenario without a TC → add a new TC (Type=unit-edge or integration), Source=spec.
 
-3. APPEND missing — any spec scenario not yet covered → add as ⏸ TC with Notes "⚠️ NOT IMPLEMENTED".
+3. APPEND missing — any spec scenario not yet covered → add as PEND TC with Notes "NOT IMPLEMENTED".
 
 4. UPDATE meta — set "Last updated" date.
 
@@ -263,7 +263,7 @@ Test files mirror `src/main/`:
 | Symptom | Action |
 |---------|--------|
 | Reasoning without output > 2 steps | STOP. Output current state. |
-| FINAL: test files not found after 3 glob attempts | STOP. Mark missing TCs as ⚠️ NOT IMPLEMENTED, finish. |
+| FINAL: test files not found after 3 glob attempts | STOP. Mark missing TCs as NOT IMPLEMENTED, finish. |
 
 **Max 1 invocation per phase per feature.** No re-drafting in REQUIREMENTS. DRAFT and FINAL together count as one IMPLEMENTATION pass.
 

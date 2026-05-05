@@ -29,23 +29,23 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 
 This is a **living document**. Multiple parties update it over time:
 
-- **@QA** (REQUIREMENTS phase) — creates this file from requirements + corner cases. All Status default to `⏸ Pending`.
+- **@QA** (REQUIREMENTS phase) — creates this file from requirements + corner cases. All Status default to `PEND`.
 - **@QA** (IMPLEMENTATION phase, DRAFT/FINAL) — appends impl-level TCs (unit-edge, integration, error). Append-only.
 - **@TestRunner** — runs interactive walkthrough (mode `EXECUTE`), updates Status, allocates DEF-ids in Defects log.
-- **@BugFixer** — after a fix, updates Status `❌ → ✅` and Defects log `🔴 → 🟢` for the row it fixed.
+- **@BugFixer** — after a fix, updates Status `FAIL → PASS` and Defects log `OPEN → FIXED` for the row it fixed.
 - **PO (you)** — can edit any cell directly. Mark Status, add Notes, append a new TC row when a new bug or scenario is discovered. `/fix` will pick up your edits automatically.
 
-`/fix` reads this file, scans for ❌ Fail and ⏸ Pending rows, asks PO which to fix, dispatches @BugFixer per chosen TC, then dispatches @TestRunner (RERUN) to verify.
+`/fix` reads this file, scans for `FAIL` and `PEND` rows, asks PO which to fix, dispatches @BugFixer per chosen TC, then dispatches @TestRunner (RERUN) to verify.
 
 ---
 
 ## Status legend
 
-`⏸ Pending`  •  `✅ Pass`  •  `❌ Fail`  •  `⏭️ Blocked`  •  `⚠️ Partial`
+`PEND`  •  `PASS`  •  `FAIL`  •  `SKIP`
 
 ## Defect lifecycle
 
-`🔴 Open` → `🟡 In Progress` → `🟢 Fixed` → `✅ Verified`
+`OPEN` → `FIXED` → `VERF`
 
 ---
 
@@ -63,9 +63,9 @@ This is a **living document**. Multiple parties update it over time:
 
 | ID    | Pri  | Type        | Source     | Preconditions | Steps                          | Expected            | Status | Notes | Bug Ref |
 |-------|------|-------------|------------|---------------|--------------------------------|---------------------|--------|-------|---------|
-| TC-01 | HIGH | happy path  | US-1       | logged in     | 1. open /home  2. click Sign-in | dashboard renders  | ⏸     |       |         |
-| TC-02 | HIGH | corner case | CC-3 Crit  | n/a           | 1. POST /login {email:"a+b@x"}  | 200, valid session  | ⏸     |       |         |
-| TC-03 | MED  | acceptance  | AC-2       | seeded DB     | 1. ...                         | ...                 | ⏸     |       |         |
+| TC-01 | HIGH | happy path  | US-1       | logged in     | 1. open /home  2. click Sign-in | dashboard renders  | PEND  |       |         |
+| TC-02 | HIGH | corner case | CC-3 Crit  | n/a           | 1. POST /login {email:"a+b@x"}  | 200, valid session  | PEND  |       |         |
+| TC-03 | MED  | acceptance  | AC-2       | seeded DB     | 1. ...                         | ...                 | PEND  |       |         |
 
 > **Type values:** `happy path | acceptance | corner case | error | security | performance | unit-edge | integration | manual`
 >
@@ -78,8 +78,8 @@ This is a **living document**. Multiple parties update it over time:
 
 > Append-only. Each row links back to a TC via the `Bug Ref` column above. `/fix` and @BugFixer maintain this section automatically.
 
-- **DEF-001** — [HIGH] *<one-line summary>*. TC-02. Status: 🔴 Open. Reported: YYYY-MM-DD by @TestRunner.
-- **DEF-002** — [MED] *<summary>*. TC-05. Status: 🟢 Fixed. Fixed by @BugFixer in commit `abc1234`. Verification pending.
+- **DEF-001** — [HIGH] *<one-line summary>*. TC-02. Status: OPEN. Reported: YYYY-MM-DD by @TestRunner.
+- **DEF-002** — [MED] *<summary>*. TC-05. Status: FIXED. Fixed by @BugFixer in commit `abc1234`. Verification pending.
 
 ---
 
@@ -88,11 +88,10 @@ This is a **living document**. Multiple parties update it over time:
 | Metric | Value |
 |--------|-------|
 | Total TCs | 0 |
-| Pending (⏸) | 0 |
-| Pass (✅) | 0 |
-| Fail (❌) | 0 |
-| Blocked (⏭️) | 0 |
-| Partial (⚠️) | 0 |
+| PEND | 0 |
+| PASS | 0 |
+| FAIL | 0 |
+| SKIP | 0 |
 | Pass rate | 0% |
-| Defects open | 0 |
-| Defects verified | 0 |
+| Defects OPEN | 0 |
+| Defects VERF | 0 |
