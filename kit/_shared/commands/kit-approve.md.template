@@ -15,7 +15,7 @@ You are @Main. You were waiting for PO confirmation at a CONFIRM step. Act now:
    - NEXT: proceeding to EXECUTE phase
    ```
 2. Continue immediately to the next phase of the active pipeline:
-   - FEATURE → step 6 EXECUTE
+   - FEATURE → step 7 EXECUTE
    - TECH → step 4 EXECUTE
    - BUG → BUG pipeline has no CONFIRM step; if somehow reached here, report current state and ask PO what to do next.
 

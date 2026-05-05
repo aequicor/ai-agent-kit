@@ -84,7 +84,9 @@ kit/_shared/skills/code-review-checklist/SKILL.md.template
 kit/_shared/skills/corner-case-refinement/SKILL.md.template
 kit/_shared/skills/knowledge-graph/SKILL.md.template
 kit/_shared/skills/look-up/SKILL.md.template
+kit/_shared/skills/mermaid-validate/SKILL.md.template
 kit/_shared/skills/requirements-pipeline/SKILL.md.template
+kit/_shared/skills/session-handoff/SKILL.md.template
 kit/_shared/skills/session-replay/SKILL.md.template
 kit/_shared/skills/test-execution/SKILL.md.template
 kit/manifest.schema.json

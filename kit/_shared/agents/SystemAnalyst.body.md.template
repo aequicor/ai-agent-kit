@@ -188,6 +188,11 @@ Precondition: requirements-pipeline must have completed and the spec must be PO-
              - Keep each diagram under ~40 nodes — split into multiple diagrams
                if the spec is larger.
 
+3.5. VALIDATE — read `{{HOST_DIR}}/skills/mermaid-validate/SKILL.md` and follow its
+             instructions exactly, using the diagrams file path from step 3 as
+             `<diagrams-file>`. The skill appends a `**Validation:**` line to
+             the result block — do not omit it.
+
 4. INDEX   — knowledge-my-app_write_guideline on the created file.
 
 5. RETURN  — strictly this format, no extra text before or after:
@@ -203,6 +208,7 @@ Precondition: requirements-pipeline must have completed and the spec must be PO-
 **Component diagrams:** N
 **Sequence diagrams:** N
 **State diagrams:** N
+**Validation:** <filled in by mermaid-validate skill>
 ```
 
 DIAGRAM mode is read-only with respect to the spec — never edit `[feature].md`. If the spec is missing details required to draw an accurate diagram, note it once at the bottom of the diagrams file under a `## Notes` section and continue; do not invent structure.

@@ -1,4 +1,74 @@
 versions:
+  - version: "4.2.1"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix several pre-existing pipeline step-number inconsistencies found during the
+      v4.2.0 audit. No behavior changes — these are documentation/instruction fixes
+      that prevent agents from following stale references.
+
+      Specifically:
+      - kit-approve.md said "FEATURE → step 6 EXECUTE" — corrected to step 7 (step 6
+        is CONFIRM in Main FEATURE pipeline; EXECUTE is step 7).
+      - Main TECH pipeline said "EXECUTE — same cycle as FEATURE step 6" — corrected
+        to step 7 for the same reason.
+      - Main AUTO_APPROVE retry instruction referenced "same write process as step 4"
+        for plan-file edits — corrected to step 5 (step 4 is LOOKUP; PLAN is step 5).
+      - _shared.md Flow B description claimed @Main "skips directly to step 3 (DESIGN)"
+        after pre-made package detection — corrected to "skips REQUIREMENTS PHASE
+        (step 1), proceeding to step 2 (SEARCH)" to match Main step 0.5.
+      - session-handoff skill (introduced in 4.2.0) hard-coded "Proceed to step 6
+        (CONFIRM)" — wrong for TECH where CONFIRM is step 3. Skill now defers to the
+        calling step in Main for routing.
+    files_changed:
+      - kit/_shared/commands/kit-approve.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_shared/skills/session-handoff/SKILL.md.template
+    manifest_changes:
+      added_fields: []
+
+  - version: "4.2.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Add session-handoff skill for copy-pasteable resume context after planning.
+
+      @Main now reads the session-handoff skill after completing the planning phase:
+      - FEATURE pipeline: new step 5b after QA IMPL DRAFT (step 5a)
+      - TECH pipeline: new step 2a after PLAN (step 2)
+
+      The skill prints a bounded block listing every planning artifact path
+      (task state, plan, all stage files, spec, test cases, requirements, corner cases)
+      and the incomplete stage count, so the PO can either run /kit-resume in a new
+      session or paste the block as manual context. The block is printed before CONFIRM
+      and does not change pipeline flow.
+    files_changed:
+      - kit/_shared/skills/session-handoff/SKILL.md.template
+      - kit/_shared/agents/Main.body.md.template
+    manifest_changes:
+      added_fields: []
+
+  - version: "4.1.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Add mermaid-validate skill for /kit-diagram rendering validation.
+
+      @SystemAnalyst DIAGRAM mode now runs a new step 3.5 after writing the
+      diagrams file: it reads the mermaid-validate skill and follows its
+      instructions. If npm is available, mmdc (mermaid-cli via npx) renders
+      every diagram block and reports pass/fail; on failure the agent fixes
+      the block and re-tries once (removes it if still failing). If npm is
+      unavailable, the skill falls back to an AI syntax self-check covering
+      node IDs, arrow types, undeclared participants, and unclosed blocks.
+      The result block gains a **Validation:** line in both cases.
+    files_changed:
+      - kit/_shared/skills/mermaid-validate/SKILL.md.template
+      - kit/_shared/agents/SystemAnalyst.body.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.0.3"
     released: "2026-05-05"
     breaking: false

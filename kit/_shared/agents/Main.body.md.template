@@ -28,7 +28,7 @@ SPEC_FILE: <path or N/A>
 ```
 Then:
 - If verdict = `✅ APPROVED` → write checkpoint "Auto-approved by @AutoApprover" and proceed immediately.
-- If verdict = `❌ NEEDS_CHANGES` → resolve BLOCKERs by updating the plan/spec files directly (same write process as step 4 — plan files are @Main's domain), then call `@AutoApprover` again. Maximum **2 retry cycles**, then STOP and escalate to PO.
+- If verdict = `❌ NEEDS_CHANGES` → resolve BLOCKERs by updating the plan/spec files directly (same write process as step 5 — plan files are @Main's domain), then call `@AutoApprover` again. Maximum **2 retry cycles**, then STOP and escalate to PO.
 
 **Human `/kit-approve` always overrides** — if PO types `/kit-approve` at any point, treat it as immediate approval regardless of mode.
 
@@ -179,6 +179,11 @@ After receiving answers from PO:
               {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md.
               No new file is created — the requirements pipeline already produced it.
 
+5b. SESSION HANDOFF — read `{{HOST_DIR}}/skills/session-handoff/SKILL.md` and follow
+              its instructions exactly. This prints a copy-pasteable artifact block
+              so the PO can resume in a new session without context loss.
+              Then proceed immediately to step 6.
+
 6. CONFIRM — show PO summary: goal, modules, stages, risks, link to test-cases.md (highlight new PEND TCs).
              AUTO_APPROVE=false → wait for PO /kit-approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
@@ -268,11 +273,14 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
 1. SEARCH  — knowledge-my-app_search_docs on the topic.
 2. PLAN    — superpowers:writing-plans (no business requirements sections).
              Create plan + stage files in {{VAULT_PATH}}/concepts/[module]/plans/ and {{VAULT_PATH}}/how-to/[module]/plans/.
+2a. SESSION HANDOFF — read `{{HOST_DIR}}/skills/session-handoff/SKILL.md` and follow
+             its instructions exactly. Prints copy-pasteable artifact block for new-session resume.
+             Then proceed immediately to step 3.
 3. CONFIRM — show PO summary: goal, modules, stages, risks.
              AUTO_APPROVE=false → wait for PO /kit-approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
              CHECKPOINT: .planning/tasks/<active_task>.md.
-4. EXECUTE — same cycle as FEATURE step 6.
+4. EXECUTE — same cycle as FEATURE step 7.
 5. CLOSE   — update affected documentation.
              CHECKPOINT: .planning/tasks/<active_task>.md.
 ```

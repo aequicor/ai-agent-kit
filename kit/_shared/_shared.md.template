@@ -227,7 +227,7 @@ PO ─► @RequirementsPipeline (entry point via /kit-requirements-pipeline)
 
 **Flow A — integrated (default):** `@RequirementsPipeline` is dispatched by `@Main` as step 1 of the FEATURE pipeline. After PO types `/kit-approve` to `@RequirementsPipeline` and then `/kit-resume`, `@Main` continues from step 2 (SEARCH).
 
-**Flow B — standalone:** PO first runs `/kit-requirements-pipeline` separately, then `/kit-new-feature`. `@Main` detects the pre-made package in the active task file at step 0.5 and skips directly to step 3 (DESIGN).
+**Flow B — standalone:** PO first runs `/kit-requirements-pipeline` separately, then `/kit-new-feature`. `@Main` detects the pre-made package in the active task file at step 0.5 and skips REQUIREMENTS PHASE (step 1), proceeding to step 2 (SEARCH).
 
 In both flows, `@Main` does **not** modify requirements, corner cases, or spec files — they are approved artifacts. If `@Main` finds a contradiction at planning time, it surfaces it to PO before starting implementation.
 
