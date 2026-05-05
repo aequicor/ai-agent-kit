@@ -43,6 +43,14 @@ You are an AI agent upgrading an installed ai-agent-kit. Your only job is to fol
            - path: "stack.formatter_v2"
              default: <yaml value>
              description: "..."
+         profile_transforms:                # optional, processed in order
+           - rename:
+               from: kotlin-multiplatform
+               to: [kotlin-gradle, compose-multiplatform]   # 1→N split allowed
+           - ensure: [security-baseline]    # add to stack.profiles[] if missing
+           - ensure_axis:                   # add a default profile if no profile of the axis is present
+               axis: provider
+               default: routerai
      - version: "1.0.0"
        ...
    ```
@@ -76,6 +84,13 @@ If fetch fails on both raw and `https://github.com/{KIT_REPO}/blob/master/docs/m
    <For each entry in MIGRATION_PATH, list each manifest_changes.added_fields[*]:
     - path, default, description.
     Include version tag for each.>
+
+   ### Profile Transforms
+   <For each entry in MIGRATION_PATH, list each manifest_changes.profile_transforms[*]:
+    - rename:      "<from> → <to1>, <to2>"
+    - ensure:      "<list>"
+    - ensure_axis: "<axis> ← <default> (only if no profile of that axis is currently selected)"
+    If none across the migration path: write "None.">
 
    ### Files That Will Be Overwritten
    <Union of files_changed across all MIGRATION_PATH entries. List relative paths.
@@ -143,6 +158,16 @@ Re-run the directory scaffold from setup.md 3.7. Skip any directory that already
 11. For each version in `MIGRATION_PATH`, for each `manifest_changes.added_fields[*]`:
     - If `path` (e.g. `formatter.environment`) is NOT present in the current manifest → add it with the documented `default`. Append a comment `# NEW in v<version>: <description>` on the same line (or directly above for multi-line values).
     - If already present → leave PO's value alone.
+
+11b. **Apply profile transforms** — for each version in `MIGRATION_PATH`, for each entry in `manifest_changes.profile_transforms` (in declared order):
+
+   Operate on `manifest.stack.profiles` (a list of profile name strings). Treat the list as ordered but deduplicated; preserve order on insert.
+
+   - `rename: {from: <X>, to: [<Y1>, <Y2>, ...]}` — find the first occurrence of `<X>` in the list and replace it in place with `<Y1>, <Y2>, ...`. If `<X>` is not in the list → no-op. After substitution, dedupe while preserving order. Log: `"profile rename: <X> → <Y1>, <Y2>"`.
+   - `ensure: [<P1>, <P2>, ...]` — for each `<Pn>`, if it is not already in the list, append it. Log: `"profile added: <Pn>"`.
+   - `ensure_axis: {axis: <A>, default: <P>}` — fetch each currently-listed profile's `_profile_axis` from `RAW_BASE/profiles/<name>.yaml` (front-matter only). If none of them belong to axis `<A>`, append `<P>`. Log: `"axis <A> was empty — added <P>"`.
+
+   After processing all transforms, re-fetch `RAW_BASE/kit/profile.schema.json` and validate every name in `stack.profiles` resolves to a real profile YAML (HEAD request to `RAW_BASE/profiles/<name>.yaml`). If any 404 → STOP and report.
 
 12. Write the updated manifest back to its original file.
 

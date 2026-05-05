@@ -1,10 +1,12 @@
-# ai-agent-kit profile: Ollama Cloud
+# ai-agent-kit profile: Ollama Cloud (provider axis)
 # Usage: add ollama-cloud to stack.profiles in your manifest
-# Overrides provider and models for Ollama's cloud-hosted LLMs.
+#
+# Provider-axis profile. Owns provider + models only — does NOT touch
+# stack/lsp/formatter/code_quality (those belong to the language axis).
 
 _profile_name: ollama-cloud
 _profile_description: "Ollama cloud-hosted LLMs via OpenAI-compatible API"
-_profile_category: provider
+_profile_axis: provider
 
 provider:
   name: ollama-cloud
@@ -17,30 +19,3 @@ models:
   reviewer: deepseek-v4-pro
   designer: null
   small: deepseek-v4-flash
-
-lsp:
-  enabled: false
-  command: ""
-  extensions: []
-
-formatter:
-  enabled: false
-  name: "default-fmt"
-  command: ["make", "format"]
-  extensions: []
-
-code_quality:
-  forbidden_patterns:
-    - "Hardcoded secrets or API keys in code"
-    - "SQL string concatenation with user input"
-    - "Logging sensitive data (passwords, tokens, PII)"
-    - "TODO comments without tracking entry"
-
-mcp:
-  context7:
-    enabled: true
-    api_key_env: CONTEXT7_API_KEY
-  knowledge:
-    enabled: false
-  serena:
-    enabled: false

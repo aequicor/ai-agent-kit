@@ -1,4 +1,73 @@
 versions:
+  - version: "2.0.0"
+    released: "2026-05-05"
+    breaking: true
+    description: |
+      Profiles reorganised into four orthogonal axes
+      (language / framework / provider / capability). Each profile now
+      declares `_profile_axis` (replacing `_profile_category`) and is
+      restricted by `kit/profile.schema.json` to fields its axis owns.
+      Cross-axis selections are conflict-free by construction; the merge
+      algorithm now raises an error on overlapping scalars instead of
+      silently letting "right side win" (the bug where ollama-cloud quietly
+      disabled kotlin-lsp).
+
+      Profile renames / splits:
+        - kotlin-multiplatform   → kotlin-gradle (language) + compose-multiplatform (framework)
+        - minecraft-paper-plugin → kotlin-gradle (language) + paper-plugin (framework)
+        - generic                → make-generic (language)
+        - ollama-cloud           → kept (provider), stripped of lsp/formatter/code_quality
+        - solid                  → kept (capability), `_profile_category` → `_profile_axis`
+        - requirements-pipeline  → kept (capability), `_profile_category` → `_profile_axis`
+
+      New profiles:
+        - routerai          (provider) — default, extracted from previous defaults
+        - security-baseline (capability) — universal hygiene patterns,
+          auto-included in every install (deduplicates the secrets/SQL/PII
+          patterns that previously lived in every stack profile)
+
+      Setup prompt now asks one question per axis (Q4a–d) and validates
+      cardinality (exactly one language, exactly one provider).
+
+      Migration for existing manifests:
+        - Replace `kotlin-multiplatform` in stack.profiles with
+          `[kotlin-gradle, compose-multiplatform]`.
+        - Replace `minecraft-paper-plugin` with `[kotlin-gradle, paper-plugin]`.
+        - Replace `generic` with `make-generic`.
+        - If no provider profile is listed, add `routerai` (or `ollama-cloud`).
+        - Add `security-baseline` to the capability list.
+    files_changed:
+      - profiles/kotlin-gradle.yaml
+      - profiles/make-generic.yaml
+      - profiles/compose-multiplatform.yaml
+      - profiles/paper-plugin.yaml
+      - profiles/routerai.yaml
+      - profiles/security-baseline.yaml
+      - profiles/ollama-cloud.yaml
+      - profiles/solid.yaml
+      - profiles/requirements-pipeline.yaml
+      - kit/profile.schema.json
+      - kit/manifest.schema.json
+      - docs/prompts/setup.md
+      - manifest.example.yaml
+      - README.md
+    manifest_changes:
+      added_fields: []
+      profile_transforms:
+        - rename:
+            from: kotlin-multiplatform
+            to: [kotlin-gradle, compose-multiplatform]
+        - rename:
+            from: minecraft-paper-plugin
+            to: [kotlin-gradle, paper-plugin]
+        - rename:
+            from: generic
+            to: [make-generic]
+        - ensure: [security-baseline]
+        - ensure_axis:
+            axis: provider
+            default: routerai
+
   - version: "1.0.0"
     released: "2026-05-04"
     breaking: false

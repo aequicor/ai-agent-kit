@@ -45,12 +45,11 @@
         },
         "profiles": {
           "type": "array",
-          "description": "List of profile names to merge (left-to-right, manifest wins over merged profiles)",
+          "description": "List of profile names to merge. Each profile declares an _profile_axis (language|framework|provider|capability). Cardinality rules: exactly one language profile, exactly one provider profile, zero or more framework profiles, zero or more capability profiles. Within a single axis, fields are exclusive (no overlap), so merge order within an axis is irrelevant; across axes, each axis owns disjoint fields. Manifest values still win over any merged profile value.",
           "items": {"type": "string"},
           "minItems": 1,
           "uniqueItems": true
         },
-        "profile": {"type": "string", "description": "Legacy single profile name — use profiles[] instead"},
         "build_command": {"type": "string", "minLength": 1},
         "compile_command": {"type": "string", "minLength": 1},
         "lint_command": {"type": "string", "minLength": 1},

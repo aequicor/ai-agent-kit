@@ -66,20 +66,32 @@ Fetch and follow:
 
 ## Available profiles
 
-| Profile | Category | What it sets |
-|---|---|---|
-| `kotlin-multiplatform` | stack | KMP — Compose Desktop + Android + iOS + Ktor; `./gradlew`, detekt+ktlint, kotlin-lsp, serena |
-| `minecraft-paper-plugin` | stack | Minecraft Paper plugin (Kotlin / Gradle KTS, multi-module) |
-| `generic` | stack | Language-agnostic baseline — fill `build_command`/`compile_command`/`test_command` manually |
-| `ollama-cloud` | provider | Ollama Cloud LLMs (kimi-k2, qwen3-coder, deepseek-v4) |
-| `requirements-pipeline` | capability | Adds the AI requirements pipeline agents and the `/requirements-pipeline` command |
+Profiles are organised along four **orthogonal axes**. Each profile is restricted to fields its axis owns, so profiles from different axes never overwrite each other — the merge is conflict-free by construction.
 
-Combine in your manifest:
+| Axis | Cardinality | Owns | Profiles |
+|------|------------|------|----------|
+| `language` | exactly 1 | `stack` commands, `lsp`, `formatter`, `mcp.serena` | `kotlin-gradle`, `make-generic` |
+| `framework` | 0..N | `ui`, `code_quality.forbidden_patterns` | `compose-multiplatform`, `paper-plugin` |
+| `provider` | exactly 1 | `provider`, `models` | `routerai` (default), `ollama-cloud` |
+| `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agents via skills | `security-baseline`, `solid`, `requirements-pipeline` |
+
+**Common combos:**
 
 ```yaml
+# KMP app on RouterAI with the requirements pipeline:
 stack:
-  profiles: [kotlin-multiplatform, requirements-pipeline, ollama-cloud]
+  profiles: [kotlin-gradle, compose-multiplatform, routerai, security-baseline, requirements-pipeline]
+
+# Minecraft Paper plugin on Ollama Cloud:
+stack:
+  profiles: [kotlin-gradle, paper-plugin, ollama-cloud, security-baseline]
+
+# Anything else — language-agnostic baseline:
+stack:
+  profiles: [make-generic, routerai, security-baseline]
 ```
+
+The setup prompt asks one question per axis, validates cardinality, and checks each profile against [`kit/profile.schema.json`](kit/profile.schema.json) so a profile cannot quietly populate a field outside its axis.
 
 ---
 
@@ -122,11 +134,19 @@ You never have to leave the markdown file — it's the source of truth.
 
 ## Extending
 
-### Add a stack profile
+### Add a profile
 
-1. Create `profiles/<your-stack>.yaml`. Include front-matter keys: `_profile_name`, `_profile_description`, `_profile_category: stack` (or `provider` / `capability`).
-2. Set the same fields a stack profile is expected to set — most importantly `stack.language`, `stack.build_command`, `stack.compile_command`, `stack.lint_command`, `stack.test_command`, plus optional `lsp`, `formatter`, `code_quality.forbidden_patterns`, `mcp` defaults.
-3. Reference it in a manifest: `stack.profiles: [<your-stack>, ...]`.
+1. Pick the right axis (`language`, `framework`, `provider`, or `capability`) — see the table above.
+2. Create `profiles/<name>.yaml` with the front-matter:
+   ```yaml
+   _profile_name: <name>
+   _profile_description: "<one line>"
+   _profile_axis: <axis>
+   ```
+3. Populate **only** fields the chosen axis is allowed to set. Refer to [`kit/profile.schema.json`](kit/profile.schema.json) — it enforces this at validation time.
+4. Reference it in a manifest: `stack.profiles: [..., <name>, ...]`.
+
+If you find yourself wanting to set a field outside your axis, that's a sign the work belongs in a separate profile on a different axis.
 
 ### Add an agent
 
@@ -157,15 +177,20 @@ ai-agent-kit/
 │   │   ├── setup.md                       # AI-driven install (no scripts)
 │   │   └── update.md                      # AI-driven update (no scripts)
 │   └── migration/changelog.yaml           # version history + breaking changes + new fields
-├── profiles/                              # stack/provider/capability profiles
-│   ├── kotlin-multiplatform.yaml
-│   ├── minecraft-paper-plugin.yaml
-│   ├── generic.yaml
-│   ├── ollama-cloud.yaml
-│   └── requirements-pipeline.yaml
+├── profiles/                              # axis-organised profiles (language/framework/provider/capability)
+│   ├── kotlin-gradle.yaml                 #   language
+│   ├── make-generic.yaml                  #   language
+│   ├── compose-multiplatform.yaml         #   framework
+│   ├── paper-plugin.yaml                  #   framework
+│   ├── routerai.yaml                      #   provider
+│   ├── ollama-cloud.yaml                  #   provider
+│   ├── security-baseline.yaml             #   capability (auto-added)
+│   ├── solid.yaml                         #   capability
+│   └── requirements-pipeline.yaml         #   capability
 └── kit/                                   # everything that gets rendered into your project
     ├── _index.txt                         # complete file list — AI reads this to know what to fetch
-    ├── manifest.schema.json               # JSON Schema for validating manifests
+    ├── manifest.schema.json               # JSON Schema for the assembled manifest
+    ├── profile.schema.json                # JSON Schema for individual profile YAMLs (axis contracts)
     ├── AGENTS.md.template
     ├── AUTO_MEMORY.md.template
     ├── opencode.json.template

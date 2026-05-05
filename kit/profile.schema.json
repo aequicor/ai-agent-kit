@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aequicor/ai-agent-kit/profile.schema.json",
+  "title": "AI Agent Kit Profile",
+  "description": "Schema for profile YAML files in profiles/. Each profile belongs to exactly one axis and is allowed to populate only fields owned by that axis. This guarantees that merging profiles from different axes cannot overwrite each other.",
+  "type": "object",
+  "required": ["_profile_name", "_profile_description", "_profile_axis"],
+  "properties": {
+    "_profile_name": {
+      "type": "string",
+      "description": "Filename-safe name (must match the YAML basename without .yaml).",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "_profile_description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "_profile_axis": {
+      "type": "string",
+      "enum": ["language", "framework", "provider", "capability"],
+      "description": "Which axis this profile belongs to. Determines which top-level keys it may set."
+    }
+  },
+  "oneOf": [
+    {
+      "title": "language axis",
+      "description": "Owns stack commands, lsp, formatter, and mcp.serena. Cardinality: exactly 1 per manifest.",
+      "properties": {
+        "_profile_axis": {"const": "language"},
+        "_profile_name": {"type": "string"},
+        "_profile_description": {"type": "string"},
+        "stack": {"type": "object"},
+        "lsp": {"type": "object"},
+        "formatter": {"type": "object"},
+        "mcp": {
+          "type": "object",
+          "properties": {
+            "serena": {"type": "object"}
+          },
+          "additionalProperties": false
+        },
+        "code_quality": {
+          "type": "object",
+          "description": "Language-level forbidden patterns (list-add). Avoid framework/security patterns here — those belong to framework or capability profiles.",
+          "properties": {
+            "forbidden_patterns": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "framework axis",
+      "description": "Owns ui and code_quality.forbidden_patterns. Cardinality: 0..N per manifest. Touching stack/lsp/formatter/provider/models/mcp is forbidden — those belong to other axes.",
+      "properties": {
+        "_profile_axis": {"const": "framework"},
+        "_profile_name": {"type": "string"},
+        "_profile_description": {"type": "string"},
+        "ui": {"type": "object"},
+        "code_quality": {
+          "type": "object",
+          "properties": {
+            "forbidden_patterns": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "provider axis",
+      "description": "Owns provider and models. Cardinality: exactly 1 per manifest. Must not touch any other field — the bug where ollama-cloud silently disabled kotlin-lsp came from violating this rule.",
+      "properties": {
+        "_profile_axis": {"const": "provider"},
+        "_profile_name": {"type": "string"},
+        "_profile_description": {"type": "string"},
+        "provider": {"type": "object"},
+        "models": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "capability axis",
+      "description": "Owns code_quality.forbidden_patterns (list-add). May also wire agent skills via the kit pipeline. Cardinality: 0..N per manifest.",
+      "properties": {
+        "_profile_axis": {"const": "capability"},
+        "_profile_name": {"type": "string"},
+        "_profile_description": {"type": "string"},
+        "code_quality": {
+          "type": "object",
+          "properties": {
+            "forbidden_patterns": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

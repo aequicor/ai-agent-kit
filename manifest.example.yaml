@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /update)
 # ─────────────────────────────────────────────
-kit_version: "1.0.0"
+kit_version: "2.0.0"
 
 # ─────────────────────────────────────────────
 # EDITORS
@@ -32,13 +32,23 @@ vault_path: vault
 # ─────────────────────────────────────────────
 # STACK
 # ─────────────────────────────────────────────
-# Available profiles (left-to-right merge, manifest values win):
-#   Stack:      kotlin-multiplatform | minecraft-paper-plugin | generic
-#   Provider:   ollama-cloud
-#   Capability: requirements-pipeline (BA / CCR / SA / Coverage / Consistency)
+# Profiles are picked along four orthogonal axes (see README → "Available profiles"):
+#   language    (exactly 1):  kotlin-gradle | make-generic
+#   framework   (0..N):       compose-multiplatform | paper-plugin
+#   provider    (exactly 1):  routerai | ollama-cloud
+#   capability  (0..N):       security-baseline (always-on) | solid | requirements-pipeline
+#
+# Profiles in different axes own disjoint fields, so cross-axis merge is conflict-free.
+# Within-axis merge concatenates lists (forbidden_patterns).
 stack:
   language: kotlin
-  profiles: [kotlin-multiplatform, requirements-pipeline]
+  profiles:
+    - kotlin-gradle           # language
+    - compose-multiplatform   # framework
+    - routerai                # provider
+    - security-baseline       # capability (auto-added if missing)
+    - solid                   # capability
+    - requirements-pipeline   # capability
 
   build_command: "./gradlew"
   compile_command: "./gradlew compileKotlin"

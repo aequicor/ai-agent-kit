@@ -30,28 +30,46 @@ Ask PO every question below in a numbered list. Wait for ALL answers before proc
 
 - **Q3b.** Vault path (relative to project root) `[default: vault]`. This is the root folder where KnowledgeOS stores all agent-generated documentation (requirements, specs, test cases, guidelines, etc.). KnowledgeOS default is `vault`. Legacy ai-agent-kit installs used `.vault` — enter `.vault` if migrating from that setup.
 
-### 3. Stack profile
+### 3. Profiles (axis-based)
+
+Profiles are organised into four orthogonal **axes**. Each profile declares `_profile_axis` and is allowed to populate only fields owned by that axis, so cross-axis selections cannot overwrite each other.
+
+| Axis | Cardinality | Owns | Examples |
+|------|------------|------|----------|
+| `language` | exactly 1 | `stack` commands, `lsp`, `formatter`, `mcp.serena` | `kotlin-gradle`, `make-generic` |
+| `framework` | 0..N | `ui`, `code_quality.forbidden_patterns` (list-add) | `compose-multiplatform`, `paper-plugin` |
+| `provider` | exactly 1 | `provider`, `models` | `routerai`, `ollama-cloud` |
+| `capability` | 0..N (always includes `security-baseline`) | `code_quality.forbidden_patterns` (list-add); may wire agents via skills | `security-baseline`, `solid`, `requirements-pipeline` |
 
 Fetch the live profile list: `RAW_BASE/profiles/` directory listing via GitHub API:
-`https://api.github.com/repos/{KIT_REPO}/contents/profiles`. Parse, strip `.yaml`.
+`https://api.github.com/repos/{KIT_REPO}/contents/profiles`. For each `.yaml`, fetch and parse only the front-matter (`_profile_name`, `_profile_description`, `_profile_axis`). Group into the four axes when presenting to PO.
 
-If API fetch fails, use this hardcoded list:
-- `kotlin-multiplatform` — KMP (Compose Desktop + Android + iOS + Ktor)
-- `minecraft-paper-plugin` — Minecraft Paper plugin (Kotlin / Gradle KTS)
-- `generic` — language-agnostic baseline
-- `ollama-cloud` — Ollama Cloud provider profile
-- `requirements-pipeline` — capability profile (BA/CCR/SA/Coverage/Consistency)
-- `solid` — capability profile (SOLID principles + Clean Architecture rules)
+If the API fetch fails, use this hardcoded grouping:
+- **language:** `kotlin-gradle`, `make-generic`
+- **framework:** `compose-multiplatform`, `paper-plugin`
+- **provider:** `routerai`, `ollama-cloud`
+- **capability:** `security-baseline` (always-on), `solid`, `requirements-pipeline`
 
-- **Q4.** Stack profile `[default: kotlin-multiplatform]`. Multiple allowed (comma-separated). Recommended combos: `kotlin-multiplatform, ollama-cloud, requirements-pipeline`, `kotlin-multiplatform, solid, requirements-pipeline`.
+Before asking Q4a, **auto-detect a smart default for the language axis**:
+- If `<target>/settings.gradle.kts` or `<target>/build.gradle.kts` exists → default is `kotlin-gradle`.
+- Otherwise → default is `make-generic`.
+
+Ask one question per axis:
+
+- **Q4a (language).** Pick exactly one. `[default: <auto-detected>]`
+- **Q4b (framework).** Pick zero or more (comma-separated). `[default: empty]`. Recommended pairings: `kotlin-gradle + compose-multiplatform` for KMP apps; `kotlin-gradle + paper-plugin` for Minecraft Paper plugins.
+- **Q4c (provider).** Pick exactly one. `[default: routerai]`
+- **Q4d (capability).** Pick zero or more (comma-separated). `[default: security-baseline]`. `security-baseline` is included automatically even if you leave the field empty.
+
+**Validation (before continuing):** count selections per axis. If `language` ≠ 1 or `provider` ≠ 1 → re-ask Q4a/Q4c (max 3 retries). If `security-baseline` is missing from the capability list → silently prepend it.
 
 ### 4. Build commands
 
-Only ask if profile is `generic` OR PO wants overrides:
-- **Q5.** Build command `[from profile]`
-- **Q6.** Compile command `[from profile]`
-- **Q7.** Lint command `[from profile]`
-- **Q8.** Test command `[from profile]` — for Gradle, must contain literal `[module]` placeholder, e.g. `./gradlew :[module]:test`.
+Only ask if the chosen language profile is `make-generic` OR PO wants overrides:
+- **Q5.** Build command `[from language profile]`
+- **Q6.** Compile command `[from language profile]`
+- **Q7.** Lint command `[from language profile]`
+- **Q8.** Test command `[from language profile]` — for Gradle, must contain literal `[module]` placeholder, e.g. `./gradlew :[module]:test`.
 
 ### 5. Modules
 
@@ -86,43 +104,63 @@ If `<target>/settings.gradle.kts` or `build.gradle.kts` exists, read it and prop
 
 - **Q18.** Enable `context7`? `[default: yes]`. If yes → **Q18a.** API key env var name `[default: CONTEXT7_API_KEY]`.
 - **Q19.** Enable `knowledge-my-app` (KnowledgeOS)? `[default: yes]`. If yes → **Q19a.** URL `[default: http://localhost:8085/mcp]`.
-- **Q20.** Enable `serena` (semantic code nav, JVM-focused)? `[default: yes for Kotlin profiles, no for generic]`.
+- **Q20.** Enable `serena` (semantic code nav, JVM-focused)? `[default: from language profile]`.
 
 ### 9. LSP
 
-- **Q21.** Enable LSP? `[default: from profile]`. If yes → **Q22.** LSP command `[default: kotlin-lsp for Kotlin]`. **Q23.** Extensions `[default: .kt, .kts]`.
+- **Q21.** Enable LSP? `[default: from language profile]`. If yes → **Q22.** LSP command `[default: kotlin-lsp for Kotlin]`. **Q23.** Extensions `[default: .kt, .kts]`.
 
 ### 10. UI / Designer
 
-- **Q24.** UI framework name `[default: from profile, or "null" to omit Designer]`
-- **Q25.** Target platforms `[default: from profile]`
+- **Q24.** UI framework name `[default: from framework profile, or "null" to omit Designer]`
+- **Q25.** Target platforms `[default: from framework profile]`
 - **Q26.** Color palette: ask "Do you have a design system?" If yes, for each color: name, HEX, purpose.
 
 ### 11. Code quality
 
-- **Q27.** Forbidden patterns: show profile defaults; ask "use these?" If no, collect custom list.
+- **Q27.** Forbidden patterns: show the **union** of `code_quality.forbidden_patterns` from every selected profile (deduplicated, preserving order). Ask "use these?" If no, collect a custom list.
 
 ### 12. Formatter
 
-- **Q28.** Enable formatter? `[default: from profile]`. If yes → **Q29.** Name. **Q30.** Command (list). **Q31.** Extensions.
+- **Q28.** Enable formatter? `[default: from language profile]`. If yes → **Q29.** Name. **Q30.** Command (list). **Q31.** Extensions.
 
 ---
 
 ## PHASE 2 — Build manifest
 
-### 2.1. Fetch profile YAMLs and deep-merge
+### 2.1. Fetch profile YAMLs and validate axes
 
-For each profile in the chosen list (left-to-right):
-- Fetch `RAW_BASE/profiles/<name>.yaml`.
-- Parse YAML into a tree of nested maps/lists/scalars.
-- Drop top-level keys starting with `_` (these are profile metadata: `_profile_name`, `_profile_description`, `_profile_category`).
+For each chosen profile name:
+- Fetch `RAW_BASE/profiles/<name>.yaml` and parse it.
+- Read `_profile_axis`. If missing or not in `{language, framework, provider, capability}` → STOP, report "profile <name> has no valid `_profile_axis`".
+- Validate the profile against `RAW_BASE/kit/profile.schema.json` (axis-specific allowed keys). If a profile populates a field outside its axis (e.g. a `provider`-axis profile sets `lsp`) → STOP and report which key violates the contract.
 
-Then `merged_profiles = profile_1`. For each subsequent profile, `merged_profiles = deep_merge(merged_profiles, profile_n)`.
+**Cardinality check:**
+- exactly one `language` profile selected, exactly one `provider` profile selected.
+- `framework` and `capability` may be 0..N.
+- If the `capability` list does not include `security-baseline`, prepend it silently.
+
+If cardinality fails → re-ask Q4a / Q4c.
+
+### 2.1.1. Axis-aware merge
+
+Because every profile is restricted to its axis-owned keys (per `profile.schema.json`), profiles from **different** axes cannot collide on any field — they always fill disjoint slots. Profiles within the same axis follow these rules:
+
+- `language` and `provider` axes have cardinality 1 → no within-axis merging needed.
+- `framework` and `capability` axes only ever populate `code_quality.forbidden_patterns` (and `framework` may set `ui`); their lists merge by **concat + dedupe**.
+
+**Merge algorithm** (run in this fixed order so the result is deterministic regardless of how PO listed profiles in Q4a–d):
+
+1. Start with `merged = {}`.
+2. Apply the chosen `language` profile (whole-tree).
+3. Apply the chosen `provider` profile (whole-tree).
+4. For each `framework` profile in selection order: deep-merge into `merged`.
+5. For each `capability` profile in selection order (with `security-baseline` first): deep-merge into `merged`.
 
 **Deep-merge algorithm** (apply recursively):
 - If both sides are **maps**: for each key in either side, recurse on the values; missing keys are added as-is.
-- If both sides are **lists**: concatenate, then deduplicate while preserving order (drop later items that equal earlier items).
-- Otherwise: **override** — right side wins.
+- If both sides are **lists**: concatenate, then deduplicate while preserving order.
+- Otherwise: if `merged` already has a non-null scalar value for that key, raise an error — this means two profiles claimed the same field, which is a contract violation that should have been caught by `profile.schema.json`. STOP and report it (do not silently let "right side win" — that was the old bug).
 
 ### 2.2. Apply PO answers on top of profile defaults
 
@@ -131,19 +169,19 @@ Then `merged_profiles = profile_1`. For each subsequent profile, `merged_profile
 Map PO answers into manifest structure:
 
 ```yaml
-kit_version: "1.0.0"
+kit_version: "2.0.0"
 editors: [opencode]
 project:
   name: <Q2>
   description: <Q3>
 vault_path: <Q3b or "vault">
 stack:
-  language: <from chosen profile or PO override>
-  profiles: [<chosen profile list>]
-  build_command: <Q5 or profile>
-  compile_command: <Q6 or profile>
-  lint_command: <Q7 or profile>
-  test_command: <Q8 or profile>
+  language: <from chosen language profile or PO override>
+  profiles: [<chosen profile list — language first, then provider, then framework(s), then capability(ies)>]
+  build_command: <Q5 or language profile>
+  compile_command: <Q6 or language profile>
+  lint_command: <Q7 or language profile>
+  test_command: <Q8 or language profile>
 modules:
   - name: <Q9.a>
     gradle_module: <Q9.b or null>
@@ -185,11 +223,13 @@ formatter:
 
 ### 2.3. Validate manifest against schema
 
+Per-profile axis validation already ran in 2.1 against `kit/profile.schema.json`. This step validates the **assembled** manifest.
+
 Fetch `RAW_BASE/kit/manifest.schema.json`. Parse. Validate `final_manifest`:
 - All `required` fields present and non-empty.
 - All field types match.
 - All regex `pattern` constraints match (e.g. `kit_version` must match `^\d+\.\d+\.\d+$`).
-- All `enum` values valid (e.g. `editors[]` items ∈ `["opencode", "cursor", "copilot"]`).
+- All `enum` values valid (e.g. `editors[]` items ∈ `["opencode"]`).
 
 If validation fails — show PO the errors and re-ask only the relevant questions. Do not proceed.
 
@@ -464,6 +504,8 @@ Report back a summary of what was done.
 ## Stop conditions
 
 - **Manifest validation fails 3 times in a row** → STOP, ask PO to inspect the manifest manually.
+- **Profile axis contract violated** (a profile sets a field outside its axis, or two profiles in the merge claim the same scalar field) → STOP, report which profile and which key.
+- **Cardinality violated** (zero or multiple language/provider profiles after Q4a–c) → re-ask the relevant axis question, max 3 retries, then STOP.
 - **A kit file 404s when fetched** → STOP, report the exact URL and ask PO whether the kit has been published yet at the expected `KIT_REPO`.
 - **A literal API key is detected anywhere** → STOP immediately, warn PO.
 - **Target directory is non-empty AND contains a `.opencode/` directory already** → STOP, warn PO that this is a fresh install path. Suggest `/update` from inside the existing kit instead.

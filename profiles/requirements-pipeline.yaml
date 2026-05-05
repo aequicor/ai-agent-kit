@@ -31,4 +31,4 @@
 
 _profile_name: requirements-pipeline
 _profile_description: "AI-driven requirements pipeline: BA → CCR → QA → Coverage → SA → CCR(tech) → Consistency"
-_profile_category: capability
+_profile_axis: capability

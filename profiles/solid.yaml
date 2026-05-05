@@ -16,11 +16,11 @@
 #   - Law of Demeter / tell-don't-ask
 #   - Composition over inheritance
 #
-# Designed to layer on top of kotlin-multiplatform, generic, or any other stack profile.
+# Designed to layer on top of any language profile (kotlin-gradle, make-generic, ...).
 
 _profile_name: solid
 _profile_description: "SOLID principles and clean architecture rules — language-agnostic capability profile"
-_profile_category: capability
+_profile_axis: capability
 
 code_quality:
   forbidden_patterns:
