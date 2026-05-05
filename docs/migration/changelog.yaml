@@ -1,4 +1,52 @@
 versions:
+  - version: "4.3.1"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix infrastructure-failure bias in the requirements pipeline corner case
+      analysis. Add a 7th attack axis — User Journey & Context — to both
+      @CornerCaseReviewer (BUSINESS mode) and the corner-case-refinement skill.
+
+      Problem: shipped corner case registers were dominated by server-down,
+      rate-limit, async-timeout, and concurrent-user scenarios while everyday
+      user-facing breakages went unexplored — return-to-draft, two-tab
+      conflicts, navigation-back mid-flow, mobile/slow-connection UX, account
+      in unusual state, locale mismatches, misclicked-but-reasonable buttons,
+      first-run-without-prerequisite. Real users break features through these
+      paths far more often than through infrastructure failures.
+
+      Root cause: the 6-axis taxonomy weighted half of all axes (External
+      Dependency Failures, Scale & Capacity, Temporal & Concurrency) toward
+      infrastructure threat modelling. The remaining 3 axes covered user input
+      but framed it as boundary attacks rather than journey gaps. The THINK
+      step also primed agents to look for "the most dangerous aspect" —
+      pushing toward catastrophic infra scenarios rather than typical
+      user paths.
+
+      Fix:
+        - Added axis 7 "User Journey & Context" to CornerCaseReviewer BUSINESS
+          mode with 11 concrete prompts (back navigation, two-tab use,
+          stale drafts, account states, mobile/offline, accessibility,
+          misclicks, locale, role switching, etc.).
+        - Added category 7 to the corner-case-refinement skill taxonomy with
+          the same lens.
+        - Added a mandatory balance rule to both: at least one third of
+          questions/rows must come from user-journey axes (1/2/3/7); category 7
+          must produce ≥1 row for any UI-bearing feature.
+        - Reframed the THINK step to ask explicitly about "the most common
+          everyday user journey — and where could it silently break for a
+          typical user?" alongside the existing danger-focused question.
+        - Added a Red Flag for registers dominated by infrastructure failures
+          and a balance check to Self-Review.
+
+      No manifest changes. No host wrapper changes. Affects @CornerCaseReviewer
+      (BUSINESS mode) and corner-case-refinement skill output only.
+    files_changed:
+      - kit/_shared/agents/CornerCaseReviewer.body.md.template
+      - kit/_shared/skills/corner-case-refinement/SKILL.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.3.0"
     released: "2026-05-05"
     breaking: false

@@ -20,10 +20,17 @@ Input: requirements file path. Previous questions list (if this is a repeat run)
 ```
 0. THINK — before attacking, reason briefly:
            - What is the most dangerous aspect of this feature (data loss? money? security)?
-           - Which of the 6 axes is most likely to reveal gaps?
+           - What is the most common, everyday user journey through this feature — and where could it silently break for a typical user (not an edge case, not an attacker)?
+           - Which of the 7 axes is most likely to reveal gaps?
    Record 2-3 key conclusions. Do NOT skip this step.
 
-Attack the requirements document across 6 axes. For each axis, generate concrete questions about scenarios NOT covered in the document.
+   **Balance rule (mandatory):** at least one third of the questions you produce
+   MUST come from axes 1, 2, 3, or 7 (everyday user-facing scenarios). Do NOT let
+   infrastructure failure modes (axes 4–6) dominate the output. If all your
+   questions are about server outages, rate limits, and concurrent users, you
+   are missing the way real users actually break the feature.
+
+Attack the requirements document across 7 axes. For each axis, generate concrete questions about scenarios NOT covered in the document.
 
 ### Attack axes
 
@@ -62,6 +69,19 @@ Attack the requirements document across 6 axes. For each axis, generate concrete
 - What if a scheduled background job runs during this user operation?
 - What if the user's session expires mid-operation?
 
+**7. User Journey & Context** *(everyday-user lens — most often missed)*
+- What if the user navigates away mid-flow and returns later (browser back, closed tab, app switch, refresh)?
+- What if the user opens this feature in two tabs / two devices and acts in both?
+- What if the user performs steps in a different but intuitive order than the happy path assumes?
+- What if a new user encounters this without an implicit prerequisite (onboarding, profile setup, prior feature usage, KYC)?
+- What if the user returns to an in-progress / draft state hours or days later — is the data still valid (prices, stock, terms)?
+- What if the user's account is technically valid but in an unusual state (trial, suspended, recently migrated, role just changed mid-session)?
+- What if the user is on mobile / small screen / slow connection / offline and the design assumed desktop?
+- What if the user uses keyboard-only / screen reader / browser autofill / paste in ways the UX didn't anticipate?
+- What if the user misreads UI labels and clicks a reasonable-but-wrong button (Save vs Submit, Cancel vs Close, Delete vs Archive)?
+- What if the user has a different language / locale / time zone / currency than the system default?
+- What if the same user has multiple roles / tenants and switches context during the flow?
+
 ### Repeat run rule
 
 If this is a repeat run (previous questions provided), perform two checks in order:
@@ -70,7 +90,7 @@ If this is a repeat run (previous questions provided), perform two checks in ord
 For each question from the previous run: is it now addressed in the updated requirements (as a new AC, Out of Scope entry, or explicit answer)? If not — carry it forward as still OPEN.
 
 **Check 2 — Attack new content.**
-The orchestrator passes a `New ACs since last run:` field containing the list of Acceptance Criteria added by BA UPDATE in this iteration. For each listed new AC: apply the 6-category attack. Generate questions about corner cases not yet covered by that AC. Do NOT try to identify new ACs by diffing the file yourself — use only the list provided in the input field. If the field is "none" or empty, skip Check 2.
+The orchestrator passes a `New ACs since last run:` field containing the list of Acceptance Criteria added by BA UPDATE in this iteration. For each listed new AC: apply the 7-category attack. Generate questions about corner cases not yet covered by that AC. Do NOT try to identify new ACs by diffing the file yourself — use only the list provided in the input field. If the field is "none" or empty, skip Check 2.
 
 **Verdict:**
 - DONE — all previous questions addressed AND no new questions from new content.
