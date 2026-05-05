@@ -37,12 +37,12 @@ PO marks Status ❌ for known bugs and may add new TC rows there at any time. `/
 TRIAGE   — clear stacktrace / self-evident steps → DISPATCH directly.
            complex / needs reproduction → DEBUG first.
 
-DEBUG    — task @debugger with TC Steps + Notes + environment. Output: BUG-NNN.md.
+DEBUG    — task @debugger with TC Description + (Notes if present) + environment. Output: BUG-NNN.md.
 
 DISPATCH — task @BugFixer:
              TC: <TC-id>
              Test-cases file: <path>
-             DEF-id: <DEF-id from Notes column, or empty>
+             DEF-id: <DEF-id from Defects log for this TC-id, or empty>
            @BugFixer: ANALYZE → REPRODUCE (failing test) → FIX → REGRESSION TEST →
              @CodeReviewer → BUILD → update test-cases.md (Status FAIL→PASS, Defects log OPEN→FIXED)
              → commit → write report to {{VAULT_PATH}}/guidelines/<module>/reports/<bug-name>.md.

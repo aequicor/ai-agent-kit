@@ -65,18 +65,24 @@ For each requirement and acceptance criterion from the spec/requirements:
 Each test case is **one row in the table** at the top of the document. The table is owned by AI agents. Columns:
 
 ```
-| ID    | Status | Notes | Type        | Pre-requirements        | To be                    |
-|-------|--------|-------|-------------|-------------------------|--------------------------|
-| TC-NNN| PEND   | —     | happy path  | logged in, DB seeded    | dashboard renders        |
+| ID    | Status | Notes | Type        | Description                       | To be                    |
+|-------|--------|-------|-------------|-----------------------------------|--------------------------|
+| TC-NNN| PEND   | —     | happy path  | submit valid login form           | dashboard renders        |
 ```
+
+`Description` = what to test and how (one-line). Prefix with the source tag
+in brackets: `[US-N]`, `[AC-N]`, `[CC-N <severity>]`, `[spec]`, `[PO-added]`.
+
+The `Notes` column is **owned by the manual tester** — they fill it when a TC
+fails (root-cause analysis, remarks). AI agents must always leave Notes as `—`
+when adding rows and never edit it after. The DEF-id link lives only in the
+Defects log entry (which references the TC by id), not in the Notes column.
 
 **Do not generate `TC-NN` detailed sections** under the table. The template
 block (`TC-00: Template`) stays as a single static example. The manual tester
 copies and fills it in for individual TCs on demand — typically only for
 failing or hard-to-reproduce cases. The table row alone is enough; do not
 duplicate its content into a section below.
-
-Notes column doubles as defect link — when a defect is created, write `DEF-NNN: <one-line cause>` in Notes.
 
 ### 1.4 Write the document
 
@@ -123,7 +129,7 @@ Present test cases one by one (or in groups by priority). For each test case:
 ```
 TC-NNN: [name]
 Type: <type>
-Pre-requirements: ...
+Description: ...
 To be: ...
 (if a detailed section exists below the table) Steps:
   1. ...
@@ -131,19 +137,19 @@ To be: ...
 
 Please enter result:
   PASS — actual result matches expected
-  FAIL — describe what went wrong (1-line cause for Notes)
+  FAIL — give a one-line bug summary for the Defects log
   SKIP — with reason
 ```
 
 ### 2.3 Record results
 
-For each test case result, update the table row:
+For each test case result, update only the **Status** column in the table row:
 
-- **PASS:** Set Status to PASS in the table row.
-- **FAIL:** Set Status to FAIL, write `DEF-NNN: <one-line cause>` to Notes, append a new DEF-NNN entry to Defects Log.
-- **SKIP:** Set Status to SKIP, write reason to Notes.
+- **PASS:** Set Status to PASS.
+- **FAIL:** Set Status to FAIL, append a new DEF-NNN entry to the Defects log (which references the TC by id). Do **not** edit the Notes column — the manual tester writes their own root-cause analysis there.
+- **SKIP:** Set Status to SKIP. The manual tester may add a reason to Notes themselves.
 
-The detailed section below the table (As is / To be) is updated by the manual tester, not by the agent.
+The detailed section below the table (Description / Steps / As is / To be) is updated by the manual tester, not by the agent.
 
 ### 2.4 Defect creation protocol
 
@@ -153,7 +159,7 @@ When a defect is found, append a one-line entry to the Defects log section:
 - **DEF-NNN** — [SEVERITY] *<one-line summary>*. TC-NNN. Status: OPEN. Reported: YYYY-MM-DD by @TestRunner.
 ```
 
-Then write `DEF-NNN: <one-line cause>` to the Notes column of the affected TC row.
+The DEF entry references the TC by id — that is the only link. **Do not write the DEF-id into the Notes column** — Notes belongs to the manual tester.
 
 Severity: `CRITICAL | HIGH | MEDIUM | LOW`. Lifecycle: `OPEN → FIXED → VERF`.
 

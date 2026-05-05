@@ -1,4 +1,57 @@
 versions:
+  - version: "2.3.0"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Two refinements to the test-cases ownership model:
+
+      1. **Notes is now manual-tester-only.** AI agents (@QA, @TestRunner,
+         @BugFixer) never write to the Notes column. The manual tester fills
+         it in when a TC fails — to record the bug's root cause or any
+         remarks. AI always leaves Notes as `—`. The DEF-id link to the
+         Defects log is implicit: each defect entry references its TC by id,
+         so no column-level link is needed.
+
+      2. **Pre-requirements column renamed to Description.** The column
+         describes "what to test and how" as a one-line summary. Source
+         tracking (US-N / AC-N / CC-N / spec / PO-added / bug-fix) moves
+         into a `[TAG]` prefix at the start of Description, e.g.
+         `[CC-3 Crit] login with email containing '+' character`. This
+         keeps Description self-explanatory and lets CoverageChecker grep
+         for the tag pattern.
+
+      Detailed `TC-00: Template` block also renamed: `Pre-requirements` →
+      `Description`. Steps / As is / To be unchanged.
+
+      Existing test-cases files keep working — agents will still update
+      Status and Defects log entries. To migrate column headers manually:
+      rename `Pre-requirements` → `Description`, prepend the source tag
+      (previously stored elsewhere) to each Description cell, and clear
+      AI-written Notes content (manual tester will refill on next failure).
+
+      Updated files:
+      - kit/.vault/_templates/test-cases.md — column rename, Notes ownership.
+      - kit/.opencode/agents/QA.md.template — column rename, source tag in
+        Description, never-touch-Notes rule.
+      - kit/.opencode/agents/TestRunner.md.template — never write to Notes,
+        source tag detection in SCAN, APPEND drops Pre-requirements field.
+      - kit/.opencode/agents/BugFixer.md.template — never touch Notes,
+        DEF-id lookup goes via Defects log instead of Notes column.
+      - kit/.opencode/agents/Main.md.template — DEF-id from Defects log,
+        Description prefix `[bug-fix]` for Mode B.
+      - kit/.opencode/commands/fix.md — DEF-id source clarified.
+      - kit/.opencode/skills/test-execution/SKILL.md — full sync.
+    files_changed:
+      - kit/.vault/_templates/test-cases.md
+      - kit/.opencode/agents/QA.md.template
+      - kit/.opencode/agents/TestRunner.md.template
+      - kit/.opencode/agents/BugFixer.md.template
+      - kit/.opencode/agents/Main.md.template
+      - kit/.opencode/commands/fix.md
+      - kit/.opencode/skills/test-execution/SKILL.md
+    manifest_changes:
+      added_fields: []
+
   - version: "2.2.1"
     released: "2026-05-05"
     breaking: false

@@ -235,7 +235,7 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
                → read that row from test-cases.md, then step 1 (TRIAGE).
              - PO gave free-form description:
                → dispatch @TestRunner (Mode=APPEND) to record a new TC FAIL
-                 (Source = bug-fix). Then step 1 (TRIAGE).
+                 (Description prefixed `[bug-fix]`). Then step 1 (TRIAGE).
              Read .planning/CURRENT.md → get active_task → read .planning/tasks/<active_task>.md
              to determine the current feature/module.
 
@@ -252,14 +252,14 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
              clear stacktrace or self-evident steps → step 3 (DISPATCH BugFixer).
              complex, needs reproduction → step 2 (DEBUG).
 
-2. DEBUG  — task @debugger. Pass: TC-id + Steps + Notes from test-cases.md, environment.
+2. DEBUG  — task @debugger. Pass: TC-id + Description + (Notes if tester wrote one) from test-cases.md, environment.
              Output: BUG-NNN.md with root cause hypothesis + failing test reference.
              If @debugger discovers an additional scenario → dispatch @TestRunner APPEND
              so it's tracked.
              CHECKPOINT: .planning/tasks/<active_task>.md.
 
 3. DISPATCH BugFixer — task @BugFixer. Pass:
-             - Mode A input: TC-id + test-cases file path + DEF-id (extracted from Notes column, may be empty).
+             - Mode A input: TC-id + test-cases file path + DEF-id (looked up in Defects log by TC-id, may be empty).
              @BugFixer fixes, runs CodeReviewer, builds, updates test-cases.md
              (Status FAIL→PASS, Defects log OPEN→FIXED), commits, writes report.
              Wait for HAND OFF result with TC-id, DEF-id, report path.

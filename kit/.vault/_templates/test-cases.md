@@ -24,13 +24,15 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 
 ## How this file works
 
-This is a **living document**. Multiple parties update it over time:
+This is a **living document**. Ownership is split:
 
-- **@QA** (REQUIREMENTS phase) — creates this file from requirements + corner cases. All Status default to `PEND`.
+- **@QA** (REQUIREMENTS phase) — creates this file from requirements + corner cases. Fills the table with one row per TC. All Status default to `PEND`. Notes empty.
 - **@QA** (IMPLEMENTATION phase, DRAFT/FINAL) — appends impl-level TCs (unit-edge, integration, error). Append-only.
-- **@TestRunner** — runs interactive walkthrough (mode `EXECUTE`), updates the table (Status, Notes), allocates DEF-ids in Defects log.
+- **@TestRunner** — interactive walkthrough (mode `EXECUTE`). Updates **Status only**. When a TC fails, allocates DEF-id and appends one entry to the Defects log (which references the TC by id).
 - **@BugFixer** — after a fix, updates Status `FAIL → PASS` and Defects log `OPEN → FIXED` for the row it fixed.
-- **Manual tester** — writes the TC sections below the table (Pre-requirements, Steps, As is, To be). Can also edit Notes in the table to record bug root cause or remarks.
+- **Manual tester** — fills **Notes** when a TC fails (bug root cause, remarks). May also copy the `TC-00: Template` block and fill it in for any TC where elaboration helps (typically failing cases).
+
+AI agents do NOT touch the Notes column. AI agents do NOT generate per-TC detailed sections.
 
 `/fix` reads this file, scans for `FAIL` and `PEND` rows, asks PO which to fix, dispatches @BugFixer per chosen TC, then dispatches @TestRunner (RERUN) to verify.
 
@@ -46,11 +48,15 @@ This is a **living document**. Multiple parties update it over time:
 
 ---
 
-> Filled by @TestRunner (AI agent). Do not edit manually — except the **Notes** column, where the manual tester records bug root cause or remarks.
+> Filled by AI agents. Columns AI may edit: **Status only**.
+> The **Notes** column is owned by the manual tester — written when a TC fails.
 
-| ID    | Status | Notes | Type | Pre-requirements | To be |
-|-------|--------|-------|------|------------------|-------|
-| TC-01 | PEND   | —     |      |                  |       |
+| ID    | Status | Notes | Type | Description | To be |
+|-------|--------|-------|------|-------------|-------|
+| TC-01 | PEND   | —     |      |             |       |
+
+> **Description** = what to test and how (one-line summary).
+> **To be** = expected outcome (observable, e.g. HTTP 200 + redirect).
 
 ---
 
@@ -63,9 +69,8 @@ This is a **living document**. Multiple parties update it over time:
 
 ## TC-00: Template
 
-**Pre-requirements:**
-
-* pre-requirement number 1
+**Description:**
+what to test, how to test it
 
 **Steps:**
 
@@ -81,6 +86,6 @@ what to be
 
 ## Defects log
 
-> Append-only. Each row links back to a TC via the Notes column above. `/fix` and @BugFixer maintain this section automatically.
+> Append-only. Each entry references a TC by id. AI agents (@TestRunner / @BugFixer) maintain this section.
 
 - **DEF-001** — [HIGH] *<one-line summary>*. TC-NN. Status: OPEN. Reported: YYYY-MM-DD by @TestRunner.

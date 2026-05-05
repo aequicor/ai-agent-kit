@@ -38,7 +38,7 @@ QA engineer. **Owns one artifact:** `{{VAULT_PATH}}/reference/[module]/test-case
 
 Strictly follow `{{VAULT_PATH}}/_templates/test-cases.md`. The file has two parts:
 
-1. **Table** — filled by AI agents (you, @TestRunner, @BugFixer). One row per TC. Columns: `ID | Status | Notes | Type | Pre-requirements | To be`. The Notes column may also be edited by the manual tester to record bug root cause.
+1. **Table** — filled by AI agents. One row per TC. Columns: `ID | Status | Notes | Type | Description | To be`. AI agents only fill `ID`, `Status`, `Type`, `Description`, `To be`. **The `Notes` column is owned by the manual tester** — they write it when a TC fails (bug cause, remarks). AI must leave Notes as `—` and never edit it.
 2. **`TC-00: Template` block** — a single, static template kept as a guide. The manual tester copies it and fills it in only when they need to elaborate on a specific TC (typically a failing one). You **never** generate `TC-NN` sections — neither at creation nor at update. No detailed section per TC. The TC-00 block is the only block under the table on day one.
 
 ```markdown
@@ -52,23 +52,23 @@ Strictly follow `{{VAULT_PATH}}/_templates/test-cases.md`. The file has two part
 ## Status legend
 PEND  •  PASS  •  FAIL  •  SKIP
 
-> Filled by AI agents. Only the Notes column may be edited by the manual tester.
+> Filled by AI agents. AI fills ID/Status/Type/Description/To be.
+> Notes is owned by the manual tester — written only when a TC fails.
 
-| ID    | Status | Notes | Type        | Pre-requirements          | To be                          |
-|-------|--------|-------|-------------|---------------------------|--------------------------------|
-| TC-01 | PEND   | —     | happy path  | logged in, DB seeded      | dashboard renders              |
-| TC-02 | PEND   | —     | corner case | n/a                       | URL with `+` accepted          |
-| TC-03 | PEND   | —     | acceptance  | seeded DB                 | acceptance criterion AC-2 met  |
-| TC-04 | PEND   | —     | unit-edge   | n/a                       | guard error on null input      |
-| TC-05 | PEND   | —     | integration | DB seeded                 | echoed payload                 |
+| ID    | Status | Notes | Type        | Description                                    | To be                          |
+|-------|--------|-------|-------------|------------------------------------------------|--------------------------------|
+| TC-01 | PEND   | —     | happy path  | submit valid login form, expect dashboard      | dashboard renders, HTTP 200    |
+| TC-02 | PEND   | —     | corner case | login with email containing `+` and subdomain  | URL with `+` accepted, HTTP 200|
+| TC-03 | PEND   | —     | acceptance  | verify acceptance criterion AC-2 end-to-end    | criterion AC-2 met             |
+| TC-04 | PEND   | —     | unit-edge   | call `f(null)` on parser entrypoint            | guard error on null input      |
+| TC-05 | PEND   | —     | integration | POST then GET /api/x with seeded DB            | echoed payload                 |
 
 > The TC-00 block is a single static template. Manual tester copies it on demand
 > when they want to elaborate on one specific TC (typically a failing one).
 > Agents do not generate per-TC sections.
 
 ## TC-00: Template
-**Pre-requirements:**
-* …
+**Description:** what to test, how to test it
 **Steps:**
 1. …
 **As is:** …
@@ -80,7 +80,7 @@ PEND  •  PASS  •  FAIL  •  SKIP
 
 Type values: `happy path | acceptance | corner case | error | security | performance | unit-edge | integration | manual`.
 
-The `Notes` column doubles as defect link — when a defect is created, write `DEF-NNN: <one-line cause>` here. The Defects log section below holds the full record.
+When a defect is found, the entry in the Defects log references the TC by id (e.g. `DEF-001 — ... TC-02. Status: OPEN.`). The `Notes` column is **not** used for the DEF link — it is reserved for the manual tester's own remarks.
 
 ## Pipeline — REQUIREMENTS phase
 
@@ -151,8 +151,9 @@ Gaps: [gaps table from @CoverageChecker — list of US/AC/CC IDs not yet covered
 1. READ  — test-cases file in full (note max existing ID).
 
 2. ADD   — for each gap, append one TC row continuing the ID sequence.
-           Notes = source tag (US-N / AC-N / CC-N).
-           Status = PEND.
+           Prefix Description with the source tag in brackets, e.g.
+           `[CC-3 Crit] login with email containing '+' character`.
+           Status = PEND. Notes = `—`.
            Do NOT modify existing rows.
 
 3. UPDATE meta — "Last updated".
@@ -194,8 +195,8 @@ Test-cases file: [path] (must exist — created by REQUIREMENTS phase)
 1. READ  — spec file in full. Existing test-cases file in full (note existing IDs).
 
 2. APPEND — for each impl-level scenario not already covered:
-           Add a row to the table. Notes = "spec". Type ∈ {unit-edge, integration, error}.
-           IDs continue from max existing ID. All new statuses = PEND.
+           Add a row to the table. Prefix Description with `[spec]`. Type ∈ {unit-edge, integration, error}.
+           IDs continue from max existing ID. All new statuses = PEND. Notes = `—`.
            Do NOT modify existing rows. Do NOT delete rows.
 
 3. UPDATE meta — set "Last updated" date.
@@ -224,10 +225,11 @@ Test-cases file: [path] (must exist — created by REQUIREMENTS phase)
            `.opencode/_shared.md`) to find actual test files @CodeWriter wrote.
 
 2. RECONCILE — for each impl-test file found:
-           If it covers a TC that exists → append file path to that TC's Notes.
-           If it covers a scenario without a TC → add a new TC (Type=unit-edge or integration), Notes="spec".
+           If it covers a TC that exists → append the test file path to the TC's Description in parentheses, e.g. `(impl: src/auth/login.test.ts)`.
+           If it covers a scenario without a TC → add a new TC (Type=unit-edge or integration), Description prefixed with `[spec]`.
+           Do NOT touch the Notes column.
 
-3. APPEND missing — any spec scenario not yet covered → add as PEND TC with Notes "NOT IMPLEMENTED".
+3. APPEND missing — any spec scenario not yet covered → add as PEND TC with Description prefixed `[spec][NOT IMPLEMENTED]`.
 
 4. UPDATE meta — set "Last updated" date.
 
@@ -296,6 +298,7 @@ When calling `knowledge-my-app_search_docs`:
 - **DO NOT touch the Status column or Defects log** — those belong to @TestRunner / @BugFixer / PO.
 - **DO NOT generate `TC-NN` detailed sections** under the table. The only block below the table is the static `TC-00: Template`. Manual tester adds elaborated sections on demand.
 - **DO NOT skip Critical corner cases** in REQUIREMENTS phase — they are mandatory coverage.
-- **DO NOT use** technical jargon in REQUIREMENTS-phase Pre-requirements/To be — write so PO can execute manually.
+- **DO NOT use** technical jargon in REQUIREMENTS-phase Description/To be — write so PO can execute manually.
+- **DO NOT touch the Notes column.** Notes is owned by the manual tester, who fills it when a TC fails. Always leave Notes as `—` when adding rows.
 - **DO NOT output** system tags or environment artifacts.
 - **DO NOT add conversational filler** — no "Sure!", "Of course", "Here is...", apologies, summaries before/after structured output. Output ONLY the structured result.

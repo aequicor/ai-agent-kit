@@ -58,8 +58,9 @@ Test-cases file: [path]
 1. READ  — test-cases file. Parse the table.
 
 2. COLLECT — list rows where Status ∈ {FAIL, PEND, SKIP}.
-             Mark each row's Source: agent-generated or PO-added (if Source field is empty
-             or note in Notes column says "PO-added", treat as PO-added).
+             Mark each row's source by inspecting the Description column prefix tag
+             (`[US-N]`, `[AC-N]`, `[CC-N <severity>]`, `[spec]`, `[PO-added]`).
+             If Description has no tag, treat as `[PO-added]`.
 
 3. RETURN — strictly:
 
@@ -69,16 +70,16 @@ Test-cases file: [path]
 **Test-cases file:** [path]
 
 **FAIL:** N
-| ID    | Type        | Notes (incl. DEF-id) |
-|-------|-------------|----------------------|
+| ID    | Type        | Description           | DEF-id (from Defects log) |
+|-------|-------------|-----------------------|---------------------------|
 
 **PEND:** N
-| ID    | Type        | Pre-requirements summary |
-|-------|-------------|--------------------------|
+| ID    | Type        | Description           |
+|-------|-------------|-----------------------|
 
 **SKIP:** N
-| ID    | Notes summary |
-|-------|---------------|
+| ID    | Description           | Notes (if tester wrote one) |
+|-------|-----------------------|-----------------------------|
 
 **PO-added rows since last run:** N (TC-ids: ...)
 **Total actionable rows:** N
@@ -103,18 +104,21 @@ Subset: [optional list of TC-ids; if empty → all PEND rows]
 
 1. READ  — file. Parse the table. Read any detailed TC sections written by the tester.
 
-2. PRESENT (per TC) — show ID, Type, Pre-requirements, To be. If a detailed section
+2. PRESENT (per TC) — show ID, Type, Description, To be. If a detailed section
                        exists below, show its Steps too.
                        Ask tester to enter:
                        PASS / FAIL / SKIP.
-                       If FAIL → also ask for Notes (1 line — bug root cause).
+                       If FAIL → also ask for a one-line bug summary so you can
+                       allocate a DEF-id with a meaningful description.
 
 3. RECORD (per response):
    PASS → set Status = PASS in the table.
    FAIL → set Status = FAIL, allocate next DEF-id, append to Defects log:
           "DEF-XXX [<severity>] <one-line summary>. <TC-id>. Status: OPEN."
-          Write the DEF-id and root cause to the Notes column: "DEF-XXX: <cause>".
-   SKIP → set Status = SKIP, write reason to Notes column.
+          DO NOT touch the Notes column — the manual tester owns it and fills
+          it themselves with their root-cause analysis.
+   SKIP → set Status = SKIP. Tell the tester they may add a reason to Notes
+          if they want; do not write it yourself.
 
 4. NEW TC discovered mid-walkthrough — dispatch self in APPEND mode (or just inline-append
                        if scope is small) so the new row is created with a fresh ID.
@@ -153,11 +157,11 @@ Hint: TCs were previously FAIL, fixed by @BugFixer.
              For each, ask PO: "Verify result?" (PASS / FAIL).
 
 3. UPDATE — per response:
-   PASS → set Status = PASS. Clear DEF-id from Notes (or rewrite to "VERF: <cause>").
-          In Defects log: change linked DEF-id from FIXED → VERF.
+   PASS → set Status = PASS. In Defects log: change linked DEF-id from FIXED → VERF.
    FAIL → set Status = FAIL (still failing).
-          In Defects log: change linked DEF-id back to OPEN. Append "retry N" to the
-          Notes column. If retry counter == 3 → STOP, return ESCALATE.
+          In Defects log: change linked DEF-id back to OPEN and append `(retry N)`
+          to the defect entry. If retry counter == 3 → STOP, return ESCALATE.
+          DO NOT edit the Notes column.
 
 4. UPDATE meta — "Last updated".
 
@@ -180,18 +184,18 @@ Caller passes:
 Mode: APPEND
 Test-cases file: [path]
 TC details:
-  Type:             happy path | acceptance | corner case | error | security | performance | unit-edge | integration | manual
-  Pre-requirements: [text — short, fits one table cell]
-  To be:            [text — short, fits one table cell]
-  Initial Status:   PEND | FAIL (use FAIL if BugFixer reports an actual failure)
-  Notes:            [text or empty — DEF-id reference if applicable]
+  Type:           happy path | acceptance | corner case | error | security | performance | unit-edge | integration | manual
+  Description:    [text — what to test, how to test; short, fits one table cell]
+  To be:          [text — short, fits one table cell]
+  Initial Status: PEND | FAIL (use FAIL if BugFixer reports an actual failure)
 ```
 
 ```
 1. READ  — file. Find max existing TC-id.
 
 2. APPEND — write one new row to the table with the next ID. Columns:
-            ID | Status | Notes | Type | Pre-requirements | To be.
+            ID | Status | Notes | Type | Description | To be.
+            Notes is always `—` for new rows — manual tester writes it later if TC fails.
 
 3. UPDATE meta — "Last updated".
 
@@ -236,7 +240,8 @@ Default to HIGH if unsure. PO can override during EXECUTE.
 
 - **DO NOT create the test-cases file** — that's `@QA` REQUIREMENTS phase.
 - **DO NOT write test code.**
-- **DO NOT touch columns other than Status and Notes** — and only as defined per mode.
+- **DO NOT touch the Notes column** — it belongs to the manual tester. Always leave it as `—` when adding rows. Even on FAIL, write the cause into the Defects log entry instead.
+- **DO NOT touch columns other than Status** during EXECUTE / RERUN.
 - **DO NOT generate per-TC detailed sections** (`## TC-NN: ...`) under the table. The static `TC-00: Template` block stays as a single template; manual tester adds per-TC sections on demand. Even in APPEND mode, only add a row to the table — never a section.
 - **DO NOT write or edit any existing detailed TC section below the table** — those are owned by the manual tester.
 - **DO NOT delete TC rows.** PO can manually delete; agents must not.
