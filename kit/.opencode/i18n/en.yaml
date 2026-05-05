@@ -65,10 +65,10 @@ locale: en
 
 ## Usage
 
-Agent language is controlled via `OPPENCODE_LANG` environment variable:
+Agent language is controlled via `OPENCODE_LANG` environment variable:
 
 ```json
 "environment": {
-  "OPPENCODE_LANG": "en"
+  "OPENCODE_LANG": "en"
 }
 ```

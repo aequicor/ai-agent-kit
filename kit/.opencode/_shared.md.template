@@ -17,7 +17,7 @@ If an agent file instruction contradicts `_shared.md` — follow the agent file.
 
 ## Language / i18n
 
-Active locale: **{{OPPENCODE_LANG}}**. All status messages and user-facing output must use `.opencode/i18n/{{OPPENCODE_LANG}}.yaml`.
+Active locale: check the `OPENCODE_LANG` environment variable first; if unset, fall back to the install-time default **{{OPENCODE_LANG}}**. All status messages and user-facing output must use `.opencode/i18n/<resolved-locale>.yaml`.
 
 Supported locales: `en` (English), `ru` (Russian). To add a new language:
 1. Copy `.opencode/i18n/en.yaml` to `.opencode/i18n/<code>.yaml`

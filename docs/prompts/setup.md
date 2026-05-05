@@ -271,7 +271,7 @@ Compute these `{{VAR}} → value` pairs from the manifest. **Many are computed (
 | Variable | Source / rule |
 |---|---|
 | `KIT_REPO` | The `<user>/<repo>` slug of the kit source. |
-| `OPPENCODE_LANG` | `manifest.language_code` (default `en`). |
+| `OPENCODE_LANG` | `manifest.language_code` (default `en`). |
 | `VAULT_PATH` | `manifest.vault_path` (default `vault` — matches KnowledgeOS default). No trailing slash. |
 | `PROJECT_NAME` | `manifest.project.name` |
 | `PROJECT_DESCRIPTION` | `manifest.project.description` |

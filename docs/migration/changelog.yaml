@@ -1,4 +1,24 @@
 versions:
+  - version: "2.1.3"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix: renamed OPPENCODE_LANG (double-P typo) to OPENCODE_LANG throughout the kit.
+
+      The misspelling meant that setting OPENCODE_LANG=ru in the environment had no
+      effect — agents were looking for OPPENCODE_LANG and never found the variable.
+
+      _shared.md.template is also updated to instruct agents to check OPENCODE_LANG
+      from the process environment at runtime, falling back to the install-time
+      default baked in during setup. This makes runtime language switching work
+      without re-running /update.
+    files_changed:
+      - kit/.opencode/_shared.md.template
+      - kit/.opencode/i18n/en.yaml
+      - kit/.opencode/i18n/ru.yaml
+    manifest_changes:
+      added_fields: []
+
   - version: "2.1.2"
     released: "2026-05-05"
     breaking: false

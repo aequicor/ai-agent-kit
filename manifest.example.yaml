@@ -6,12 +6,13 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /update)
 # ─────────────────────────────────────────────
-kit_version: "2.1.2"
+kit_version: "2.1.3"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
 # ─────────────────────────────────────────────
-# Agent output language. Controls OPPENCODE_LANG environment variable in opencode.json.
+# Agent output language. Sets the install-time default for OPENCODE_LANG.
+# Can be overridden at runtime by setting OPENCODE_LANG=<code> in the environment.
 # Supported: en (English), ru (Russian). Default: en
 language_code: en
 

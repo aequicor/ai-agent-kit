@@ -72,8 +72,8 @@ locale: ru
 
 ```json
 "environment": {
-  "OPPENCODE_LANG": "ru"
+  "OPENCODE_LANG": "ru"
 }
 ```
 
-Агенты проверяют `OPPENCODE_LANG` и подгружают соответствующие локализованные варианты сообщений через `.opencode/_shared.md`.
+Агенты проверяют `OPENCODE_LANG` и подгружают соответствующие локализованные варианты сообщений через `.opencode/_shared.md`.
