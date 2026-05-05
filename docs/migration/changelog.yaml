@@ -1,4 +1,21 @@
 versions:
+  - version: "2.1.1"
+    released: "2026-05-05"
+    breaking: false
+    description: |
+      Fix: removed invalid top-level "environment" key from opencode.json.template.
+
+      OpenCode does not support an "environment" key at the config root — using it
+      produces "Unrecognized key: 'environment'" on startup. The locale value is now
+      embedded directly into _shared.md via the {{OPPENCODE_LANG}} template variable
+      so agents always see the active locale without any environment variable.
+    files_changed:
+      - kit/opencode.json.template
+      - kit/.opencode/_shared.md.template
+      - kit/manifest.schema.json
+    manifest_changes:
+      added_fields: []
+
   - version: "2.1.0"
     released: "2026-05-05"
     breaking: false

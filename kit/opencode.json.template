@@ -19,9 +19,6 @@
     "prune": true,
     "reserved": 10000
   },
-  "environment": {
-    "OPPENCODE_LANG": "{{OPPENCODE_LANG}}"
-  },
   {{FORMATTER_BLOCK}}
   "provider": {
     "{{PROVIDER_ID}}": {

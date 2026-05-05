@@ -29,7 +29,7 @@
     },
     "language_code": {
       "type": "string",
-      "description": "Agent output language (IETF language tag). Sets OPPENCODE_LANG in opencode.json. Supported: en (English), ru (Russian).",
+      "description": "Agent output language (IETF language tag). Embedded into _shared.md so agents use the matching i18n locale. Supported: en (English), ru (Russian).",
       "enum": ["en", "ru"],
       "default": "en"
     },

@@ -17,17 +17,12 @@ If an agent file instruction contradicts `_shared.md` — follow the agent file.
 
 ## Language / i18n
 
-Project supports multilingual agent output. Set `OPPENCODE_LANG` environment variable:
+Active locale: **{{OPPENCODE_LANG}}**. All status messages and user-facing output must use `.opencode/i18n/{{OPPENCODE_LANG}}.yaml`.
 
-- `en` — English (default)
-- `ru` — Russian (Русский)
-
-Locale definitions in `.opencode/i18n/<locale>.yaml`. Agents read `OPPENCODE_LANG` and use the corresponding locale for status messages and user-facing output.
-
-To add a new language:
+Supported locales: `en` (English), `ru` (Russian). To add a new language:
 1. Copy `.opencode/i18n/en.yaml` to `.opencode/i18n/<code>.yaml`
 2. Translate all values
-3. Set `OPPENCODE_LANG=<code>` to use it
+3. Re-run `/update` and set `language_code: <code>` in the manifest
 
 ## Project Context
 
