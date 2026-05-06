@@ -193,7 +193,7 @@ If you rename or split an existing profile, add a `profile_transforms.rename` en
 
 Agent prose lives once in `_shared/`; each host has its own thin wrapper file with host-specific frontmatter that includes the body.
 
-1. **Body** — `kit/_shared/agents/<AgentName>.body.md.template`. Pure prose, no frontmatter. Use placeholders like `{{HOST_DIR}}`, `{{HOST_INSTRUCTION_FILE}}`, `{{KIT_LANG_ENV}}`, `{{DISPATCH_TOOL}}` for host-divergent text.
+1. **Body** — `kit/_shared/agents/<AgentName>.body.md.template`. Pure prose, no frontmatter. Use placeholders from the [**Template placeholders**](#template-placeholders) section below for host-divergent text and manifest-derived values.
 2. **OpenCode wrapper** — `kit/.opencode/agents/<AgentName>.md.template`:
    ```
    ---
@@ -232,6 +232,97 @@ Commands and skills are host-agnostic — single source under `_shared/`, render
 2. Refresh `kit/_index.txt`.
 3. Reference the command/skill from the orchestrator body (`kit/_shared/agents/Main.body.md.template`) or from a relevant agent body.
 4. Bump version (MINOR) and add a changelog entry.
+
+---
+
+## Template placeholders
+
+`{{NAME}}` tokens inside `.template` files are resolved by `setup.md` / `update.md` from the manifest. Authoritative list of every placeholder the kit currently emits, grouped by source. The post-install verifier rejects any unresolved `{{...}}` — if you introduce a new placeholder, register it here and teach the install prompt how to fill it.
+
+**Project (manifest top-level)**
+
+| Placeholder | Source | Notes |
+|-------------|--------|-------|
+| `{{PROJECT_NAME}}` | `project.name` | |
+| `{{PROJECT_DESCRIPTION}}` | `project.description` | |
+| `{{STACK_DESCRIPTION}}` | derived from `stack.profiles[]` | one-line summary |
+| `{{KIT_REPO}}` | constant — kit repo URL | |
+| `{{VAULT_PATH}}` | `vault_path` | default `vault` |
+| `{{KIT_LANG}}` | `language_code` | `en` \| `ru` |
+| `{{KIT_LANG_ENV}}` | derived from host | `OPENCODE_LANG` or `KIT_LANG` |
+
+**Host-divergent (filled per host during render)**
+
+| Placeholder | Values (opencode / claude-code) |
+|-------------|---------------------------------|
+| `{{HOST_NAME}}` | `OpenCode` / `Claude Code` |
+| `{{HOST_DIR}}` | `.opencode` / `.claude` |
+| `{{HOST_INSTRUCTION_FILE}}` | `AGENTS.md` / `CLAUDE.md` |
+| `{{HOST_CONFIG_FILE}}` | `opencode.json` / `.claude/settings.json` |
+| `{{DISPATCH_TOOL}}` | `@AgentName` / `Task` |
+| `{{DISPATCH_TOOL_DESC}}` | one-line how-to-dispatch hint |
+
+**Provider & models (OpenCode only — empty/omitted when `opencode ∉ hosts`)**
+
+| Placeholder | Source |
+|-------------|--------|
+| `{{PROVIDER_ID}}` | `provider.name` (slug used in `model: <provider>/<model>`) |
+| `{{PROVIDER_NAME}}` | human-readable provider label |
+| `{{PROVIDER_BASE_URL}}` | `provider.base_url` |
+| `{{PROVIDER_API_KEY_ENV}}` | `provider.api_key_env` |
+| `{{DEFAULT_MODEL}}` | `models.default` |
+| `{{CODER_MODEL}}` | `models.coder` |
+| `{{REVIEWER_MODEL}}` | `models.reviewer` |
+| `{{DESIGNER_MODEL}}` | `models.designer` (omits @Designer if `null`) |
+| `{{SMALL_MODEL}}` | `models.small` |
+
+**Build, test, modules**
+
+| Placeholder | Source |
+|-------------|--------|
+| `{{BUILD_COMMAND}}` | `stack.build_command` |
+| `{{COMPILE_COMMAND}}` | `stack.compile_command` |
+| `{{LINT_COMMAND}}` | `stack.lint_command` |
+| `{{TEST_COMMAND_TEMPLATE}}` | `stack.test_command` (literal `[module]` substituted per module) |
+| `{{MODULE_TABLE}}` | rendered table — name, gradle module, responsibility |
+| `{{MODULE_SOURCE_TABLE}}` | rendered table — `source_root` per module |
+| `{{MODULE_TEST_TABLE}}` | rendered table — `test_root` per module |
+| `{{MODULE_BUILD_COMMANDS}}` | per-module test-command list (TEST_COMMAND_TEMPLATE × modules) |
+| `{{DEPENDENCY_FILES_LIST}}` | derived from language profile (e.g. `build.gradle.kts`, `package.json`) |
+
+**Code quality, formatter, LSP**
+
+| Placeholder | Source |
+|-------------|--------|
+| `{{FORBIDDEN_PATTERNS_LIST}}` | `code_quality.forbidden_patterns` (rendered as bullet list) |
+| `{{FORMATTER_BLOCK}}` | rendered block from `formatter.*` (or empty if `enabled: false`) |
+| `{{LSP_BLOCK}}` | rendered block from `lsp.*` (or empty if `enabled: false`) |
+
+**UI / Designer**
+
+| Placeholder | Source |
+|-------------|--------|
+| `{{UI_FRAMEWORK}}` | `ui.framework` (whole `@Designer` agent omitted if `null`) |
+| `{{PLATFORMS}}` | `ui.platforms[]` joined |
+| `{{COLOR_TABLE}}` | rendered table from `ui.colors[]` |
+
+**MCP integrations**
+
+| Placeholder | Source |
+|-------------|--------|
+| `{{CONTEXT7_ENABLED}}` | `mcp.context7.enabled` |
+| `{{CONTEXT7_API_KEY_ENV}}` | `mcp.context7.api_key_env` |
+| `{{KNOWLEDGE_ENABLED}}` | `mcp.knowledge.enabled` |
+| `{{KNOWLEDGE_URL}}` | `mcp.knowledge.url` |
+| `{{SERENA_ENABLED}}` | `mcp.serena.enabled` |
+
+**Dynamic (filled by the agent at run time, not at install)**
+
+| Placeholder | Notes |
+|-------------|-------|
+| `{{ISO_TIMESTAMP_PLACEHOLDER}}` | Literal — agents replace with current ISO-8601 timestamp when stamping vault docs. Survives install render on purpose. |
+
+`{{INCLUDE: <path>}}` is **not** a value placeholder — it is a directive that inlines the contents of another `kit/`-relative file at render time. See [What this repo is](#what-this-repo-is).
 
 ---
 
