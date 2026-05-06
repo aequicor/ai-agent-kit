@@ -1,4 +1,60 @@
 versions:
+  - version: "4.6.2"
+    released: "2026-05-06"
+    breaking: false
+    description: |
+      Stub & deferral gate — three layered prompt edits that close a silent
+      failure path where `@CodeWriter` could leave `// TODO` bodies in
+      production code, `@TestExecutor` would pass tests written against the
+      empty bodies, `@CodeReviewer` had no rule against it, and the per-stage
+      checkpoint would assert the AC was implemented.
+
+      The end-of-feature gates (`@CornerCaseReviewer IMPL`,
+      `@TraceabilityChecker`, `@DoDGate`) eventually catch the gap, but by
+      that time several subsequent stages have been built atop the
+      false-positive assertion, multiplying rework. The kit's `CLAUDE.md`
+      already declared `TODO`/`FIXME` in production code without a tracking
+      entry forbidden — but no agent enforced it.
+
+      Three layered fixes (defense in depth):
+
+        - kit/_shared/agents/CodeReviewer.body.md.template — new focus area 6
+          "Stub & deferral check (CRITICAL)". Reviewer scans every changeset
+          file for `TODO|FIXME|XXX|HACK|stage [0-9]|later|TBD` and
+          flags unpaired hits in production code as CRITICAL. New "DO NOT"
+          line forbids downgrading in-changeset hits to MEDIUM/LOW or to
+          tech-debt — tech-debt entries are for markers in files outside
+          the changeset.
+        - kit/_shared/agents/Main.body.md.template — new step 7.3c STUB-SCAN
+          between 7.3 (REVIEW) and 7.4 (FIX). Mechanical grep over the
+          changed-files list. Folds unpaired hits into the review findings
+          as CRITICAL. Backstop in case `@CodeReviewer`'s prose-based check
+          drifts. Step 7.4 FIX now consumes the union of (CodeReviewer,
+          SecurityReviewer, STUB-SCAN) findings.
+        - kit/_shared/agents/CodeWriter.body.md.template — new Step 3a
+          "Stage Atomicity (no stubs)" with explicit BLOCKED return contract.
+          When a method cannot be fully implemented in the current stage,
+          CodeWriter returns BLOCKED (replacing the normal "Changed Files"
+          table) instead of committing a `// TODO` body. The existing
+          one-line "DO NOT leave unimplemented stubs" rule was buried in a
+          12-item DO NOT list; it now references Step 3a explicitly.
+
+      Also: kit/_shared/skills/code-review-checklist/SKILL.md.template —
+      new "Stub & Deferral Check (CRITICAL — blocking)" subsection mirrors
+      the new CodeReviewer rule as four binary checkboxes. Same surface,
+      two consumers (the agent body and the skill); if either drifts the
+      other still enforces.
+
+      No new files, no schema changes, no profile changes, no `_index.txt`
+      change. Existing installs pick up the new rules on next `/kit-update`.
+    files_changed:
+      - kit/_shared/agents/CodeReviewer.body.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/skills/code-review-checklist/SKILL.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.6.1"
     released: "2026-05-06"
     breaking: false

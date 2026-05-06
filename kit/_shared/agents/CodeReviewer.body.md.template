@@ -71,6 +71,26 @@ You are explicitly **not** responsible for OWASP-aligned coverage, threat modell
 - Resources are closed properly.
 - Concurrency / async patterns are correct.
 
+### 6. Stub & deferral check (CRITICAL)
+
+Run a regex scan over **every file in the changeset**:
+
+```
+TODO|FIXME|XXX|HACK|stage [0-9]|later|TBD
+```
+
+For each hit in **production code** (anything outside `*test*`, `*Test*`, `*spec*`, `.md`, `.adoc`, comments-only doc files):
+
+| Hit context | Verdict |
+|-------------|---------|
+| Paired with a `.planning/DECISIONS.md` reference, an external tracker ID (`#123`, `JIRA-456`, `TC-NN`), or a deferral entry already recorded in the stage file | OK — not flagged |
+| Method body is **only** comments (`// TODO: implement…`) for an AC the stage was supposed to deliver | CRITICAL — verdict `❌ NEEDS FIXES`. Suggestion: "Implement in this stage or escalate to @Main as BLOCKED — do not commit unimplemented stubs." |
+| Inline `// TODO` / `// FIXME` not paired with a tracker | CRITICAL — same suggestion |
+
+Why this is CRITICAL, not MEDIUM/LOW: the per-stage checkpoint asserts the AC is implemented. A `// TODO` body in the AC's method makes that assertion false. Subsequent stages plan against the assertion; any silent gap multiplies rework. The end-of-feature gates (`@CornerCaseReviewer IMPLEMENTATION`, `@TraceabilityChecker`, `@DoDGate`) do eventually catch it — but by then 2-3 stages have been built atop the false-positive.
+
+This rule fires on **in-changeset hits only**. Pre-existing markers in untouched files belong in tech debt (see "Recording technical debt"), not in the review.
+
 ## Output format
 
 ```markdown
@@ -159,6 +179,7 @@ Do not block review on hypothetical questions — only if the ambiguity is real.
 - DO NOT approve if there are CRITICAL issues.
 - DO NOT skip surface-level security smells — flag and delegate (see focus area 4). Deep adversarial review belongs to `@SecurityReviewer`, not you.
 - DO NOT duplicate `@SecurityReviewer`'s OWASP-style attack scan — your scope is style + spec + structure + smell.
+- DO NOT downgrade in-changeset `TODO` / `FIXME` / stub hits to MEDIUM/LOW or to tech-debt — they are CRITICAL per focus area 6, blocking. Tech-debt entries are for markers in files **outside** the changeset.
 - DO NOT give vague comments — only specific file:line + suggestion.
 - DO NOT review without context (without stage file / spec).
 - DO NOT output system tags.

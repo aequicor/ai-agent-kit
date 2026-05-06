@@ -24,7 +24,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://aequicor.github.io/ai-agent-kit/">
 <meta property="og:title" content="ai-agent-kit: AI agents that work together on your project">
-<meta property="og:description" content="Several AI agents work on one task together. One writes the code, another rechecks it, automated checks confirm that nothing else broke. Five-minute install. Works inside Claude Code and OpenCode. v4.6.1.">
+<meta property="og:description" content="Several AI agents work on one task together. One writes the code, another rechecks it, automated checks confirm that nothing else broke. Five-minute install. Works inside Claude Code and OpenCode. v4.6.2.">
 <meta property="og:image" content="https://aequicor.github.io/ai-agent-kit/og-image.svg">
 <meta property="og:image:type" content="image/svg+xml">
 <meta property="og:image:width" content="1200">
@@ -64,7 +64,7 @@
       "@type": "SoftwareApplication",
       "@id": "https://aequicor.github.io/ai-agent-kit/#software",
       "name": "ai-agent-kit",
-      "softwareVersion": "4.6.1",
+      "softwareVersion": "4.6.2",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Cross-platform",
       "url": "https://aequicor.github.io/ai-agent-kit/",
@@ -349,7 +349,11 @@ nav {
 .analogy-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 22px 22px 20px;
-  display: flex; flex-direction: column; gap: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 10px;
 }
 .analogy-card .role-icon {
   width: 36px; height: 36px; border-radius: 9px;
@@ -359,7 +363,7 @@ nav {
   font-size: 1.05rem;
 }
 .analogy-card h3 { font-size: 0.9375rem; font-weight: 700; }
-.analogy-card p  { font-size: 0.825rem; color: var(--subtle); line-height: 1.55; }
+.analogy-card p  { font-size: 0.825rem; color: var(--subtle); line-height: 1.55; grid-column: 1 / -1; }
 .analogy-tagline {
   margin-top: 32px; padding: 22px 26px;
   background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(34,211,160,0.06) 100%);
@@ -529,7 +533,7 @@ nav {
   display: grid; gap: 12px; margin-top: 8px;
 }
 .phase {
-  display: grid; grid-template-columns: 32px 1fr; gap: 14px;
+  display: grid; grid-template-columns: 36px 1fr; gap: 14px;
   align-items: start;
   background: rgba(99,102,241,0.04);
   border: 1px solid rgba(99,102,241,0.18);
@@ -537,9 +541,8 @@ nav {
   padding: 14px 16px;
 }
 .phase-num {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(99,102,241,0.18);
-  color: var(--accent2); font-weight: 700; font-size: 0.875rem;
+  width: 36px; height: 36px;
+  font-size: 1.4rem; line-height: 1;
   display: flex; align-items: center; justify-content: center;
 }
 .phase-body h4 {
@@ -869,8 +872,8 @@ footer a:hover { color: var(--text); }
   <div class="wrap" style="text-align:center">
     <div class="hero-badge">
       <span class="glow-dot"></span>
-      <span class="lang-en">v4.6.1 · works inside Claude Code and OpenCode</span>
-      <span class="lang-ru">v4.6.1 · работает в Claude Code и OpenCode</span>
+      <span class="lang-en">v4.6.2 · works inside Claude Code and OpenCode</span>
+      <span class="lang-ru">v4.6.2 · работает в Claude Code и OpenCode</span>
     </div>
     <h1>
       <span class="lang-en">AI agents that work<br>together on your project</span>
@@ -967,33 +970,33 @@ footer a:hover { color: var(--text); }
 
       <div class="analogy">
         <div class="analogy-card">
-          <div class="role-icon">1</div>
-          <h3>Writing the code</h3>
+          <div class="role-icon">👩‍💻</div>
+          <h3>The coder</h3>
           <p>Writes the code in small, separate steps. No huge change that nobody can read at once.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">2</div>
-          <h3>Rechecking each change</h3>
+          <div class="role-icon">🔍</div>
+          <h3>The reviewer</h3>
           <p>Reads every change before it is added to the project. Blocks anything that looks risky or sloppy.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">3</div>
-          <h3>Running automated checks</h3>
+          <div class="role-icon">🧪</div>
+          <h3>The QA tester</h3>
           <p>Keeps a written list of what should work. Marks an item as failing the moment something breaks.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">4</div>
-          <h3>Investigating failures</h3>
+          <div class="role-icon">🛠️</div>
+          <h3>The bug fixer</h3>
           <p>When something breaks, finds the real cause and repairs it. Then adds an automatic check so the same problem cannot come back unnoticed.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">5</div>
-          <h3>Turning ideas into descriptions</h3>
+          <div class="role-icon">📋</div>
+          <h3>The analyst</h3>
           <p>Reads your request in plain English. Writes a clear description of what should happen and what should not.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">6</div>
-          <h3>Planning visual features</h3>
+          <div class="role-icon">🎨</div>
+          <h3>The designer</h3>
           <p>For features with a screen, plans the layout and how the user moves through it.</p>
         </div>
       </div>
@@ -1018,33 +1021,33 @@ footer a:hover { color: var(--text); }
 
       <div class="analogy">
         <div class="analogy-card">
-          <div class="role-icon">1</div>
-          <h3>Пишет код</h3>
+          <div class="role-icon">👩‍💻</div>
+          <h3>Программист</h3>
           <p>Пишет код небольшими отдельными шагами. Без огромных изменений, которые невозможно прочитать за один раз.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">2</div>
-          <h3>Перечитывает каждое изменение</h3>
+          <div class="role-icon">🔍</div>
+          <h3>Ревьюер</h3>
           <p>Перечитывает каждое изменение перед тем, как оно попадёт в проект. Останавливает всё, что выглядит рискованно или небрежно.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">3</div>
-          <h3>Запускает автоматические проверки</h3>
+          <div class="role-icon">🧪</div>
+          <h3>Тестировщик</h3>
           <p>Ведёт список того, что должно работать. Помечает пункт как упавший, как только что-то ломается.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">4</div>
-          <h3>Разбирается с поломками</h3>
+          <div class="role-icon">🛠️</div>
+          <h3>Баг-фиксер</h3>
           <p>Когда что-то ломается, ищет настоящую причину и чинит. Затем добавляет автоматическую проверку, чтобы та же проблема не вернулась незамеченной.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">5</div>
-          <h3>Превращает идеи в описания</h3>
+          <div class="role-icon">📋</div>
+          <h3>Аналитик</h3>
           <p>Читает ваш запрос на обычном языке. Пишет понятное описание того, что должно происходить и чего быть не должно.</p>
         </div>
         <div class="analogy-card">
-          <div class="role-icon">6</div>
-          <h3>Планирует визуальные функции</h3>
+          <div class="role-icon">🎨</div>
+          <h3>Дизайнер</h3>
           <p>Для функций с экраном продумывает, как он выглядит и как пользователь по нему перемещается.</p>
         </div>
       </div>
@@ -1285,22 +1288,22 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <div class="lang-en">
       <div class="sec-label">User scenarios</div>
-      <h2 class="sec-title">Four workflows, zero manual wiring</h2>
+      <h2 class="sec-title">Four workflows, each run by a single command</h2>
       <p class="sec-sub">
-        Each workflow is triggered by a single command. The team coordinator routes the
-        work through the right specialists in the right order — and stops the workflow
-        the moment any quality check fails. You always know exactly where the work is
-        and why it's blocked, instead of looking at a wall of AI output.
+        Each workflow follows a fixed sequence of steps. If any check fails, the work
+        stops where it is and tells you what went wrong. At any moment you can see
+        which step is running and what is blocking it, without having to read through
+        a wall of text from one AI.
       </p>
     </div>
     <div class="lang-ru">
       <div class="sec-label">Сценарии</div>
-      <h2 class="sec-title">Четыре рабочих процесса, без ручного связывания</h2>
+      <h2 class="sec-title">Четыре рабочих процесса, каждый запускается одной командой</h2>
       <p class="sec-sub">
-        Каждый процесс запускается одной командой. Координатор команды направляет
-        работу к нужным специалистам в нужном порядке — и останавливает процесс в
-        момент, когда любая проверка качества не пройдена. Вы всегда знаете точно,
-        где работа и почему она заблокирована, вместо стены ИИ-вывода для разбора.
+        Каждый процесс идёт по фиксированной последовательности шагов. Если какая-то
+        проверка не проходит, работа останавливается на этом шаге и сообщает, что
+        именно пошло не так. В любой момент видно, какой шаг идёт прямо сейчас и что
+        его блокирует. Не нужно разбираться в стене текста от одного ИИ.
       </p>
     </div>
 
@@ -1310,12 +1313,12 @@ footer a:hover { color: var(--text); }
       <div class="scenario">
         <div class="scenario-head">
           <h3>
-            <span class="lang-en">Shipping a new feature</span>
-            <span class="lang-ru">Сделать новую фичу</span>
+            <span class="lang-en">Adding a new feature</span>
+            <span class="lang-ru">Добавить новую функцию</span>
           </h3>
           <span class="scenario-tag tag-feature">
             <span class="lang-en">Feature</span>
-            <span class="lang-ru">Фича</span>
+            <span class="lang-ru">Функция</span>
           </span>
         </div>
         <div class="scenario-body">
@@ -1326,22 +1329,8 @@ footer a:hover { color: var(--text); }
                 <span class="lang-en">You type</span>
                 <span class="lang-ru">Вы пишете</span>
               </div>
-              <code class="trigger-cmd">/kit-new-feature "add OAuth2 login via Google"</code>
+              <code class="trigger-cmd">/kit-new-feature "add login via Google account"</code>
             </div>
-          </div>
-          <div class="plain-summary">
-            <span class="lang-en">
-              <strong>What's actually happening:</strong> the analyst writes down what you
-              want. The QA agent stress-tests the requirements (what if the user does X?
-              what if Y fails?). The team designs, plans, and codes it stage by stage —
-              every stage reviewed before the next starts. Nothing gets merged unprotested.
-            </span>
-            <span class="lang-ru">
-              <strong>Что происходит на самом деле:</strong> аналитик записывает, чего вы
-              хотите. QA-агент проверяет требования на прочность (а если пользователь
-              сделает X? а если Y упадёт?). Команда проектирует, планирует и кодит этапами —
-              каждый этап проверяется перед началом следующего. Ничего не сливается без проверки.
-            </span>
           </div>
           <div class="pipeline-label">
             <span class="lang-en">How the work flows</span>
@@ -1349,45 +1338,54 @@ footer a:hover { color: var(--text); }
           </div>
           <div class="phases">
             <div class="phase">
-              <div class="phase-num">1</div>
+              <div class="phase-num">📋</div>
               <div class="phase-body">
                 <h4>
                   <span class="lang-en">Plan</span>
                   <span class="lang-ru">Планирование</span>
                 </h4>
                 <p>
-                  <span class="lang-en">Your one-line idea is expanded into a clear product brief and a technical blueprint. Other specialists stress-test it for unanswered questions ("what if the user does X?", "what if Y goes down?") and loop until none are left.</span>
-                  <span class="lang-ru">Ваша идея в одной строке разворачивается в понятный продуктовый бриф и технический чертёж. Другие специалисты стресс-тестируют его на нерешённые вопросы («а если пользователь сделает X?», «а если Y упадёт?») и крутят цикл, пока вопросов не остаётся.</span>
+                  <span class="lang-en">Your one-line idea becomes a written description and a plan. Another agent searches for missed situations until none are left.</span>
+                  <span class="lang-ru">Ваша идея в одной строке превращается в письменное описание и план. Другой агент ищет пропущенные ситуации, пока новых не остаётся.</span>
                 </p>
-                <div class="phase-roles">Analyst · Stress-tester · QA · Coverage check · Cross-check</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Description · Edge cases · Test list · Coverage check · Consistency check</span>
+                  <span class="lang-ru">Описание · Сложные случаи · Список тестов · Проверка полноты · Проверка согласованности</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">2</div>
+              <div class="phase-num">🔨</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Build with safety nets</span>
-                  <span class="lang-ru">Сборка с подстраховкой</span>
+                  <span class="lang-en">Build, with checks at every step</span>
+                  <span class="lang-ru">Сборка с проверкой на каждом шаге</span>
                 </h4>
                 <p>
-                  <span class="lang-en">Code is written in small steps, tests first. After each step an independent specialist re-runs the entire test set from scratch — and only then a code reviewer reads the change. If the step touches sensitive areas (login, payments, personal data), a separate security review is triggered. Nothing moves to the next step on the author's say-so alone.</span>
-                  <span class="lang-ru">Код пишется маленькими шагами, сначала тесты. После каждого шага независимый специалист с нуля прогоняет весь набор тестов — и только потом ревьюер читает изменение. Если шаг касается чувствительных мест (вход, платежи, персональные данные) — запускается отдельное security-ревью. Ни один шаг не идёт дальше только по слову автора.</span>
+                  <span class="lang-en">Code is written in small steps, tests first. After each step, a different agent re-runs the full test set, then another reads the change.</span>
+                  <span class="lang-ru">Код пишется маленькими шагами, сначала тесты. После каждого шага другой агент прогоняет весь набор тестов, затем ещё один перечитывает изменение.</span>
                 </p>
-                <div class="phase-roles">Coder · Test runner · Code reviewer · Security reviewer</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Code writing · Test run · Code recheck · Security check</span>
+                  <span class="lang-ru">Написание кода · Прогон тестов · Перечитывание · Проверка безопасности</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">3</div>
+              <div class="phase-num">✅</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Verify and ship</span>
-                  <span class="lang-ru">Верификация и релиз</span>
+                  <span class="lang-en">Final review before completion</span>
+                  <span class="lang-ru">Финальная проверка перед готовностью</span>
                 </h4>
                 <p>
-                  <span class="lang-en">A final auditor walks through a 25-point release checklist — every promise has a passing test, no security issue is open, no work is half-done. The feature can't be marked finished until every check passes (or you explicitly waive a check with a written reason).</span>
-                  <span class="lang-ru">Финальный аудитор проходит по 25-пунктному релиз-чеклисту — у каждого обещания есть проходящий тест, нет открытых security-замечаний, нет недоделанных работ. Фича не может быть отмечена готовой, пока все пункты не пройдены (или пока вы явно не отметите конкретный пункт как принятый с письменным обоснованием).</span>
+                  <span class="lang-en">A 25-point checklist runs before the feature can be marked finished. Every requirement must have a passing test.</span>
+                  <span class="lang-ru">До отметки «готово» проходит список из 25 пунктов. У каждого требования должен быть проходящий тест.</span>
                 </p>
-                <div class="phase-roles">Tester · Trace auditor · Release gate</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Test status · Match check · Final review</span>
+                  <span class="lang-ru">Статус тестов · Сверка соответствия · Финальная проверка</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1396,25 +1394,19 @@ footer a:hover { color: var(--text); }
             <span class="output-chip">corner-cases.md</span>
             <span class="output-chip">spec.md</span>
             <span class="output-chip">
-              <span class="lang-en">implementation + tests</span>
-              <span class="lang-ru">реализация + тесты</span>
+              <span class="lang-en">code + tests</span>
+              <span class="lang-ru">код + тесты</span>
             </span>
             <span class="output-chip">
               <span class="lang-en">test-cases.md auto-verified</span>
-              <span class="lang-ru">test-cases.md авто-верифицирован</span>
+              <span class="lang-ru">test-cases.md проверен автоматически</span>
             </span>
             <span class="output-chip">trace.md</span>
             <span class="output-chip">dod.md</span>
           </div>
           <div class="scenario-note">
-            <span class="lang-en">
-              If the requirements document already exists in the project, the workflow skips ahead to design.
-              Every step is independently re-tested before being reviewed, and the feature can't be marked "done" until the release-gate specialist confirms every quality check passed.
-            </span>
-            <span class="lang-ru">
-              Если документ требований уже есть в проекте, процесс перескакивает сразу к дизайну.
-              Каждый шаг независимо перепроверяется до ревью, а фича не может быть отмечена «готово», пока релизный шлагбаум не подтвердит, что все проверки качества пройдены.
-            </span>
+            <span class="lang-en">If a requirements document already exists, the workflow jumps straight to design.</span>
+            <span class="lang-ru">Если документ требований уже есть, процесс сразу переходит к проектированию.</span>
           </div>
         </div>
       </div>
@@ -1423,12 +1415,12 @@ footer a:hover { color: var(--text); }
       <div class="scenario">
         <div class="scenario-head">
           <h3>
-            <span class="lang-en">Fixing a bug from the test-cases file</span>
-            <span class="lang-ru">Исправить баг из файла тест-кейсов</span>
+            <span class="lang-en">Fixing a problem from the test list</span>
+            <span class="lang-ru">Исправить ошибку из списка тестов</span>
           </h3>
           <span class="scenario-tag tag-bug">
             <span class="lang-en">Bug fix</span>
-            <span class="lang-ru">Баг-фикс</span>
+            <span class="lang-ru">Исправление</span>
           </span>
         </div>
         <div class="scenario-body">
@@ -1436,27 +1428,11 @@ footer a:hover { color: var(--text); }
             <div class="trigger-icon ti-bug">⚡</div>
             <div class="trigger-text">
               <div class="trigger-label">
-                <span class="lang-en">You edit the markdown file, then type</span>
-                <span class="lang-ru">Правите markdown-файл, потом пишете</span>
+                <span class="lang-en">You edit the test list file, then type</span>
+                <span class="lang-ru">Правите файл со списком тестов, потом пишете</span>
               </div>
               <code class="trigger-cmd">/kit-fix</code>
             </div>
-          </div>
-          <div class="plain-summary">
-            <span class="lang-en">
-              <strong>What's actually happening:</strong> the test runner reads your markdown
-              file, sees which tests are failing, and asks which to fix. For tricky bugs,
-              a debugger investigates first to find the real cause. The bug-fixer writes
-              the fix, the reviewer checks it, the test runner re-verifies. Your file
-              flips from FAIL to PASS automatically.
-            </span>
-            <span class="lang-ru">
-              <strong>Что происходит на самом деле:</strong> тест-раннер читает ваш markdown,
-              видит, какие тесты упали, и спрашивает, что чинить. Для непростых багов
-              сначала отладчик ищет настоящую причину. Баг-фиксер пишет фикс, ревьюер
-              проверяет, тест-раннер перепроверяет. Ваш файл переключается с FAIL на PASS
-              автоматически.
-            </span>
           </div>
           <div class="pipeline-label">
             <span class="lang-en">How the work flows</span>
@@ -1464,45 +1440,54 @@ footer a:hover { color: var(--text); }
           </div>
           <div class="phases">
             <div class="phase">
-              <div class="phase-num">1</div>
+              <div class="phase-num">🔍</div>
               <div class="phase-body">
                 <h4>
                   <span class="lang-en">Find the real cause</span>
                   <span class="lang-ru">Найти настоящую причину</span>
                 </h4>
                 <p>
-                  <span class="lang-en">The test list is scanned for failing items. For tricky bugs, an investigator first builds a small repeatable scenario that reliably triggers the failure — so the fixer starts with a clear target instead of guessing.</span>
-                  <span class="lang-ru">Список тестов сканируется на упавшие пункты. Для непростых багов сначала исследователь строит маленький воспроизводимый сценарий, который стабильно вызывает падение — фиксер получает чёткую цель вместо догадок.</span>
+                  <span class="lang-en">For tricky problems, one agent first builds a small repeatable scenario that reliably causes the failure. The next agent has a clear target instead of guessing.</span>
+                  <span class="lang-ru">Для непростых случаев один агент сначала строит маленький повторяемый сценарий, который стабильно вызывает поломку. Следующий агент получает понятную цель.</span>
                 </p>
-                <div class="phase-roles">Test runner · Debugger</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Test status · Cause search</span>
+                  <span class="lang-ru">Статус тестов · Поиск причины</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">2</div>
+              <div class="phase-num">🔧</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Fix and protect</span>
-                  <span class="lang-ru">Починить и защитить</span>
+                  <span class="lang-en">Repair and protect</span>
+                  <span class="lang-ru">Исправить и защитить</span>
                 </h4>
                 <p>
-                  <span class="lang-en">The bug-fixer repairs the underlying cause (not just the symptom) and adds a regression test — a small permanent safety check that prevents the same bug from coming back. The reviewer reads the fix before it lands.</span>
-                  <span class="lang-ru">Баг-фиксер устраняет первопричину (не симптом) и добавляет регрессионный тест — небольшую постоянную страховку, чтобы тот же баг не вернулся. Ревьюер читает исправление до того, как оно попадает в код.</span>
+                  <span class="lang-en">An agent repairs the underlying cause, not just the symptom. It also adds an automatic check so the same problem cannot return unnoticed.</span>
+                  <span class="lang-ru">Агент исправляет первопричину, а не только симптом. Он также добавляет автоматическую проверку, чтобы та же проблема не вернулась незамеченной.</span>
                 </p>
-                <div class="phase-roles">Bug fixer · Code reviewer</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Repair · Code recheck</span>
+                  <span class="lang-ru">Исправление · Перечитывание</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">3</div>
+              <div class="phase-num">📘</div>
               <div class="phase-body">
                 <h4>
                   <span class="lang-en">Confirm and learn</span>
                   <span class="lang-ru">Подтвердить и извлечь урок</span>
                 </h4>
                 <p>
-                  <span class="lang-en">You re-verify the fix interactively. For serious defects, a short retrospective runs automatically: the team identifies the root cause and updates rules or adds new tests so the same class of error doesn't repeat.</span>
-                  <span class="lang-ru">Вы интерактивно перепроверяете исправление. Для серьёзных дефектов автоматически запускается короткая ретроспектива: команда определяет глубинную причину и обновляет правила или добавляет тесты, чтобы такой класс ошибок больше не повторялся.</span>
+                  <span class="lang-en">You confirm the fix yourself. For serious problems a short review runs automatically so the same kind of problem does not happen again.</span>
+                  <span class="lang-ru">Вы сами подтверждаете исправление. Для серьёзных проблем автоматически запускается короткий разбор, чтобы такая же проблема не повторилась.</span>
                 </p>
-                <div class="phase-roles">Test runner · Bug retrospective</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Confirmation · Lessons learned</span>
+                  <span class="lang-ru">Подтверждение · Извлечение урока</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1516,19 +1501,13 @@ footer a:hover { color: var(--text); }
               <span class="lang-ru">Журнал дефектов OPEN → FIXED</span>
             </span>
             <span class="output-chip">
-              <span class="lang-en">regression test committed</span>
-              <span class="lang-ru">регресс-тест закоммичен</span>
+              <span class="lang-en">automatic check added</span>
+              <span class="lang-ru">автоматическая проверка добавлена</span>
             </span>
           </div>
           <div class="scenario-note">
-            <span class="lang-en">
-              You can also be specific: <code>/kit-fix TC-07</code> targets one row,
-              or <code>/kit-fix "login crashes on special chars"</code> adds a new TC and fixes it in one step.
-            </span>
-            <span class="lang-ru">
-              Можно конкретнее: <code>/kit-fix TC-07</code> чинит одну строку,
-              а <code>/kit-fix "логин падает на спецсимволах"</code> сам добавит новый тест-кейс и тут же починит.
-            </span>
+            <span class="lang-en"><code>/kit-fix TC-07</code> targets one line. <code>/kit-fix "login crashes on special characters"</code> adds a new line and fixes it.</span>
+            <span class="lang-ru"><code>/kit-fix TC-07</code> работает с одной строкой. <code>/kit-fix "логин падает на спецсимволах"</code> добавляет новую строку и сразу исправляет.</span>
           </div>
         </div>
       </div>
@@ -1537,8 +1516,8 @@ footer a:hover { color: var(--text); }
       <div class="scenario">
         <div class="scenario-head">
           <h3>
-            <span class="lang-en">Turning an idea into a validated spec</span>
-            <span class="lang-ru">Превратить идею в проверенное ТЗ</span>
+            <span class="lang-en">Turning an idea into a clear written description</span>
+            <span class="lang-ru">Превратить идею в понятное описание задачи</span>
           </h3>
           <span class="scenario-tag tag-req">
             <span class="lang-en">Requirements</span>
@@ -1556,68 +1535,60 @@ footer a:hover { color: var(--text); }
               <code class="trigger-cmd">/kit-requirements-pipeline "full-text search across all projects"</code>
             </div>
           </div>
-          <div class="plain-summary">
-            <span class="lang-en">
-              <strong>What's actually happening:</strong> you describe a feature in one
-              sentence. The analyst expands it into requirements. Other agents loop over
-              them looking for missing edge cases until none are left. Then the spec is
-              written and cross-checked against the requirements until they match. You
-              get a feature description any developer (human or AI) can implement confidently.
-            </span>
-            <span class="lang-ru">
-              <strong>Что происходит на самом деле:</strong> вы описываете фичу одним
-              предложением. Аналитик разворачивает её в требования. Другие агенты
-              прогоняют требования в поисках пропущенных кейсов, пока новых не остаётся.
-              Затем пишется ТЗ и сверяется с требованиями до полного соответствия.
-              На выходе — описание фичи, которое уверенно реализует любой разработчик
-              (человек или ИИ).
-            </span>
-          </div>
           <div class="pipeline-label">
             <span class="lang-en">How the work flows</span>
             <span class="lang-ru">Как идёт работа</span>
           </div>
           <div class="phases">
             <div class="phase">
-              <div class="phase-num">1</div>
+              <div class="phase-num">💡</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Idea → product brief</span>
-                  <span class="lang-ru">Идея → продуктовый бриф</span>
+                  <span class="lang-en">Idea → written description</span>
+                  <span class="lang-ru">Идея → понятное описание</span>
                 </h4>
                 <p>
-                  <span class="lang-en">The analyst expands one sentence into a structured brief — what the user needs, what success looks like, what is and isn't in scope. A stress-tester loops over the brief looking for unanswered scenarios until none remain.</span>
-                  <span class="lang-ru">Аналитик разворачивает одно предложение в структурированный бриф — что нужно пользователю, как выглядит успех, что входит в работу и что нет. Стресс-тестер крутит бриф в поисках нерешённых сценариев, пока их не остаётся.</span>
+                  <span class="lang-en">One agent expands the sentence into a structured description of what the user needs and what success looks like. A second agent searches for situations that have not been answered.</span>
+                  <span class="lang-ru">Один агент разворачивает одно предложение в структурированное описание того, что нужно пользователю и как выглядит успех. Второй агент ищет ситуации, которые остались без ответа.</span>
                 </p>
-                <div class="phase-roles">Analyst · Stress-tester</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Description · Edge-case search</span>
+                  <span class="lang-ru">Описание · Поиск пропущенных случаев</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">2</div>
+              <div class="phase-num">📐</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Brief → test list → blueprint</span>
-                  <span class="lang-ru">Бриф → список тестов → чертёж</span>
+                  <span class="lang-en">Description → test list → plan</span>
+                  <span class="lang-ru">Описание → список тестов → план</span>
                 </h4>
                 <p>
-                  <span class="lang-en">QA writes the test list (every promise → at least one test). A coverage auditor confirms nothing's missing. Then a senior-engineer-style specialist writes the technical blueprint from the brief and the test list combined.</span>
-                  <span class="lang-ru">QA пишет список тестов (на каждое обещание — минимум один тест). Аудитор покрытия подтверждает, что ничего не пропущено. Затем специалист уровня senior-инженера пишет технический чертёж по брифу и списку тестов вместе.</span>
+                  <span class="lang-en">One agent writes the test list. Every promise gets at least one test. A second agent writes the implementation plan from the description and the test list.</span>
+                  <span class="lang-ru">Один агент пишет список тестов. На каждое обещание приходится минимум один тест. Второй агент пишет план реализации по описанию и списку тестов.</span>
                 </p>
-                <div class="phase-roles">QA · Coverage auditor · Tech blueprint author</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Test list · Coverage check · Implementation plan</span>
+                  <span class="lang-ru">Список тестов · Проверка полноты · План реализации</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">3</div>
+              <div class="phase-num">🔁</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Cross-check and sign off</span>
-                  <span class="lang-ru">Перекрёстная сверка и утверждение</span>
+                  <span class="lang-en">Cross-check and confirm</span>
+                  <span class="lang-ru">Перекрёстная сверка и подтверждение</span>
                 </h4>
                 <p>
-                  <span class="lang-en">A contradiction-finder compares brief, test list, and blueprint against each other and surfaces every place they disagree. The team loops until all three documents tell the same story. Then you sign off — the result is a feature description any developer (human or AI) can implement confidently.</span>
-                  <span class="lang-ru">Специалист по противоречиям сверяет бриф, список тестов и чертёж между собой и поднимает каждое расхождение. Команда крутит цикл, пока три документа не расскажут одну историю. Затем вы утверждаете — на выходе описание фичи, которое уверенно реализует любой разработчик (человек или ИИ).</span>
+                  <span class="lang-en">An agent compares the description, the test list, and the plan against each other. The cycle repeats until all three say the same thing. Then you confirm.</span>
+                  <span class="lang-ru">Агент сверяет описание, список тестов и план между собой. Цикл повторяется, пока все три не скажут одно и то же. Затем вы подтверждаете.</span>
                 </p>
-                <div class="phase-roles">Contradiction finder · Sign-off</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Consistency check · Confirmation</span>
+                  <span class="lang-ru">Проверка согласованности · Подтверждение</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1625,22 +1596,14 @@ footer a:hover { color: var(--text); }
             <span class="output-chip">requirements.md</span>
             <span class="output-chip">corner-cases.md</span>
             <span class="output-chip">test-cases.md
-              <span class="lang-en">(living)</span>
-              <span class="lang-ru">(живой)</span>
+              <span class="lang-en">(stays current)</span>
+              <span class="lang-ru">(поддерживается актуальным)</span>
             </span>
             <span class="output-chip">spec.md</span>
           </div>
           <div class="scenario-note">
-            <span class="lang-en">
-              Requires the <code>requirements-pipeline</code> capability profile.
-              After <code>/kit-approve</code>, run <code>/kit-diagram</code> to auto-generate
-              UML diagrams (class, component, sequence, state) alongside the spec.
-            </span>
-            <span class="lang-ru">
-              Требуется capability-профиль <code>requirements-pipeline</code>.
-              После <code>/kit-approve</code> запустите <code>/kit-diagram</code> — он
-              автоматически сгенерирует UML-диаграммы (классы, компоненты, последовательности, состояния) рядом с ТЗ.
-            </span>
+            <span class="lang-en">Needs the <code>requirements-pipeline</code> option enabled at install. After <code>/kit-approve</code>, run <code>/kit-diagram</code> for UML diagrams.</span>
+            <span class="lang-ru">Нужна опция <code>requirements-pipeline</code> при установке. После <code>/kit-approve</code> запустите <code>/kit-diagram</code> для UML-диаграмм.</span>
           </div>
         </div>
       </div>
@@ -1649,12 +1612,12 @@ footer a:hover { color: var(--text); }
       <div class="scenario">
         <div class="scenario-head">
           <h3>
-            <span class="lang-en">Draining the tech-debt backlog</span>
-            <span class="lang-ru">Разгрести технический долг</span>
+            <span class="lang-en">Cleaning up the list of minor known issues</span>
+            <span class="lang-ru">Разобрать список мелких известных проблем</span>
           </h3>
           <span class="scenario-tag tag-tech">
-            <span class="lang-en">Tech debt</span>
-            <span class="lang-ru">Тех. долг</span>
+            <span class="lang-en">Cleanup</span>
+            <span class="lang-ru">Уборка</span>
           </span>
         </div>
         <div class="scenario-body">
@@ -1668,69 +1631,60 @@ footer a:hover { color: var(--text); }
               <code class="trigger-cmd">/kit-techdebt</code>
             </div>
           </div>
-          <div class="plain-summary">
-            <span class="lang-en">
-              <strong>What's actually happening:</strong> while doing other work, the code-touching
-              agents quietly recorded non-critical findings — duplicated blocks in sibling files,
-              compiler warnings, deprecated calls, stale TODOs — into a per-module folder in the
-              vault. None of it expanded their current diff. When you're ready, you run this
-              command, see the full backlog grouped by severity, pick what to drain, and the team
-              fixes each entry through the same review-gated loop as a regular task.
-            </span>
-            <span class="lang-ru">
-              <strong>Что происходит на самом деле:</strong> пока агенты делали другую работу,
-              они тихо записывали некритичные находки — дублирующиеся блоки в соседних файлах,
-              предупреждения компилятора, deprecated-вызовы, протухшие TODO — в папку модуля
-              в хранилище. Это не раздувало их текущий диф. Когда вы готовы, запускаете команду,
-              видите весь бэклог сгруппированный по важности, выбираете что чинить — и команда
-              исправляет каждую запись через тот же ревью-цикл, что и обычную задачу.
-            </span>
-          </div>
           <div class="pipeline-label">
             <span class="lang-en">How the work flows</span>
             <span class="lang-ru">Как идёт работа</span>
           </div>
           <div class="phases">
             <div class="phase">
-              <div class="phase-num">1</div>
+              <div class="phase-num">📥</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">See the backlog</span>
-                  <span class="lang-ru">Увидеть бэклог</span>
+                  <span class="lang-en">See the list</span>
+                  <span class="lang-ru">Увидеть список</span>
                 </h4>
                 <p>
-                  <span class="lang-en">All the small non-critical findings the team noticed during regular work — duplicated code in sibling files, compiler warnings, deprecated calls, stale TODO notes — are surfaced as a single backlog grouped by severity. You decide what's worth draining now.</span>
-                  <span class="lang-ru">Все мелкие некритичные находки, замеченные командой по ходу обычной работы — дублирующийся код в соседних файлах, предупреждения компилятора, устаревшие вызовы, протухшие TODO — собираются в один бэклог, сгруппированный по важности. Вы решаете, что разгребать сейчас.</span>
+                  <span class="lang-en">All the small problems the agents noticed appear in one list, grouped by importance. You decide which entries to deal with now.</span>
+                  <span class="lang-ru">Все мелкие проблемы, замеченные агентами, собираются в один список, сгруппированный по важности. Вы решаете, какие записи разобрать сейчас.</span>
                 </p>
-                <div class="phase-roles">Triage</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Sorting by importance</span>
+                  <span class="lang-ru">Сортировка по важности</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">2</div>
+              <div class="phase-num">🔧</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Fix with the same safety nets</span>
-                  <span class="lang-ru">Чинить с той же подстраховкой</span>
+                  <span class="lang-en">Fix with the same checks</span>
+                  <span class="lang-ru">Исправить с теми же проверками</span>
                 </h4>
                 <p>
-                  <span class="lang-en">Each picked entry goes through the same review-gated cycle as a regular task: the appropriate specialist makes the change, the reviewer reads it, the build passes. Trivial entries take a direct path; bigger ones go through a planned path with stages.</span>
-                  <span class="lang-ru">Каждая выбранная запись проходит тот же цикл с проверками, что и обычная задача: нужный специалист вносит правку, ревьюер читает, сборка зелёная. Мелкие правки идут прямым путём; крупные — плановым путём с этапами.</span>
+                  <span class="lang-en">Each chosen entry goes through the same checks as a regular task. One agent makes the change, another reads it, the project is built again.</span>
+                  <span class="lang-ru">Каждая выбранная запись проходит те же проверки, что и обычная задача. Один агент вносит правку, другой её перечитывает, проект собирается заново.</span>
                 </p>
-                <div class="phase-roles">Bug fixer · Coder · Code reviewer</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Repair · Code writing · Code recheck</span>
+                  <span class="lang-ru">Исправление · Написание · Перечитывание</span>
+                </div>
               </div>
             </div>
             <div class="phase">
-              <div class="phase-num">3</div>
+              <div class="phase-num">📦</div>
               <div class="phase-body">
                 <h4>
-                  <span class="lang-en">Archive and report</span>
-                  <span class="lang-ru">Архив и отчёт</span>
+                  <span class="lang-en">Archive and summary</span>
+                  <span class="lang-ru">Архив и итоговый отчёт</span>
                 </h4>
                 <p>
-                  <span class="lang-en">Closed entries move to a "done" folder. The team produces a single batch report so you can show the work in a status update or sprint review without compiling it by hand.</span>
-                  <span class="lang-ru">Закрытые записи переезжают в папку «готово». Команда формирует единый отчёт по батчу, чтобы вы могли показать работу в статусе или на ревью спринта без ручной сборки.</span>
+                  <span class="lang-en">Closed entries move to a "done" folder. The agents put together a single summary report you can use for a status update.</span>
+                  <span class="lang-ru">Закрытые записи переезжают в папку «готово». Агенты собирают единый итоговый отчёт, который можно использовать для обновления статуса.</span>
                 </p>
-                <div class="phase-roles">Archive · Batch report</div>
+                <div class="phase-roles">
+                  <span class="lang-en">Archive · Summary report</span>
+                  <span class="lang-ru">Архив · Итоговый отчёт</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1740,28 +1694,17 @@ footer a:hover { color: var(--text); }
               <span class="lang-ru">записи закрыты → done/</span>
             </span>
             <span class="output-chip">
-              <span class="lang-en">fix commits</span>
-              <span class="lang-ru">фикс-коммиты</span>
+              <span class="lang-en">fix changes saved</span>
+              <span class="lang-ru">правки сохранены</span>
             </span>
             <span class="output-chip">
-              <span class="lang-en">batch report</span>
-              <span class="lang-ru">отчёт по батчу</span>
+              <span class="lang-en">summary report</span>
+              <span class="lang-ru">итоговый отчёт</span>
             </span>
           </div>
           <div class="scenario-note">
-            <span class="lang-en">
-              Filter the batch with <code>/kit-techdebt severity=high</code>,
-              <code>/kit-techdebt module=server</code>, or pass a single
-              <code>TD-id</code> to drain just one entry. Real bugs and security issues are
-              never recorded as tech debt — those still escalate or get fixed in place.
-            </span>
-            <span class="lang-ru">
-              Фильтруйте батч через <code>/kit-techdebt severity=high</code>,
-              <code>/kit-techdebt module=server</code> или передайте конкретный
-              <code>TD-id</code>, чтобы починить только одну запись. Настоящие баги и
-              security-проблемы никогда не записываются как тех. долг — они эскалируются
-              или чинятся на месте.
-            </span>
+            <span class="lang-en">Filter with <code>/kit-techdebt severity=high</code> or <code>module=server</code>. Real bugs and security issues never go here; they are reported or fixed straight away.</span>
+            <span class="lang-ru">Фильтруйте через <code>/kit-techdebt severity=high</code> или <code>module=server</code>. Настоящие баги и проблемы безопасности сюда не попадают: они сообщаются или исправляются сразу.</span>
           </div>
         </div>
       </div>
@@ -1775,29 +1718,29 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <div class="lang-en">
       <div class="sec-label">Slash commands</div>
-      <h2 class="sec-title">16 commands cover the whole lifecycle</h2>
+      <h2 class="sec-title">17 commands cover the whole lifecycle</h2>
       <p class="sec-sub">
-        From requirements to deploy. Every command is a single entry point that the orchestrator
-        expands into the right pipeline of agents.
+        From requirements to deployment. Each command is a single entry point. Behind
+        it, the agents follow a fixed sequence of steps for that workflow.
       </p>
 
       <div class="cmd-group">Core workflows</div>
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-new-feature</div>
-          <div class="cmd-desc">End-to-end feature delivery: requirements → design → plan → code → review → tests.</div>
+          <div class="cmd-desc">Builds a feature from start to finish: requirements → design → plan → code → recheck → tests.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-fix</div>
-          <div class="cmd-desc">Triage failing test cases, debug, fix, regression-test, and re-verify.</div>
+          <div class="cmd-desc">Reads failing tests from your list, finds the cause, repairs it, adds an automatic check, and confirms the fix.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-requirements-pipeline</div>
-          <div class="cmd-desc">Turn an idea into validated requirements + corner cases + spec + test cases.</div>
+          <div class="cmd-desc">Turns an idea into a checked list of requirements, edge cases, written description, and test list.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-diagram</div>
-          <div class="cmd-desc">Generate UML class, component, sequence, and state diagrams in Mermaid from the spec.</div>
+          <div class="cmd-desc">Generates UML diagrams (class, component, sequence, state) in Mermaid from the written description.</div>
         </div>
       </div>
 
@@ -1805,23 +1748,23 @@ footer a:hover { color: var(--text); }
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-review</div>
-          <div class="cmd-desc">Run @CodeReviewer over staged or arbitrary changes and surface findings.</div>
+          <div class="cmd-desc">Runs the code-recheck agent on staged or specific changes and reports what it found.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-lint</div>
-          <div class="cmd-desc">Project-aware lint pass with auto-fix where safe.</div>
+          <div class="cmd-desc">Runs the project's code-style checks. Fixes problems automatically where it is safe to do so.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-techdebt</div>
-          <div class="cmd-desc">Drain the per-module tech-debt backlog written by other agents — pick by severity, module, or TD-id; each entry runs through review-gated fix.</div>
+          <div class="cmd-desc">Works through the list of small known issues collected by other agents. Pick by importance, module, or by entry id. Each entry is fixed through the same checks as a regular task.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-checkpoint</div>
-          <div class="cmd-desc">Mark a known-good state during a long pipeline so you can rewind safely.</div>
+          <div class="cmd-desc">Saves a known-working point during long work, so you can return to it safely later.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-approve</div>
-          <div class="cmd-desc">Manual gate: approve a draft (requirements, plan, spec) and unblock the next phase.</div>
+          <div class="cmd-desc">Approve a draft (requirements, plan, written description) by hand to let the next step start.</div>
         </div>
       </div>
 
@@ -1829,15 +1772,15 @@ footer a:hover { color: var(--text); }
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-status</div>
-          <div class="cmd-desc">Where am I? Current task, phase, blockers, and what's next.</div>
+          <div class="cmd-desc">Shows where you are: current task, current step, what is blocking the work, and what comes next.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-resume</div>
-          <div class="cmd-desc">Resume a paused or compacted session — agents pick up exactly where they stopped.</div>
+          <div class="cmd-desc">Continues a paused session. The agents pick up exactly where they stopped.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-deploy</div>
-          <div class="cmd-desc">Run the project's deploy pipeline with built-in safety prompts.</div>
+          <div class="cmd-desc">Runs the project's deployment process with built-in confirmation prompts.</div>
         </div>
       </div>
 
@@ -1845,24 +1788,28 @@ footer a:hover { color: var(--text); }
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-update</div>
-          <div class="cmd-desc">Pull the latest kit version, migrate the manifest, re-render kit-managed files.</div>
+          <div class="cmd-desc">Updates the kit to the latest version. Moves your settings file forward and refreshes the files the kit manages.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/kit-config</div>
+          <div class="cmd-desc">Edits the kit's settings file in plain language. Say what to change ("switch the recheck model to Opus") and it updates the file and refreshes only the affected configurations.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-extend</div>
-          <div class="cmd-desc">Add a profile by URL — from this repo or a third-party one.</div>
+          <div class="cmd-desc">Adds a profile by URL, either from this kit or from a third-party source.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-update-deps</div>
-          <div class="cmd-desc">Refresh project dependency manifests safely with version-bump rationale.</div>
+          <div class="cmd-desc">Updates the project's dependency lists safely, with a written reason for each version change.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-uninstall</div>
-          <div class="cmd-desc">Remove kit-managed files cleanly while preserving vault and planning.</div>
+          <div class="cmd-desc">Removes the files managed by the kit cleanly, while keeping your stored documents and planning files.</div>
         </div>
       </div>
 
       <div style="margin-top:32px;font-size:0.8125rem;color:var(--muted);text-align:center;">
-        Backed by <span style="color:var(--text);font-weight:600;">14 reusable skills</span> —
+        Backed by <span style="color:var(--text);font-weight:600;">14 reusable skills</span>:
         <code>code-review-checklist</code>, <code>definition-of-done</code>,
         <code>pre-mortem</code>, <code>spec-to-code-trace</code>,
         <code>requirements-pipeline</code>,
@@ -1874,53 +1821,54 @@ footer a:hover { color: var(--text); }
 
     <div class="lang-ru">
       <div class="sec-label">Слэш-команды</div>
-      <h2 class="sec-title">16 команд покрывают весь жизненный цикл</h2>
+      <h2 class="sec-title">17 команд покрывают весь жизненный цикл</h2>
       <p class="sec-sub">
-        От требований до деплоя. Каждая команда — это единая точка входа, которую
-        оркестратор разворачивает в нужный пайплайн агентов.
+        От требований до развёртывания. Каждая команда служит одной точкой входа.
+        За ней агенты идут по фиксированной последовательности шагов, заданной для
+        этого процесса.
       </p>
 
       <div class="cmd-group">Основные процессы</div>
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-new-feature</div>
-          <div class="cmd-desc">Сквозная разработка фичи: требования → дизайн → план → код → ревью → тесты.</div>
+          <div class="cmd-desc">Делает функцию от начала до конца: требования → дизайн → план → код → перечитывание → тесты.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-fix</div>
-          <div class="cmd-desc">Разбор упавших тест-кейсов, отладка, фикс, регресс-тест и перепроверка.</div>
+          <div class="cmd-desc">Читает упавшие тесты из вашего списка, ищет причину, исправляет, добавляет автоматическую проверку и подтверждает исправление.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-requirements-pipeline</div>
-          <div class="cmd-desc">Превратить идею в проверенные требования + корнер-кейсы + ТЗ + тест-кейсы.</div>
+          <div class="cmd-desc">Превращает идею в проверенный список требований, сложных случаев, понятное описание задачи и список тестов.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-diagram</div>
-          <div class="cmd-desc">Сгенерировать UML-диаграммы (классы, компоненты, последовательности, состояния) в Mermaid из ТЗ.</div>
+          <div class="cmd-desc">Генерирует UML-диаграммы (классы, компоненты, последовательности, состояния) в Mermaid по описанию задачи.</div>
         </div>
       </div>
 
-      <div class="cmd-group">Качество и ревью</div>
+      <div class="cmd-group">Качество и проверка</div>
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-review</div>
-          <div class="cmd-desc">Запустить @CodeReviewer по застейдженным или произвольным изменениям и получить находки.</div>
+          <div class="cmd-desc">Запускает агента-перечитыватель по подготовленным или произвольным изменениям и сообщает, что он нашёл.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-lint</div>
-          <div class="cmd-desc">Линт под ваш проект с автоисправлениями там, где это безопасно.</div>
+          <div class="cmd-desc">Проверяет код на соответствие правилам оформления. Исправляет автоматически там, где это безопасно.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-techdebt</div>
-          <div class="cmd-desc">Разгрести бэклог тех. долга по модулям, который накопили другие агенты — выбираете по важности, модулю или TD-id; каждая запись проходит ревью-цикл.</div>
+          <div class="cmd-desc">Работает по списку мелких известных проблем, накопленному другими агентами. Можно выбирать по важности, модулю или по идентификатору записи. Каждая запись чинится через тот же набор проверок, что и обычная задача.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-checkpoint</div>
-          <div class="cmd-desc">Зафиксировать известно-рабочее состояние во время долгого пайплайна — чтобы безопасно откатиться.</div>
+          <div class="cmd-desc">Сохраняет известную рабочую точку во время длинной работы, чтобы безопасно к ней вернуться позже.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-approve</div>
-          <div class="cmd-desc">Ручной шаг: утвердить черновик (требования, план, ТЗ) и разблокировать следующую фазу.</div>
+          <div class="cmd-desc">Утверждение вручную. Подтверждает черновик (требования, план, описание), чтобы следующий шаг мог начаться.</div>
         </div>
       </div>
 
@@ -1928,40 +1876,44 @@ footer a:hover { color: var(--text); }
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-status</div>
-          <div class="cmd-desc">Где я? Текущая задача, фаза, блокеры и что дальше.</div>
+          <div class="cmd-desc">Показывает, на чём вы стоите: текущая задача, текущий шаг, что блокирует работу и что будет дальше.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-resume</div>
-          <div class="cmd-desc">Продолжить приостановленную или ужатую сессию — агенты подхватят ровно с того места, где остановились.</div>
+          <div class="cmd-desc">Продолжает приостановленную сессию. Агенты подхватывают ровно там, где остановились.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-deploy</div>
-          <div class="cmd-desc">Запустить деплой-пайплайн проекта со встроенными подтверждениями безопасности.</div>
+          <div class="cmd-desc">Запускает процесс развёртывания проекта со встроенными запросами на подтверждение.</div>
         </div>
       </div>
 
-      <div class="cmd-group">Обслуживание кита</div>
+      <div class="cmd-group">Обслуживание набора</div>
       <div class="cmd-grid">
         <div class="cmd-card">
           <div class="cmd-name">/kit-update</div>
-          <div class="cmd-desc">Подтянуть последнюю версию кита, мигрировать манифест и перегенерировать управляемые киту файлы.</div>
+          <div class="cmd-desc">Обновляет набор до последней версии. Переводит ваш файл настроек на новую и обновляет файлы, которые набор сам ведёт.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/kit-config</div>
+          <div class="cmd-desc">Правит файл настроек обычным языком. Скажите, что поменять («переключи модель перечитывания на Opus»), и команда обновит файл и обновит только затронутые конфигурации.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-extend</div>
-          <div class="cmd-desc">Добавить профиль по ссылке — из этого репозитория или стороннего.</div>
+          <div class="cmd-desc">Добавляет профиль по ссылке: из этого набора или из стороннего источника.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-update-deps</div>
-          <div class="cmd-desc">Безопасно обновить манифесты зависимостей с обоснованием версий.</div>
+          <div class="cmd-desc">Безопасно обновляет списки зависимостей проекта, с записанной причиной для каждого изменения версии.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-uninstall</div>
-          <div class="cmd-desc">Аккуратно удалить файлы, управляемые китом, сохранив хранилище и планирование.</div>
+          <div class="cmd-desc">Аккуратно удаляет файлы, которыми управляет набор, сохранив ваши документы и файлы планирования.</div>
         </div>
       </div>
 
       <div style="margin-top:32px;font-size:0.8125rem;color:var(--muted);text-align:center;">
-        Подкреплено <span style="color:var(--text);font-weight:600;">14 переиспользуемыми навыками</span> —
+        Подкреплено <span style="color:var(--text);font-weight:600;">14 переиспользуемыми навыками</span>:
         <code>code-review-checklist</code>, <code>definition-of-done</code>,
         <code>pre-mortem</code>, <code>spec-to-code-trace</code>,
         <code>requirements-pipeline</code>,
@@ -1977,13 +1929,13 @@ footer a:hover { color: var(--text); }
 <section id="profiles">
   <div class="wrap">
     <div class="lang-en">
-      <div class="sec-label">Profile architecture</div>
+      <div class="sec-label">Building blocks of your setup</div>
       <h2 class="sec-title">Build your setup from profiles</h2>
       <p class="sec-sub">
-        A <strong>profile</strong> is one building block of your kit setup — like ticking
-        one checkbox on an order form. Each profile says one thing: <em>"I'm using Kotlin,"</em>
-        <em>"I'm building a Compose app,"</em> <em>"Run on Claude Code,"</em>
-        <em>"Add security rules."</em>
+        A <strong>profile</strong> is one building block of your setup. Each profile
+        records one fact about your project: <em>"I am using Kotlin,"</em>
+        <em>"I am building a Compose app,"</em> <em>"I will run inside Claude Code,"</em>
+        <em>"Add the basic security rules."</em>
       </p>
       <div class="profile-example">
         <span class="prof-chip">kotlin-gradle</span>
@@ -1997,31 +1949,31 @@ footer a:hover { color: var(--text); }
         <span class="ex-result">your project setup</span>
       </div>
       <p class="profile-intro-line">
-        You pick a few when you install — the kit assembles them into your project.
-        Want SOLID design principles later? Add the <code>solid</code> profile;
-        language, framework, and host stay untouched. Switching from Claude Code
-        to OpenCode? Replace just the host profile.
+        You pick a few during install. The kit assembles them into your project.
+        Need SOLID design principles later? Add the <code>solid</code> profile.
+        Language, framework, and AI assistant stay untouched. Want to switch from
+        Claude Code to OpenCode? Replace only the AI-assistant profile.
       </p>
       <h3 class="axes-heading">The five categories of profiles</h3>
       <p class="axes-heading-sub">
-        Every profile belongs to one of these five categories (technically called
-        <em>axes</em>). Each category answers a different question about your project,
-        so profiles never overlap or conflict.
+        Every profile belongs to one of these five categories. Each category answers
+        a different question about your project. Profiles in different categories
+        never get in each other's way.
       </p>
       <div class="power-user-note">
-        Specific profile names look technical, but you don't need to memorise them.
-        The install prompt asks plain questions ("What language?", "Which AI assistant?")
-        and picks the right profiles for you.
+        The profile names look technical, but you do not need to remember them.
+        The install asks plain questions like "Which programming language?" or
+        "Which AI assistant?" and picks the right profiles for you.
       </div>
     </div>
     <div class="lang-ru">
-      <div class="sec-label">Архитектура профилей</div>
+      <div class="sec-label">Кирпичики настройки</div>
       <h2 class="sec-title">Соберите свою конфигурацию из профилей</h2>
       <p class="sec-sub">
-        <strong>Профиль</strong> — это один кирпичик настройки кита, как одна галочка
-        на бланке заказа. Каждый профиль говорит одну вещь: <em>«у меня Kotlin»</em>,
-        <em>«я делаю приложение на Compose»</em>, <em>«работаю в Claude Code»</em>,
-        <em>«добавь правила безопасности»</em>.
+        <strong>Профиль</strong> — это один кирпичик настройки. Каждый профиль
+        фиксирует один факт о вашем проекте: <em>«у меня Kotlin»</em>,
+        <em>«я делаю приложение на Compose»</em>, <em>«я работаю внутри Claude Code»</em>,
+        <em>«добавь базовые правила безопасности»</em>.
       </p>
       <div class="profile-example">
         <span class="prof-chip">kotlin-gradle</span>
@@ -2035,21 +1987,21 @@ footer a:hover { color: var(--text); }
         <span class="ex-result">конфигурация вашего проекта</span>
       </div>
       <p class="profile-intro-line">
-        На установке вы выбираете несколько штук — кит их собирает в проект.
-        Захотелось добавить принципы SOLID позже? Добавьте профиль <code>solid</code> —
-        язык, фреймворк и хост не тронутся. Переходите с Claude Code на OpenCode?
-        Замените только профиль хоста.
+        На установке вы выбираете несколько штук. Набор сам собирает их в проект.
+        Захотелось добавить принципы SOLID позже? Добавьте профиль <code>solid</code>.
+        Язык, фреймворк и ИИ-ассистент остаются нетронутыми. Хотите перейти с
+        Claude Code на OpenCode? Замените только профиль ИИ-ассистента.
       </p>
       <h3 class="axes-heading">Пять категорий профилей</h3>
       <p class="axes-heading-sub">
-        Каждый профиль принадлежит одной из пяти категорий (технически они называются
-        <em>осями</em>). Каждая категория отвечает на свой вопрос о вашем проекте,
-        поэтому профили никогда не пересекаются и не конфликтуют.
+        Каждый профиль принадлежит одной из пяти категорий. Каждая категория
+        отвечает на свой вопрос о вашем проекте. Профили из разных категорий
+        не мешают друг другу.
       </p>
       <div class="power-user-note">
-        Названия конкретных профилей выглядят технически, но запоминать их не нужно.
-        Установочный промпт задаёт простые вопросы («Какой язык?», «Какой ИИ-ассистент?»)
-        и сам выбирает нужные профили.
+        Названия профилей выглядят технически, но запоминать их не нужно.
+        Установка задаёт простые вопросы («Какой язык программирования?»,
+        «Какой ИИ-ассистент?») и сама выбирает нужные профили.
       </div>
     </div>
 
@@ -2063,8 +2015,8 @@ footer a:hover { color: var(--text); }
           </span>
         </div>
         <div class="axis-desc">
-          <span class="lang-en">Build commands, LSP, formatter, MCP integration.</span>
-          <span class="lang-ru">Команды сборки, LSP, форматтер, интеграция MCP.</span>
+          <span class="lang-en">Build commands, code-style tools, and language integrations.</span>
+          <span class="lang-ru">Команды сборки, инструменты оформления кода и интеграции для языка.</span>
         </div>
         <div class="axis-profiles">
           <span class="prof-chip">kotlin-gradle</span>
@@ -2078,8 +2030,8 @@ footer a:hover { color: var(--text); }
           <span class="axis-card">0…N</span>
         </div>
         <div class="axis-desc">
-          <span class="lang-en">UI framework, platforms, framework-specific forbidden patterns.</span>
-          <span class="lang-ru">UI-фреймворк, платформы, фреймворк-специфичные запрещённые паттерны.</span>
+          <span class="lang-en">UI framework, target platforms, and rules specific to that framework.</span>
+          <span class="lang-ru">UI-фреймворк, целевые платформы и правила, специфичные для этого фреймворка.</span>
         </div>
         <div class="axis-profiles">
           <span class="prof-chip">compose-multiplatform</span>
@@ -2093,8 +2045,8 @@ footer a:hover { color: var(--text); }
           <span class="axis-card">1…N</span>
         </div>
         <div class="axis-desc">
-          <span class="lang-en">Which template tree is rendered, host config file, agent frontmatter format.</span>
-          <span class="lang-ru">Какое дерево шаблонов рендерится, файл конфига хоста, формат frontmatter агента.</span>
+          <span class="lang-en">The set of files installed for that AI assistant, the assistant's settings file, and the format of agent metadata.</span>
+          <span class="lang-ru">Набор файлов, которые ставятся для этого ИИ-ассистента, его файл настроек и формат метаданных агента.</span>
         </div>
         <div class="axis-profiles">
           <span class="prof-chip">claude-code</span>
@@ -2111,8 +2063,8 @@ footer a:hover { color: var(--text); }
           </span>
         </div>
         <div class="axis-desc">
-          <span class="lang-en">Model routing for OpenCode installs (RouterAI, Ollama Cloud, …).</span>
-          <span class="lang-ru">Роутинг моделей для установок OpenCode (RouterAI, Ollama Cloud, …).</span>
+          <span class="lang-en">Where OpenCode gets its models from (RouterAI, Ollama Cloud, …).</span>
+          <span class="lang-ru">Откуда OpenCode берёт модели (RouterAI, Ollama Cloud, …).</span>
         </div>
         <div class="axis-profiles">
           <span class="prof-chip">routerai</span>
@@ -2126,8 +2078,8 @@ footer a:hover { color: var(--text); }
           <span class="axis-card">0…N</span>
         </div>
         <div class="axis-desc">
-          <span class="lang-en">Cross-cutting concerns — security baselines, design principles, full pipelines.</span>
-          <span class="lang-ru">Сквозные аспекты — базовая безопасность, принципы дизайна, готовые пайплайны.</span>
+          <span class="lang-en">Rules that apply across the whole project: basic security, design principles, or full workflow processes.</span>
+          <span class="lang-ru">Правила, которые применяются ко всему проекту: базовая безопасность, принципы дизайна или готовые рабочие процессы.</span>
         </div>
         <div class="axis-profiles">
           <span class="prof-chip locked">security-baseline</span>
@@ -2142,19 +2094,21 @@ footer a:hover { color: var(--text); }
         <div class="multihost-icon">⚡</div>
         <div class="multihost-text">
           <div class="lang-en">
-            <h3>Run on Claude Code, OpenCode, or both side-by-side</h3>
+            <h3>Run inside Claude Code, OpenCode, or both at the same time</h3>
             <p>
-              Pick one host or render both — agent prose lives once in <code>_shared/</code> and
-              is inlined into each host's tree at install time. Same project, two runtimes,
-              zero duplication.
+              Choose one or use both. The text of each agent lives in one place inside
+              the kit. It is built into the files for each AI assistant during install.
+              The same project can run inside two AI assistants without any duplicate
+              text to maintain.
             </p>
           </div>
           <div class="lang-ru">
-            <h3>Работайте в Claude Code, OpenCode или обоих параллельно</h3>
+            <h3>Работайте в Claude Code, OpenCode или в обоих сразу</h3>
             <p>
-              Выберите один хост или соберите оба — текст агентов живёт в одном месте
-              в <code>_shared/</code> и встраивается в дерево каждого хоста при установке.
-              Один проект, две среды, ноль дублирования.
+              Выберите одного или используйте обоих. Текст каждого агента живёт в одном
+              месте внутри набора. При установке он встраивается в файлы каждого
+              ИИ-ассистента. Один проект может работать в двух ИИ-ассистентах без
+              дублирующегося текста, который пришлось бы поддерживать вручную.
             </p>
           </div>
         </div>
@@ -2171,24 +2125,23 @@ footer a:hover { color: var(--text); }
 <section id="agents">
   <div class="wrap">
     <div class="lang-en">
-      <div class="sec-label">Agent roster</div>
-      <h2 class="sec-title">Meet your team</h2>
+      <div class="sec-label">The agents in your kit</div>
+      <h2 class="sec-title">What each agent does</h2>
       <p class="sec-sub">
-        Each AI specialist below has one clearly defined job — like a real software team,
-        only at the speed of an AI assistant. Fourteen ship with every install. Five more
-        join when you turn on the requirements pipeline (the optional package of agents
-        that turns plain-English ideas into a complete spec, automatically).
+        Each AI agent below has one clearly defined job. Fourteen come with every
+        install. Five more are added when you turn on the requirements pipeline. That
+        is an optional package that turns plain-English requests into a complete
+        written description without manual work.
       </p>
     </div>
     <div class="lang-ru">
-      <div class="sec-label">Состав команды</div>
-      <h2 class="sec-title">Знакомьтесь с командой</h2>
+      <div class="sec-label">Агенты в вашем наборе</div>
+      <h2 class="sec-title">Чем занимается каждый агент</h2>
       <p class="sec-sub">
-        У каждого ИИ-специалиста ниже одна чётко очерченная задача — как в настоящей
-        команде разработки, только со скоростью ИИ-ассистента. Четырнадцать идут с
-        каждой установкой. Ещё пятеро присоединяются, когда вы включаете requirements
-        pipeline (опциональный пакет агентов, который автоматически превращает идею
-        обычными словами в готовое ТЗ).
+        У каждого ИИ-агента ниже одна чётко определённая задача. Четырнадцать идут с
+        каждой установкой. Ещё пятеро добавляются, когда вы включаете requirements
+        pipeline. Это опциональный пакет, который превращает запрос обычными словами
+        в готовое описание задачи без ручной работы.
       </p>
     </div>
     <div class="agents-grid">
@@ -2199,8 +2152,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@Main</div>
         <div class="agent-role">
-          <span class="lang-en">Orchestrator — your single entry point. Runs FEATURE / BUG / TECH pipelines. Lives in <code>CLAUDE.md</code> for Claude Code installs.</span>
-          <span class="lang-ru">Оркестратор — ваша единая точка входа. Запускает пайплайны FEATURE / BUG / TECH. В установках Claude Code живёт в <code>CLAUDE.md</code>.</span>
+          <span class="lang-en">Your single entry point. Runs the workflows for new features, bug fixes, and cleanup. In Claude Code installs the role belongs to the main session itself, guided by <code>CLAUDE.md</code>. In OpenCode it is a separate agent file.</span>
+          <span class="lang-ru">Ваша единая точка входа. Запускает рабочие процессы для новых функций, исправления ошибок и уборки. В установках Claude Code эту роль выполняет основная сессия, опираясь на <code>CLAUDE.md</code>. В OpenCode это отдельный файл агента.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2210,8 +2163,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@CodeWriter</div>
         <div class="agent-role">
-          <span class="lang-en">Writes code in small steps, <strong>tests first</strong> (the practice known as TDD — Test-Driven Development: write tests describing the expected behaviour, then write only enough code to make them pass). Each step is independently verified before the next.</span>
-          <span class="lang-ru">Пишет код маленькими шагами, <strong>сначала тесты</strong> (практика TDD — Test-Driven Development: сначала пишутся тесты, описывающие ожидаемое поведение, затем код, который ровно их проходит). Каждый шаг независимо проверяется перед следующим.</span>
+          <span class="lang-en">Writes code in small steps, <strong>tests first</strong>. This is the practice called TDD (Test-Driven Development): the tests describing the expected behaviour are written first, then only enough code to make them pass. Each step is checked independently before the next one starts.</span>
+          <span class="lang-ru">Пишет код маленькими шагами, <strong>сначала тесты</strong>. Эта практика называется TDD (Test-Driven Development): сначала пишутся тесты, описывающие ожидаемое поведение, затем ровно столько кода, чтобы они проходили. Каждый шаг независимо проверяется до начала следующего.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2221,8 +2174,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@TestExecutor</div>
         <div class="agent-role">
-          <span class="lang-en">An independent referee. After the coder says "everything works," this specialist re-runs the entire test set from scratch and reports the result. No more "passing on the developer's machine only" — the green light here is verified, not claimed.</span>
-          <span class="lang-ru">Независимый арбитр. После того как программист говорит «всё работает», этот специалист с нуля прогоняет весь набор тестов и отчитывается о результате. Никаких «у меня всё работает» — зелёный свет здесь проверен, а не заявлен.</span>
+          <span class="lang-en">An independent agent. After the code-writing agent reports that the change is ready, this one runs the full set of tests from scratch and reports the result. The green light is confirmed by the run, not by the writer's word alone.</span>
+          <span class="lang-ru">Независимый агент. После того как агент, пишущий код, сообщает, что изменение готово, этот с нуля прогоняет весь набор тестов и сообщает результат. Зелёный свет подтверждается прогоном, а не словами того, кто написал код.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2232,8 +2185,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@CodeReviewer</div>
         <div class="agent-role">
-          <span class="lang-en">A second pair of eyes. Reads every change for clarity, structure, and obvious risks — and flags anything that doesn't match what the team agreed to build. Read-only — never edits the code, only reports.</span>
-          <span class="lang-ru">Вторая пара глаз. Читает каждое изменение на понятность, структуру и явные риски — и отмечает всё, что расходится с тем, что команда договорилась сделать. Только читает, никогда не правит, только сообщает.</span>
+          <span class="lang-en">Reads every change for clarity, structure, and obvious risks. Flags anything that does not match what was agreed. This agent only reads and reports. It never edits the code itself.</span>
+          <span class="lang-ru">Читает каждое изменение на понятность, структуру и явные риски. Отмечает всё, что расходится с тем, о чём договаривались. Этот агент только читает и сообщает, он никогда не правит код сам.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2243,8 +2196,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@SecurityReviewer</div>
         <div class="agent-role">
-          <span class="lang-en">A dedicated security review when a change touches sensitive areas — login, payments, personal data, file uploads, permission rules, anything that talks to the outside internet. Uses the industry-standard security checklist (OWASP, the open security framework used by every major bank and tech company) and classifies findings as Critical / High / Medium / Low so you know what must be fixed before release.</span>
-          <span class="lang-ru">Отдельный security-проход, когда изменение касается чувствительных мест — входа, платежей, персональных данных, загрузки файлов, прав доступа, всего, что общается с внешним интернетом. Использует индустриальный security-чеклист OWASP (открытый стандарт, на который опираются все крупные банки и техкомпании) и классифицирует находки на Critical / High / Medium / Low — вы видите, что обязательно чинить до релиза.</span>
+          <span class="lang-en">Runs a separate security check when a change touches sensitive areas. Examples: login, payments, personal data, file uploads, permission rules, anything that talks to the outside internet. The check uses the OWASP list (an open security standard used by major banks and tech companies). Findings are sorted into Critical, High, Medium, or Low so you know what must be fixed before the next release.</span>
+          <span class="lang-ru">Запускает отдельную проверку безопасности, когда изменение касается чувствительных мест. Например: вход, платежи, персональные данные, загрузка файлов, права доступа, всё, что общается с внешним интернетом. Использует список OWASP (открытый стандарт безопасности, на который опираются крупные банки и техкомпании). Находки сортируются по уровням Critical, High, Medium и Low, чтобы вы видели, что обязательно чинить до следующего релиза.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2254,8 +2207,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@TraceabilityChecker</div>
         <div class="agent-role">
-          <span class="lang-en">The auditor. Draws a clear chain from "what we promised the customer" → "the test that proves it works" → "the actual code that handles it." If a promised feature has no test, or a piece of code has no purpose, this specialist surfaces the gap before release.</span>
-          <span class="lang-ru">Аудитор. Чертит чёткую цепочку «что мы пообещали заказчику» → «тест, который это проверяет» → «код, который это делает». Если у обещанной функции нет теста, а у куска кода нет задачи — этот специалист поднимает разрыв до релиза.</span>
+          <span class="lang-en">Draws a clear chain from "what was promised to the user" to "the test that proves it works" to "the code that handles it." If a promised feature has no test, or a piece of code has no clear purpose, this agent points out the gap before the next release.</span>
+          <span class="lang-ru">Чертит чёткую цепочку: «что обещано пользователю» → «тест, который это проверяет» → «код, который это делает». Если у обещанной функции нет теста или у куска кода нет понятной задачи, этот агент указывает на разрыв до следующего релиза.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2265,8 +2218,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@DoDGate</div>
         <div class="agent-role">
-          <span class="lang-en">The release gate. Before a feature is marked finished, this specialist walks through a 25-point checklist — all tests passing, every requirement covered, no security issues open, no work-in-progress left. If even one item is unmet, the release is blocked. ("DoD" stands for Definition of Done — the standard list of conditions that must be true before a feature ships.)</span>
-          <span class="lang-ru">Релизный шлагбаум. Прежде чем фича считается готовой, этот специалист проходит по чеклисту из 25 пунктов — все тесты пройдены, все требования покрыты, нет открытых security-замечаний, нет незавершённой работы. Хотя бы один пункт не закрыт — релиз заблокирован. («DoD» — Definition of Done, стандартный список условий, при которых фича считается готовой.)</span>
+          <span class="lang-en">The final review. Before a feature is marked finished, this agent walks through a 25-point checklist: every test passes, every requirement is covered, no security issue is open, no piece of work is left half-done. If even one item is unmet, the feature cannot be marked finished. ("DoD" stands for Definition of Done, the standard list of conditions a feature must meet to count as finished.)</span>
+          <span class="lang-ru">Финальная проверка. Прежде чем функция считается готовой, этот агент проходит по списку из 25 пунктов: все тесты пройдены, все требования покрыты, нет открытых вопросов по безопасности, нет незаконченной работы. Если хотя бы один пункт не закрыт, функцию нельзя отметить готовой. («DoD» — Definition of Done, стандартный список условий, при которых функция считается готовой.)</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2276,8 +2229,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@BugFixer</div>
         <div class="agent-role">
-          <span class="lang-en">Investigates a reported bug, finds the real cause (not just the symptom), fixes it, and adds a "regression test" — a safety check that prevents the same bug from coming back. For serious bugs, automatically runs a short retrospective so the team learns the lesson, not just the fix.</span>
-          <span class="lang-ru">Расследует баг, находит настоящую причину (не симптом), чинит и добавляет «регрессионный тест» — страховку, чтобы тот же баг не вернулся. Для серьёзных багов автоматически запускает короткую ретроспективу — чтобы команда вынесла урок, а не просто фикс.</span>
+          <span class="lang-en">Investigates a reported bug and finds the real cause, not just the symptom. Repairs it. Adds a "regression test": a small permanent check that prevents the same bug from coming back. For serious bugs, runs a short review automatically so the lesson is captured, not only the fix.</span>
+          <span class="lang-ru">Расследует сообщённую ошибку и находит настоящую причину, а не только симптом. Исправляет её. Добавляет «регрессионный тест»: маленькую постоянную проверку, чтобы тот же баг не вернулся. Для серьёзных ошибок автоматически запускает короткий разбор, чтобы зафиксировать урок, а не только исправление.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2287,8 +2240,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@Debugger</div>
         <div class="agent-role">
-          <span class="lang-en">Investigates hard-to-pin-down bugs without changing any code. The output is a small, repeatable scenario that demonstrates the failure — so the BugFixer can start with a clear target instead of guessing.</span>
-          <span class="lang-ru">Расследует трудноуловимые баги, ничего не меняя в коде. Результат — маленький воспроизводимый сценарий, который показывает падение. BugFixer получает чёткую цель вместо догадок.</span>
+          <span class="lang-en">Investigates hard-to-pin-down bugs without changing any code. The result is a small repeatable scenario that demonstrates the failure. The BugFixer can then start with a clear target instead of guessing.</span>
+          <span class="lang-ru">Расследует трудноуловимые ошибки, ничего не меняя в коде. Результат: маленький повторяемый сценарий, который показывает поломку. BugFixer получает понятную цель вместо догадок.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2298,8 +2251,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@QA</div>
         <div class="agent-role">
-          <span class="lang-en">Owns the test list — a single living document that lists every behaviour the product is supposed to support, with a status next to each (passing, failing, not yet checked). It's the team's source of truth for what works and what doesn't.</span>
-          <span class="lang-ru">Ведёт список тестов — единый живой документ, в котором перечислены все ожидаемые поведения продукта, у каждого свой статус (работает, упало, ещё не проверено). Это источник правды для команды о том, что работает, а что нет.</span>
+          <span class="lang-en">Owns the test list. The list is a single document with every behaviour the product is supposed to support. Each line has its current status: passing, failing, or not yet checked. It is the source of truth for what works and what does not.</span>
+          <span class="lang-ru">Ведёт список тестов. Это один документ, в котором перечислены все поведения, которые продукт должен поддерживать. У каждой строки свой статус: проходит, упало или ещё не проверено. Это источник правды о том, что работает, а что нет.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2309,8 +2262,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@TestRunner</div>
         <div class="agent-role">
-          <span class="lang-en">Walks you through manual testing when needed — finds failing items, asks you to verify each step, records what passed and what didn't, and lets you add new scenarios as you discover them. Keeps the test list in sync with what the team has actually checked.</span>
-          <span class="lang-ru">Проводит вас по ручному тестированию, когда оно нужно: находит упавшие пункты, просит подтвердить каждый шаг, фиксирует что прошло, а что нет, позволяет добавлять новые сценарии по ходу. Держит список тестов в синхроне с тем, что команда реально проверила.</span>
+          <span class="lang-en">Helps you go through manual tests when they are needed. Finds failing items. Asks you to confirm each step. Records what passed and what did not. Lets you add new scenarios as you find them. Keeps the test list in sync with what has actually been checked.</span>
+          <span class="lang-ru">Помогает пройти ручные тесты, когда они нужны. Находит упавшие пункты. Просит подтвердить каждый шаг. Записывает, что прошло, а что нет. Позволяет добавлять новые сценарии по ходу. Держит список тестов в соответствии с тем, что было реально проверено.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2320,8 +2273,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@Designer</div>
         <div class="agent-role">
-          <span class="lang-en">For visual features, describes how the screen should look and how the user should move through it — colours, layout, what happens when buttons are pressed. Optional: turn it off if your product has no user interface.</span>
-          <span class="lang-ru">Для визуальных фич описывает, как должен выглядеть экран и как пользователь движется по нему — цвета, расположение, что происходит при нажатии кнопок. Опциональный: можно отключить, если у вашего продукта нет интерфейса.</span>
+          <span class="lang-en">For visual features, describes how the screen should look and how the user moves through it: colours, layout, what happens when each button is pressed. This agent is optional. Turn it off if your product has no user interface.</span>
+          <span class="lang-ru">Для визуальных функций описывает, как должен выглядеть экран и как пользователь по нему перемещается: цвета, расположение, что происходит при нажатии каждой кнопки. Этот агент опционален. Выключите его, если у вашего продукта нет интерфейса.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2331,8 +2284,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@PromptEngineer</div>
         <div class="agent-role">
-          <span class="lang-en">The team's editor — keeps the instructions each AI specialist follows up to date as the project evolves. Without this role, the team's "rulebook" gradually drifts out of sync with reality.</span>
-          <span class="lang-ru">Редактор команды — держит инструкции каждого ИИ-специалиста в актуальном виде по мере развития проекта. Без этой роли «свод правил» команды постепенно расходится с реальностью.</span>
+          <span class="lang-en">Keeps the instructions that each AI agent follows up to date as the project evolves. Without this agent, the rulebook the others follow gradually drifts out of sync with reality.</span>
+          <span class="lang-ru">Держит инструкции, которым следует каждый ИИ-агент, в актуальном виде по мере развития проекта. Без этого агента свод правил, по которому работают остальные, постепенно расходится с реальностью.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2342,48 +2295,48 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@AutoApprover</div>
         <div class="agent-role">
-          <span class="lang-en">Reviews and approves plans automatically when you've turned on auto-approve mode — useful for running the team unattended overnight or on routine work, while still applying the same quality checks.</span>
-          <span class="lang-ru">Проверяет и подтверждает планы автоматически, когда включён режим авто-апрува — удобно для запуска команды на ночь или на рутинную работу. Качественные проверки при этом не отключаются.</span>
+          <span class="lang-en">Reads and approves plans automatically when you turn on auto-approve mode. Useful for running the agents overnight without your input, or on routine work. The same checks still apply.</span>
+          <span class="lang-ru">Читает и подтверждает планы автоматически, когда включён режим авто-одобрения. Удобно для запуска агентов на ночь без вашего участия или для рутинной работы. Те же проверки при этом сохраняются.</span>
         </div>
       </div>
       <div class="agent-card">
         <div class="agent-tag">requirements-pipeline</div>
         <div class="agent-name">@BusinessAnalyst</div>
         <div class="agent-role">
-          <span class="lang-en">Turns a one-line idea ("let users log in with their work email") into a clear requirements document — what the user needs, what success looks like, what is and isn't in scope. The kind of document a product manager would write, drafted in minutes.</span>
-          <span class="lang-ru">Превращает однострочную идею («дать пользователям вход через рабочую почту») в чёткий документ требований — что нужно пользователю, как выглядит успех, что входит в задачу и что нет. Документ уровня продакт-менеджера — за минуты.</span>
+          <span class="lang-en">Turns a one-line idea ("let users log in with their work email") into a clear requirements document. The document covers what the user needs, what success looks like, and what is and is not part of the work. It is the kind of document a product manager would normally write, drafted in minutes.</span>
+          <span class="lang-ru">Превращает идею в одной строке («дать пользователям вход через рабочую почту») в чёткий документ требований. В документе описано: что нужно пользователю, как выглядит успех, что входит в работу и что не входит. Это документ уровня продакт-менеджера, написанный за минуты.</span>
         </div>
       </div>
       <div class="agent-card">
         <div class="agent-tag">requirements-pipeline</div>
         <div class="agent-name">@CornerCaseReviewer</div>
         <div class="agent-role">
-          <span class="lang-en">A "what-could-go-wrong" specialist. Stress-tests requirements, the technical plan, and finally the code itself — looking for rare scenarios (called "corner cases") that the team might have missed. If the customer can hit a Critical edge case that nobody thought to handle, this specialist finds it before they do.</span>
-          <span class="lang-ru">Специалист по «а что если». Стресс-тестирует требования, план и сам код — ищет редкие сценарии (так называемые «corner cases», крайние случаи), которые команда могла упустить. Если пользователь способен наткнуться на критический случай, который никто не предусмотрел — этот специалист найдёт его раньше пользователя.</span>
+          <span class="lang-en">A "what-could-go-wrong" agent. Looks for rare scenarios (called "corner cases" or "edge cases") in the requirements, the technical plan, and the code itself. If the user can run into a critical edge case that nobody thought to handle, this agent finds it first.</span>
+          <span class="lang-ru">Агент «а что если». Ищет редкие случаи (их называют «corner cases» или «крайние случаи») в требованиях, в техническом плане и в самом коде. Если пользователь может наткнуться на критический случай, который никто не предусмотрел, этот агент находит его первым.</span>
         </div>
       </div>
       <div class="agent-card">
         <div class="agent-tag">requirements-pipeline</div>
         <div class="agent-name">@SystemAnalyst</div>
         <div class="agent-role">
-          <span class="lang-en">Turns approved requirements into a technical blueprint — what the system will look like, how the parts fit together, what data is stored where, what each interface promises. The kind of document a senior engineer would write before coding.</span>
-          <span class="lang-ru">Превращает утверждённые требования в технический чертёж — как устроена система, как части соединяются, какие данные где хранятся, что обещает каждый интерфейс. Документ, который написал бы senior-инженер до начала кода.</span>
+          <span class="lang-en">Turns approved requirements into an implementation plan. The plan covers what the system will look like, how the parts fit together, what data is stored where, and what each interface promises. It is the kind of document a senior engineer would normally write before any code is written.</span>
+          <span class="lang-ru">Превращает утверждённые требования в план реализации. В плане описано: как устроена система, как соединяются её части, какие данные где хранятся, что обещает каждый интерфейс. Это документ, который senior-инженер обычно пишет до начала кода.</span>
         </div>
       </div>
       <div class="agent-card">
         <div class="agent-tag">requirements-pipeline</div>
         <div class="agent-name">@CoverageChecker</div>
         <div class="agent-role">
-          <span class="lang-en">A coverage auditor. Cross-checks the test list against the requirements: every promise made to the customer must have at least one test that proves it. If anything's missing, sends it back to QA — until 100% coverage is reached.</span>
-          <span class="lang-ru">Аудитор покрытия. Сверяет список тестов с требованиями: на каждое обещание заказчику должен быть хотя бы один тест, который это доказывает. Если чего-то не хватает — возвращает в QA, пока покрытие не достигнет 100%.</span>
+          <span class="lang-en">Cross-checks the test list against the requirements. Every promise made to the user must have at least one test that proves it. If anything is missing, the list is sent back to QA. The cycle repeats until every promise is covered by a test.</span>
+          <span class="lang-ru">Сверяет список тестов с требованиями. На каждое обещание пользователю должен быть хотя бы один тест, который это доказывает. Если чего-то не хватает, список возвращается в QA. Цикл повторяется, пока каждое обещание не будет покрыто тестом.</span>
         </div>
       </div>
       <div class="agent-card">
         <div class="agent-tag">requirements-pipeline</div>
         <div class="agent-name">@ConsistencyChecker</div>
         <div class="agent-role">
-          <span class="lang-en">A contradiction-finder. Compares the requirements, the technical blueprint, and the test list against each other — and surfaces any place where two of them disagree (e.g. requirements promise a feature the blueprint forgets, or a test expects something the blueprint never agreed to). Loops until the three documents tell the same story.</span>
-          <span class="lang-ru">Ищет противоречия. Сверяет требования, технический чертёж и список тестов между собой — и поднимает любое место, где два документа расходятся (например, требования обещают то, чего нет в чертеже, или тест проверяет то, на что чертёж не подписывался). Повторяет, пока три документа не расскажут одну историю.</span>
+          <span class="lang-en">Compares the requirements, the implementation plan, and the test list against each other. Reports any place where two of them disagree. For example: the requirements promise a feature that the plan forgets, or a test expects something that the plan never agreed to. The cycle repeats until all three documents say the same thing.</span>
+          <span class="lang-ru">Сверяет требования, план реализации и список тестов между собой. Сообщает о любом месте, где два из них расходятся. Например: требования обещают то, чего нет в плане, или тест проверяет то, на что план не подписывался. Цикл повторяется, пока все три документа не скажут одно и то же.</span>
         </div>
       </div>
     </div>
@@ -2394,19 +2347,21 @@ footer a:hover { color: var(--text); }
 <section id="test-cases">
   <div class="wrap">
     <div class="lang-en">
-      <div class="sec-label">Living test-cases file</div>
-      <h2 class="sec-title">Your control panel for quality</h2>
+      <div class="sec-label">Living test list</div>
+      <h2 class="sec-title">One file you can edit by hand</h2>
       <p class="sec-sub">
-        A markdown file is the single source of truth between you and the agent team.
-        Edit it manually — the agents pick up every change on the next <code>/kit-fix</code>.
+        One markdown file serves as the shared source of truth between you and the
+        agents. Edit it by hand. The agents pick up every change on the next
+        <code>/kit-fix</code>.
       </p>
     </div>
     <div class="lang-ru">
-      <div class="sec-label">Живой файл тест-кейсов</div>
-      <h2 class="sec-title">Ваша панель управления качеством</h2>
+      <div class="sec-label">Живой список тестов</div>
+      <h2 class="sec-title">Один файл, который можно править вручную</h2>
       <p class="sec-sub">
-        Markdown-файл — единый источник правды между вами и командой агентов.
-        Редактируйте его вручную — агенты подхватят все правки на следующем <code>/kit-fix</code>.
+        Один markdown-файл служит общим источником правды между вами и агентами.
+        Правьте его вручную. Агенты подхватят все изменения на следующем
+        <code>/kit-fix</code>.
       </p>
     </div>
 
@@ -2462,8 +2417,8 @@ footer a:hover { color: var(--text); }
             </td>
             <td><span class="status-badge s-fail">FAIL</span></td>
             <td style="color:#fb7185;font-size:0.78rem">
-              <span class="lang-en">Session drops after 1h — token not refreshed</span>
-              <span class="lang-ru">Сессия слетает через час — токен не обновляется</span>
+              <span class="lang-en">Session drops after 1h, token not refreshed</span>
+              <span class="lang-ru">Сессия слетает через час, токен не обновляется</span>
             </td>
           </tr>
           <tr>
@@ -2483,15 +2438,15 @@ footer a:hover { color: var(--text); }
             </td>
             <td><span class="status-badge s-fail">FAIL</span></td>
             <td style="color:#fb7185;font-size:0.78rem">
-              <span class="lang-en">Added manually — crashes with 400 Bad Request</span>
-              <span class="lang-ru">Добавлено вручную — падает с 400 Bad Request</span>
+              <span class="lang-en">Added by hand. Crashes with 400 Bad Request</span>
+              <span class="lang-ru">Добавлено вручную. Падает с 400 Bad Request</span>
             </td>
           </tr>
         </tbody>
       </table>
       <div class="tc-edit-hint">
-        <span class="lang-en">✏️ You edited TC-03 and TC-05 to FAIL, then ran <code>/kit-fix</code> — the agent team handles the rest.</span>
-        <span class="lang-ru">✏️ Вы пометили TC-03 и TC-05 как FAIL и запустили <code>/kit-fix</code> — остальное делает команда агентов.</span>
+        <span class="lang-en">✏️ You edited TC-03 and TC-05 to FAIL, then ran <code>/kit-fix</code>. The agents handle the rest.</span>
+        <span class="lang-ru">✏️ Вы пометили TC-03 и TC-05 как FAIL и запустили <code>/kit-fix</code>. Остальное делают агенты.</span>
       </div>
     </div>
 
@@ -2502,8 +2457,8 @@ footer a:hover { color: var(--text); }
           <span class="lang-ru">1. Вы помечаете падения</span>
         </div>
         <div style="font-size:0.8125rem;color:var(--subtle);">
-          <span class="lang-en">Change any row's Status to <code>FAIL</code>. Add a Note with the symptom. No tooling needed — just edit the markdown.</span>
-          <span class="lang-ru">Меняете статус любой строки на <code>FAIL</code>. Дописываете в Notes симптом. Никаких инструментов — просто правите markdown.</span>
+          <span class="lang-en">Change any row's Status to <code>FAIL</code>. Add a Note with the symptom. No special tools needed. You just edit the file.</span>
+          <span class="lang-ru">Меняете статус любой строки на <code>FAIL</code>. Дописываете в Notes симптом. Никаких специальных инструментов. Вы просто правите файл.</span>
         </div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;">
@@ -2512,8 +2467,8 @@ footer a:hover { color: var(--text); }
           <span class="lang-ru">2. Запускаете <code>/kit-fix</code></span>
         </div>
         <div style="font-size:0.8125rem;color:var(--subtle);">
-          <span class="lang-en">@TestRunner scans the file, lists all FAIL/PEND rows, asks which to fix. Pick one, a few, or all.</span>
-          <span class="lang-ru">@TestRunner сканирует файл, выводит все FAIL/PEND-строки и спрашивает, что чинить. Один, несколько или все.</span>
+          <span class="lang-en">@TestRunner reads the file, shows all rows with status FAIL or PEND, and asks which ones to fix. You can pick one row, several, or all of them.</span>
+          <span class="lang-ru">@TestRunner читает файл, показывает все строки со статусом FAIL или PEND и спрашивает, какие из них чинить. Можно выбрать одну строку, несколько или все.</span>
         </div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;">
@@ -2522,8 +2477,8 @@ footer a:hover { color: var(--text); }
           <span class="lang-ru">3. Агенты чинят и проверяют</span>
         </div>
         <div style="font-size:0.8125rem;color:var(--subtle);">
-          <span class="lang-en">@BugFixer analyzes, fixes, @CodeReviewer checks, @TestRunner re-verifies. Status flips to <code>PASS Verified</code>.</span>
-          <span class="lang-ru">@BugFixer разбирает и чинит, @CodeReviewer проверяет, @TestRunner перезапускает. Статус переключается на <code>PASS Verified</code>.</span>
+          <span class="lang-en">@BugFixer finds the cause and repairs it. @CodeReviewer reads the change. @TestRunner runs the tests again. The status changes to <code>PASS Verified</code>.</span>
+          <span class="lang-ru">@BugFixer находит причину и исправляет. @CodeReviewer перечитывает изменение. @TestRunner снова прогоняет тесты. Статус меняется на <code>PASS Verified</code>.</span>
         </div>
       </div>
     </div>
@@ -2537,16 +2492,16 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">Keeping it current</div>
       <h2 class="sec-title">Update and extend without breaking anything</h2>
       <p class="sec-sub">
-        The kit evolves with your project. Both operations run as AI-driven commands —
-        no manual file merging.
+        The kit evolves with your project. All three operations are commands that the
+        AI handles for you. You do not have to combine files by hand.
       </p>
     </div>
     <div class="lang-ru">
       <div class="sec-label">Поддержка в актуальном состоянии</div>
       <h2 class="sec-title">Обновляйте и расширяйте, ничего не ломая</h2>
       <p class="sec-sub">
-        Кит развивается вместе с вашим проектом. Обе операции — это команды,
-        исполняемые ИИ. Никакого ручного слияния файлов.
+        Набор развивается вместе с вашим проектом. Все три операции — это команды,
+        которые ИИ выполняет за вас. Вручную объединять файлы не нужно.
       </p>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:40px;">
@@ -2556,15 +2511,19 @@ footer a:hover { color: var(--text); }
         <div class="lang-en">
           <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:8px;">Update the kit</h3>
           <p style="font-size:0.8125rem;color:var(--subtle);margin-bottom:14px;">
-            Run <code>/kit-update</code> inside any installed project. The agent reads the changelog,
-            shows you breaking changes, merges new files, and bumps <code>kit_version</code> — your vault and planning files are never touched.
+            Run <code>/kit-update</code> inside any installed project. The agent reads
+            the changelog, shows you any breaking changes, brings in new files, and
+            updates <code>kit_version</code>. Your stored documents and planning files
+            are never touched.
           </p>
         </div>
         <div class="lang-ru">
-          <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:8px;">Обновить кит</h3>
+          <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:8px;">Обновить набор</h3>
           <p style="font-size:0.8125rem;color:var(--subtle);margin-bottom:14px;">
-            Запустите <code>/kit-update</code> в любом проекте с установленным китом. Агент читает changelog,
-            показывает ломающие изменения, мерджит новые файлы и поднимает <code>kit_version</code> — ваши файлы хранилища и планирования не трогаются.
+            Запустите <code>/kit-update</code> в любом проекте, где набор уже
+            установлен. Агент читает changelog, показывает ломающие изменения,
+            добавляет новые файлы и обновляет <code>kit_version</code>. Ваши документы
+            и файлы планирования при этом не трогаются.
           </p>
         </div>
         <div style="font-family:'SF Mono',ui-monospace,monospace;font-size:0.8rem;color:var(--accent2);background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.18);border-radius:6px;padding:8px 12px;">/kit-update</div>
@@ -2575,15 +2534,17 @@ footer a:hover { color: var(--text); }
         <div class="lang-en">
           <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:8px;">Add a profile</h3>
           <p style="font-size:0.8125rem;color:var(--subtle);margin-bottom:14px;">
-            Pull in any capability or framework profile by URL — from this repo or a third-party one.
-            The agent validates, deep-merges, and re-renders only the affected files.
+            Pull in any capability or framework profile by URL, either from this kit or
+            from a third-party source. The agent checks the profile, combines it with
+            your existing settings, and refreshes only the affected files.
           </p>
         </div>
         <div class="lang-ru">
           <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:8px;">Добавить профиль</h3>
           <p style="font-size:0.8125rem;color:var(--subtle);margin-bottom:14px;">
-            Подтяните любой capability- или framework-профиль по ссылке — из этого репозитория или стороннего.
-            Агент валидирует, глубоко мерджит и перегенерирует только затронутые файлы.
+            Подтяните любой профиль (capability или framework) по ссылке: из этого
+            набора или из стороннего источника. Агент проверяет профиль, объединяет
+            его с вашими настройками и обновляет только затронутые файлы.
           </p>
         </div>
         <div style="font-family:'SF Mono',ui-monospace,monospace;font-size:0.75rem;color:var(--accent2);background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.18);border-radius:6px;padding:8px 12px;word-break:break-all;">/kit-extend https://…/profiles/capability/solid.yaml</div>
@@ -2594,15 +2555,17 @@ footer a:hover { color: var(--text); }
         <div class="lang-en">
           <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:8px;">Uninstall cleanly</h3>
           <p style="font-size:0.8125rem;color:var(--subtle);margin-bottom:14px;">
-            The uninstall prompt removes all kit-managed files while preserving your vault,
-            planning files, and any custom edits made outside of kit-managed paths.
+            The uninstall command removes every file the kit added. Your stored
+            documents, planning files, and any custom edits made outside the kit's
+            folders are kept.
           </p>
         </div>
         <div class="lang-ru">
           <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:8px;">Чисто удалить</h3>
           <p style="font-size:0.8125rem;color:var(--subtle);margin-bottom:14px;">
-            Промпт удаления убирает все управляемые китом файлы, сохраняя ваше хранилище,
-            файлы планирования и любые правки за пределами зоны кита.
+            Команда удаления убирает все файлы, которые добавил набор. Ваши документы,
+            файлы планирования и любые правки за пределами папок набора при этом
+            сохраняются.
           </p>
         </div>
         <div style="font-family:'SF Mono',ui-monospace,monospace;font-size:0.8rem;color:var(--accent2);background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.18);border-radius:6px;padding:8px 12px;">Fetch and follow docs/prompts/uninstall.md</div>
@@ -2619,26 +2582,26 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">FAQ</div>
       <h2 class="sec-title">Common questions</h2>
       <p class="sec-sub">
-        If you've never used an AI agent kit before, these are probably the questions
-        on your mind.
+        If you have never used a kit of AI agents before, these are probably the
+        questions on your mind.
       </p>
 
       <div class="faq">
         <details>
           <summary>Do I need to know how to code?</summary>
           <div class="faq-body">
-            <p>Not really, but it helps. The kit handles the engineering side — coding, reviews, tests. You need to be able to:</p>
+            <p>Not really, but it helps. The kit handles the engineering side: coding, rechecking, and testing. You need to be able to:</p>
             <p>• describe what you want clearly,<br>
                • run commands in a terminal,<br>
                • check whether the result matches your idea.</p>
-            <p>If you've ever written a careful brief for a freelancer, you have the skill.</p>
+            <p>If you have ever written clear instructions for a freelancer, you already have the skill.</p>
           </div>
         </details>
 
         <details>
           <summary>How much does this cost?</summary>
           <div class="faq-body">
-            <p>The kit itself is free and open source. The cost is the AI assistant you use it with — typically Claude Code, OpenCode, or Cursor — plus the underlying model API calls.</p>
+            <p>The kit itself is free and open source. The cost is the AI assistant you use it with (typically Claude Code, OpenCode, or Cursor), plus the cost of the model API calls behind it.</p>
             <p>Expect a few dollars per significant feature, depending on how much code is involved. There are no kit-specific fees.</p>
           </div>
         </details>
@@ -2646,52 +2609,52 @@ footer a:hover { color: var(--text); }
         <details>
           <summary>What if the AI makes a mistake?</summary>
           <div class="faq-body">
-            <p>The whole point of the team setup is that one agent's mistakes are caught by another. The reviewer reads every change before it ships. The QA agent maintains a list of test cases that flip to FAIL when something breaks.</p>
-            <p>And every change is just a normal git commit — you can always revert to any earlier point.</p>
+            <p>The whole point of having several agents is that a mistake made by one of them is caught by another. A separate agent reads every change before it is added to the project. Another agent keeps a list of automatic checks that switch to FAIL the moment something stops working.</p>
+            <p>Every change is also saved as a separate, reversible step in your project's history. You can always return to any earlier point.</p>
           </div>
         </details>
 
         <details>
           <summary>Where does my code live? Is it private?</summary>
           <div class="faq-body">
-            <p>On your machine, in your project's git repository. Same as if you wrote it yourself.</p>
-            <p>The kit doesn't upload code anywhere. The AI assistant you've chosen sends snippets to its provider while you're working — that's the same trade-off as using any AI coding tool.</p>
+            <p>On your machine, inside your project's git repository, just as if you had written it yourself.</p>
+            <p>The kit does not upload code anywhere. The AI assistant you have chosen sends pieces of code to its own provider while you work. That is the same trade-off as using any AI coding tool.</p>
           </div>
         </details>
 
         <details>
-          <summary>Is this safe to use on real projects?</summary>
+          <summary>Is it safe to use on real projects?</summary>
           <div class="faq-body">
             <p>Yes, with normal precautions:</p>
-            <p>• never paste API keys into the manifest (the install prompt rejects them automatically),<br>
+            <p>• never paste API keys into the settings file (the install rejects them automatically),<br>
                • commit your work to git regularly,<br>
-               • review meaningful changes before merging.</p>
-            <p>The same rules as working with any AI coding assistant — the team setup just makes the safety net wider, not weaker.</p>
+               • read meaningful changes before they are added to the project.</p>
+            <p>The rules are the same as for any AI coding assistant. Having several agents only makes the safety net wider, not weaker.</p>
           </div>
         </details>
 
         <details>
-          <summary>Which AI assistant should I pick — Claude Code or OpenCode?</summary>
+          <summary>Which AI assistant should I pick: Claude Code or OpenCode?</summary>
           <div class="faq-body">
-            <p><strong>Claude Code</strong> — easiest setup, best Claude models, polished experience.</p>
-            <p><strong>OpenCode</strong> — flexibility: pluggable model providers, more open architecture.</p>
-            <p>You can also install both side-by-side and switch between them. The agent team is identical on both.</p>
+            <p><strong>Claude Code</strong>: easiest setup, best Claude models, polished experience.</p>
+            <p><strong>OpenCode</strong>: more flexible. Pluggable model providers and a more open architecture.</p>
+            <p>You can also install both side by side and switch between them. The agents are identical on both.</p>
           </div>
         </details>
 
         <details>
-          <summary>What if I get stuck mid-pipeline?</summary>
+          <summary>What if I get stuck partway through a workflow?</summary>
           <div class="faq-body">
-            <p>Run <code>/kit-status</code> — it tells you which stage is active, what's blocking it, and what's next. Run <code>/kit-resume</code> to continue exactly where you left off, even after closing your AI assistant.</p>
-            <p>For a long pipeline, run <code>/kit-checkpoint</code> at known-good moments so you can rewind to them safely.</p>
+            <p>Run <code>/kit-status</code>. It tells you which step is active, what is blocking it, and what comes next. Run <code>/kit-resume</code> to continue exactly where you left off, even after closing your AI assistant.</p>
+            <p>On long workflows, run <code>/kit-checkpoint</code> at known-working moments so you can safely return to them later.</p>
           </div>
         </details>
 
         <details>
-          <summary>Can I customise an agent's behaviour?</summary>
+          <summary>Can I change an agent's behaviour?</summary>
           <div class="faq-body">
-            <p>Yes. Each agent is just a markdown file in <code>.claude/agents/</code> or <code>.opencode/agents/</code>. Open it, edit the prompt, save. The next run uses the new instructions.</p>
-            <p>For deeper changes — add or modify capability profiles, then run <code>/kit-update</code> to re-render everything cleanly.</p>
+            <p>Yes. Each agent is just a markdown file in <code>.claude/agents/</code> or <code>.opencode/agents/</code>. Open it, edit the instructions, save. The next run uses the new instructions.</p>
+            <p>For deeper changes, add or modify a capability profile, then run <code>/kit-update</code> to refresh everything cleanly.</p>
           </div>
         </details>
       </div>
@@ -2701,43 +2664,43 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">FAQ</div>
       <h2 class="sec-title">Частые вопросы</h2>
       <p class="sec-sub">
-        Если вы раньше не работали с китом ИИ-агентов, скорее всего, у вас в голове
-        крутятся именно эти вопросы.
+        Если вы раньше не работали с набором ИИ-агентов, скорее всего, у вас в
+        голове крутятся именно эти вопросы.
       </p>
 
       <div class="faq">
         <details>
           <summary>Нужно ли уметь программировать?</summary>
           <div class="faq-body">
-            <p>Не обязательно, но полезно. Кит сам занимается инженерной частью — кодом, ревью, тестами. От вас требуется уметь:</p>
+            <p>Не обязательно, но полезно. Набор сам занимается инженерной частью: кодом, перечитываниями и тестами. От вас требуется уметь:</p>
             <p>• чётко описать, чего вы хотите,<br>
                • запускать команды в терминале,<br>
                • проверять, соответствует ли результат вашей задумке.</p>
-            <p>Если вы когда-нибудь писали внятное ТЗ фрилансеру — у вас уже есть нужные навыки.</p>
+            <p>Если вы когда-нибудь писали понятные инструкции фрилансеру, нужный навык у вас уже есть.</p>
           </div>
         </details>
 
         <details>
           <summary>Сколько это стоит?</summary>
           <div class="faq-body">
-            <p>Сам кит бесплатный и с открытым кодом. Платите вы за ИИ-ассистент, который его запускает — обычно это Claude Code, OpenCode или Cursor — плюс за вызовы API моделей.</p>
-            <p>На серьёзную фичу обычно уходит несколько долларов, в зависимости от объёма кода. Дополнительных платежей именно за кит нет.</p>
+            <p>Сам набор бесплатный и с открытым кодом. Платите вы за ИИ-ассистент, который его запускает (обычно это Claude Code, OpenCode или Cursor), плюс за вызовы API моделей.</p>
+            <p>На серьёзную функцию обычно уходит несколько долларов, в зависимости от объёма кода. Дополнительных платежей именно за набор нет.</p>
           </div>
         </details>
 
         <details>
           <summary>А что, если ИИ ошибётся?</summary>
           <div class="faq-body">
-            <p>Смысл командной настройки в том, что ошибки одного агента ловит другой. Ревьюер читает каждое изменение перед тем, как оно попадёт в код. QA-агент ведёт список тест-кейсов, которые переключаются в FAIL, когда что-то ломается.</p>
-            <p>А любое изменение — это обычный git-коммит. Всегда можно откатиться к любой более ранней точке.</p>
+            <p>Смысл нескольких агентов в том, что ошибки одного из них ловит другой. Отдельный агент перечитывает каждое изменение перед тем, как оно попадёт в проект. Ещё один ведёт список автоматических проверок, которые переключаются в FAIL, как только что-то перестаёт работать.</p>
+            <p>Каждое изменение к тому же сохраняется как отдельный обратимый шаг в истории проекта. Всегда можно вернуться к любой более ранней точке.</p>
           </div>
         </details>
 
         <details>
           <summary>Где хранится мой код? Это приватно?</summary>
           <div class="faq-body">
-            <p>На вашем компьютере, в вашем git-репозитории. Точно так же, как если бы вы писали его сами.</p>
-            <p>Кит ничего никуда не загружает. ИИ-ассистент, который вы выбрали, отправляет фрагменты кода своему провайдеру во время работы с ним — это тот же трейдофф, что и при использовании любого ИИ-кодера.</p>
+            <p>На вашем компьютере, внутри git-репозитория проекта. Точно так же, как если бы вы писали его сами.</p>
+            <p>Набор ничего никуда не загружает. ИИ-ассистент, который вы выбрали, отправляет фрагменты кода своему провайдеру во время работы. Это тот же компромисс, что и при использовании любого ИИ-инструмента для написания кода.</p>
           </div>
         </details>
 
@@ -2745,35 +2708,35 @@ footer a:hover { color: var(--text); }
           <summary>Можно ли использовать на реальных проектах?</summary>
           <div class="faq-body">
             <p>Да, с обычными мерами осторожности:</p>
-            <p>• не вставляйте API-ключи в манифест (установочный промпт сам это отбрасывает),<br>
+            <p>• не вставляйте API-ключи в файл настроек (установка отбрасывает их автоматически),<br>
                • регулярно коммитьте работу в git,<br>
-               • просматривайте значимые изменения перед мерджем.</p>
-            <p>Правила те же, что и при работе с любым ИИ-кодером — командная настройка просто делает страховочную сетку шире, а не уже.</p>
+               • перечитывайте значимые изменения до того, как они попадут в проект.</p>
+            <p>Правила те же, что и для любого ИИ-ассистента по коду. Несколько агентов лишь делают страховочную сетку шире, а не уже.</p>
           </div>
         </details>
 
         <details>
-          <summary>Какой ИИ-ассистент выбрать — Claude Code или OpenCode?</summary>
+          <summary>Какой ИИ-ассистент выбрать: Claude Code или OpenCode?</summary>
           <div class="faq-body">
-            <p><strong>Claude Code</strong> — самая простая установка, лучшие модели Claude, отполированный UX.</p>
-            <p><strong>OpenCode</strong> — гибкость: подключаемые провайдеры моделей, более открытая архитектура.</p>
-            <p>Можно установить оба параллельно и переключаться. Команда агентов в обоих одинаковая.</p>
+            <p><strong>Claude Code</strong>: самая простая установка, лучшие модели Claude, отполированный UX.</p>
+            <p><strong>OpenCode</strong>: больше гибкости. Подключаемые провайдеры моделей и более открытая архитектура.</p>
+            <p>Можно установить оба параллельно и переключаться между ними. Агенты в обоих одинаковые.</p>
           </div>
         </details>
 
         <details>
-          <summary>А если я застряну посреди пайплайна?</summary>
+          <summary>А если я застряну посреди процесса?</summary>
           <div class="faq-body">
-            <p>Запустите <code>/kit-status</code> — он покажет, какой этап сейчас активен, что его блокирует и что дальше. <code>/kit-resume</code> продолжает ровно с того места, где остановились — даже после закрытия ИИ-ассистента.</p>
-            <p>На длинных пайплайнах используйте <code>/kit-checkpoint</code> в известно-рабочих точках, чтобы безопасно к ним откатываться.</p>
+            <p>Запустите <code>/kit-status</code>. Команда покажет, какой шаг сейчас активен, что его блокирует и что будет дальше. <code>/kit-resume</code> продолжает ровно с той точки, где вы остановились, даже после закрытия ИИ-ассистента.</p>
+            <p>На длинных процессах используйте <code>/kit-checkpoint</code> в проверенных точках, чтобы безопасно к ним возвращаться.</p>
           </div>
         </details>
 
         <details>
           <summary>Можно ли поменять поведение агента под себя?</summary>
           <div class="faq-body">
-            <p>Да. Каждый агент — это просто markdown-файл в <code>.claude/agents/</code> или <code>.opencode/agents/</code>. Открываете, редактируете промпт, сохраняете. Следующий запуск использует новые инструкции.</p>
-            <p>Для более глубоких изменений — добавьте или модифицируйте capability-профили, затем запустите <code>/kit-update</code> для чистой перегенерации.</p>
+            <p>Да. Каждый агент — это просто markdown-файл в <code>.claude/agents/</code> или <code>.opencode/agents/</code>. Открываете, редактируете инструкции, сохраняете. Следующий запуск использует новые инструкции.</p>
+            <p>Для более глубоких изменений добавьте или измените capability-профиль, затем запустите <code>/kit-update</code> для чистого обновления.</p>
           </div>
         </details>
       </div>
@@ -2788,16 +2751,16 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">Get started</div>
       <h2 class="sec-title">Your agents are one paste away</h2>
       <p class="sec-sub">
-        Open Claude Code, OpenCode, or any AI agent with file access.
-        Paste the prompt below and follow the guided setup.
+        Open Claude Code, OpenCode, or another AI assistant with file access. Paste
+        the text below and follow the guided setup.
       </p>
     </div>
     <div class="lang-ru">
       <div class="sec-label">Начать</div>
-      <h2 class="sec-title">До команды агентов — одна вставка</h2>
+      <h2 class="sec-title">Агенты в одну вставку отсюда</h2>
       <p class="sec-sub">
-        Откройте Claude Code, OpenCode или любой ИИ-ассистент с доступом к файлам.
-        Вставьте промпт ниже и следуйте шагам установки.
+        Откройте Claude Code, OpenCode или другой ИИ-ассистент с доступом к файлам.
+        Вставьте текст ниже и следуйте шагам установки.
       </p>
     </div>
     <div class="cta-install">
@@ -2825,7 +2788,7 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <p>
       <a href="https://github.com/aequicor/ai-agent-kit" target="_blank">aequicor/ai-agent-kit</a>
-      &nbsp;·&nbsp; v4.6.0
+      &nbsp;·&nbsp; v4.6.2
       &nbsp;·&nbsp; <a href="https://github.com/aequicor/ai-agent-kit/blob/master/docs/migration/changelog.yaml" target="_blank">
         <span class="lang-en">Changelog</span>
         <span class="lang-ru">История изменений</span>

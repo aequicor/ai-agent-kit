@@ -37,6 +37,17 @@ Called by @CodeReviewer automatically after each @CodeWriter stage completion. N
 - [ ] Consistent formatting (auto-formatter applied)
 - [ ] No patterns from forbidden list: `{{FORBIDDEN_PATTERNS_LIST}}`
 
+## Stub & Deferral Check (CRITICAL — blocking)
+
+Regex scan over every changeset file: `TODO|FIXME|XXX|HACK|stage [0-9]|later|TBD`.
+
+- [ ] No unpaired `TODO`, `FIXME`, `XXX`, `HACK`, "stage N", "later", or "TBD" in production code added/modified by this stage
+- [ ] Every such marker (if any) is paired with a `.planning/DECISIONS.md` reference, an external tracker ID (`#123`, `JIRA-456`, `TC-NN`), or an explicit deferral entry already in the stage file
+- [ ] No method body for an AC the stage was supposed to deliver is comment-only (`{ // TODO: implement… }`)
+- [ ] No method body is silently noop (`fun foo() { /* ... */ }`) where the spec required behavior
+
+Any unchecked box → CRITICAL issue, return to @CodeWriter (or escalate to @Main as BLOCKED). This rule fires on **in-changeset hits only** — pre-existing markers in untouched files belong to tech-debt, not the review.
+
 ## Architecture
 
 - [ ] No circular dependencies between modules

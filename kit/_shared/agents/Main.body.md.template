@@ -260,7 +260,22 @@ After receiving answers from PO:
                 `(deferred to @SecurityReviewer)` smell and `@SecurityReviewer`
                 was NOT dispatched in the parallel call (no surface match),
                 dispatch `@SecurityReviewer` now as a sequential follow-up.
-   7.4  FIX — if any of (`@CodeReviewer`, `@SecurityReviewer`) returned
+   7.3c STUB-SCAN — for every file in the changed-files list returned by 7.2,
+                run a regex scan over the file body for:
+                  `TODO|FIXME|XXX|HACK|stage [0-9]|later|TBD`
+                Hits in **production code** (non-test, non-doc) that are NOT paired
+                with a `.planning/DECISIONS.md` reference, an external tracker ID
+                (`#123`, `JIRA-456`, `TC-NN`), or an explicit deferral entry in
+                the stage file → fold into the review findings as **CRITICAL**.
+                Defense-in-depth backstop for `@CodeReviewer` focus area 6 — the
+                grep is mechanical and cannot regress when prompt prose drifts.
+                Without this gate, a `// TODO` body for an AC method passes
+                CodeWriter (claims success) → TestExecutor (tests assert
+                "no exception") → CodeReviewer (no rule) and the stage
+                checkpoint silently asserts an unimplemented AC is done.
+                Loop into 7.4 FIX with the combined findings; cap follows the
+                7.4 review-fix retry budget (max 3).
+   7.4  FIX — if any of (`@CodeReviewer`, `@SecurityReviewer`, 7.3c STUB-SCAN) returned
                 CRITICAL or HIGH:
                 dispatch `@CodeWriter` again with the combined findings, then
                 loop 7.2 → 7.2a → 7.3. Max 3 review-fix cycles per
@@ -482,6 +497,7 @@ When calling `knowledge-my-app_search_docs`:
 - **DO NOT skip `@TestRunner AUTO_VERIFY` (step 7.2b)** — without it, automatically-verified TCs stay PEND in test-cases.md and `@DoDGate` blocks at Group 1.1. This is the bookkeeping bridge between `@TestExecutor`'s independent verdict and the live test-cases document.
 - **DO NOT skip `@CodeReviewer` (step 7.3)** — reading the diff yourself is not a code review.
 - **DO NOT skip `@SecurityReviewer` (step 7.3)** for security-relevant stages — when unclear, dispatch.
+- **DO NOT skip step 7.3c STUB-SCAN** — three-line grep over the changeset that catches `TODO`/`FIXME`/`stage N` markers `@CodeReviewer` may miss. Without it, an AC's method body can be `// TODO` and the stage will close green.
 - **DO NOT skip `@CornerCaseReviewer` IMPLEMENTATION mode (step 7b)** — tests passing alone does not certify that every Critical CC has a real branch in code.
 - **DO NOT skip `@TraceabilityChecker` (step 7c)** — orphan endpoints, missing impl refs, weak assertions are exactly what this agent catches.
 - **DO NOT skip `@DoDGate` (step 7e)** — CLOSE is gated on PASS. PO override is `/kit-approve-with-dod-waiver`, not `/kit-approve`. A FAIL in the DoD checklist cannot be waived; it must be fixed.
