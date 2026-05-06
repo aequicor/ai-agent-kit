@@ -138,6 +138,44 @@ For non-trivial steps, use an explicit Think → Act → Observe cycle before ca
 
 This reduces errors in multi-step tasks. For trivial actions (read known file, grep known pattern), skip the cycle.
 
+## Tool Use Discipline (CRITICAL — prevents three recurring tool-call failures)
+
+Three failure modes that consistently burn context. Verify mentally before every `edit` / `write` call.
+
+### 1. Read before Edit (and before Write to existing files)
+
+`edit` requires `read` on **the exact same path in the current session**. A path "remembered" from `AUTO_MEMORY.md`, the vault, a prior session, or another subagent dispatch does **not** count — read freshness is per-session, per-path.
+
+- `edit <path>` → must be preceded by `read <path>` in this session.
+- `write <path>` to a brand-new file → no prior read needed.
+- `write <path>` to a file that already exists → `read <path>` first. If unsure whether it exists, `glob` it.
+
+If `edit` errors with "File has not been read yet" — read the file, do not "guess" the content from memory.
+
+### 2. No-op edits are forbidden
+
+Before submitting `edit`, verify `old_string ≠ new_string`. Identical strings = no diff = the tool will reject the call. This typically happens when you copy the same block into both fields. Think in terms of the **diff you want to apply**, not the file you want to end up with.
+
+### 3. Paths anchor to current CWD, not memory
+
+Never paste an absolute path that came from documentation, `AUTO_MEMORY.md`, a prior conversation, or another machine — it may be Linux-style (`/home/user/...`) when your CWD is Windows (`C:\Users\...`), or vice versa, or simply a different developer's checkout.
+
+- Default to **paths relative to project root** (`vault/...`, `src/...`, `.planning/...`) — these mirror the kit's `{{VAULT_PATH}}` style placeholders.
+- If you need an absolute path, derive it from the current CWD (`bash pwd` or the system context), never from prior text.
+- If a path you read in a doc starts with `/home/`, `/Users/`, `C:\` — strip it to the project-relative form before using it.
+
+### Pre-flight (1 second, mental)
+
+Before every `edit` / `write`:
+
+```
+1. Read freshness — have I read this path in THIS session? (or: brand-new write?)
+2. Diff non-empty — old_string ≠ new_string?
+3. Path origin — relative to project root, or derived from the current CWD?
+```
+
+Any "no" → fix that first. Cheaper than a failed tool call that pollutes context.
+
 ## Workflow
 
 ### Standard development pipeline (`/kit-new-feature`)

@@ -87,6 +87,18 @@ Do NOT modify without explicit instruction:
 
 ---
 
+## Tool Use Discipline
+
+Three rules before any `edit` / `write` call — they prevent the most common context-burning errors:
+
+1. **Read before Edit.** `edit <path>` requires a `read <path>` earlier in **this session**; memory of the file from another session/agent does not count. `write` to a brand-new file is fine without read; `write` to an existing file needs `read` first.
+2. **No empty diffs.** `old_string` must differ from `new_string`; otherwise the call is rejected. Plan the diff you want, not the final file content.
+3. **Paths from CWD, not memory.** Never paste absolute paths from docs, `AUTO_MEMORY.md`, or prior sessions — they may be from a different OS or developer's checkout. Default to project-relative paths (`vault/...`, `src/...`); derive absolute paths from `bash pwd` if needed.
+
+Full rules + pre-flight checklist: `{{HOST_DIR}}/_shared.md` → "Tool Use Discipline".
+
+---
+
 ## Corner Cases
 
 - Corner cases MUST be identified during planning, not discovered during implementation.

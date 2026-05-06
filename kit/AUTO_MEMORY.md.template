@@ -2,6 +2,8 @@
 
 > Auto-memory: agents write learnings here across sessions.
 > Loaded by all agents. Never manually edit — agents maintain this file.
+>
+> **Path format — IMPORTANT.** When recording any file path below, use **paths relative to project root** (`src/foo/Bar.kt`, `vault/concepts/...`). Never write absolute paths (`/home/...`, `C:\Users\...`, `/Users/...`) — they belong to a single machine and break the moment another agent on a different OS or developer reads them back.
 
 ---
 

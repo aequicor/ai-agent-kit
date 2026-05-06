@@ -1,4 +1,56 @@
 versions:
+  - version: "4.6.1"
+    released: "2026-05-06"
+    breaking: false
+    description: |
+      Tool Use Discipline — prompt-level guardrails for three recurring
+      tool-call failures that have been burning context across all agents:
+
+        1. "File has not been read yet. Read it first before writing to it."
+           — `edit` (and `write` to existing files) called before a `read` of
+             the same path in the current session.
+        2. "newString equals oldString" — `edit` submitted with an identical
+             `old_string` and `new_string` (no-op diff).
+        3. Path mismatch — agent uses an absolute path copied from
+             `AUTO_MEMORY.md`, vault docs, or a prior session that belongs to
+             a different OS / developer's checkout (e.g. `/home/user/...`
+             while CWD is `C:\Users\...`).
+
+      Each error wastes a full tool round-trip and forces the model to
+      recover, polluting context. The kit had no explicit rule against any
+      of them.
+
+      Fix — three independent edits, all prompt-only (no new files, no
+      manifest changes, no profile changes):
+
+        - `kit/_shared/_shared.md.template` — adds a new "Tool Use
+          Discipline" section right after "Reasoning Loop". Full rules for
+          all three failure modes plus a 3-line pre-flight checklist. This
+          file is loaded as a top-level instruction by OpenCode and is
+          referenced by every subagent body on both hosts, so the rules
+          reach all agents that perform file edits.
+        - `kit/_shared/PROJECT_RULES.body.md.template` — adds a compact
+          "Tool Use Discipline" subsection (3 bullets, ~7 lines) between
+          "Boundaries" and "Corner Cases". This file is `{{INCLUDE}}`d
+          into both `CLAUDE.md` (Claude Code) and `AGENTS.md` (OpenCode),
+          so the orchestrator main session sees the rules without having
+          to read `_shared.md` mid-task. References `_shared.md` for the
+          full text.
+        - `kit/AUTO_MEMORY.md.template` — header-level reminder that any
+          file path written to AUTO_MEMORY must be project-relative, not
+          absolute. Closes the feedback loop where one agent records an
+          absolute path and a future agent on a different machine
+          dereferences it verbatim.
+
+      No new files, no schema changes, no profile changes. Existing
+      installs pick up the new rules on next `/kit-update`.
+    files_changed:
+      - kit/_shared/_shared.md.template
+      - kit/_shared/PROJECT_RULES.body.md.template
+      - kit/AUTO_MEMORY.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.6.0"
     released: "2026-05-06"
     breaking: false
