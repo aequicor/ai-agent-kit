@@ -32,7 +32,7 @@ Single-pass agent. No re-review.
 
 ## Input
 
-Caller (`@Main` step 7.3b, after `@CodeReviewer` step 7.3a) passes:
+Caller (`@Main` step 7.3 — dispatched in parallel with `@CodeReviewer`, or as a sequential follow-up if `@CodeReviewer` flagged a `(deferred to @SecurityReviewer)` smell) passes:
 
 ```
 Stage: <stage-file path>

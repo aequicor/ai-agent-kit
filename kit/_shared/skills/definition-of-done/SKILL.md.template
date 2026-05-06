@@ -68,7 +68,7 @@ Walk groups in order. Within a group, walk rows in order. Stop walking only when
 | # | Check | Evidence required |
 |---|-------|-------------------|
 | 4.1 | Last `@CodeReviewer` verdict is `APPROVED` (no open CRITICAL/HIGH) | Read latest review block from active task file or last `@CodeReviewer` output. |
-| 4.2 | If `@SecurityReviewer` was dispatched at any point during this feature (presence of a SecurityReviewer output in the active task file checkpoints) → its last verdict must be `APPROVED`. If `@SecurityReviewer` was never dispatched, mark this row `N/A — @Main classified the changeset as not security-relevant`; N/A counts as PASS. (Caller `@Main` knows whether step 7.3b fired — pass that signal in the prompt body to make the decision unambiguous.) | Active task file: presence + last verdict of `@SecurityReviewer` block. |
+| 4.2 | If `@SecurityReviewer` was dispatched at any point during this feature (presence of a SecurityReviewer output in the active task file checkpoints) → its last verdict must be `APPROVED`. If `@SecurityReviewer` was never dispatched, mark this row `N/A — @Main classified the changeset as not security-relevant`; N/A counts as PASS. (Caller `@Main` knows whether `@SecurityReviewer` fired in step 7.3 — pass that signal in the prompt body to make the decision unambiguous.) | Active task file: presence + last verdict of `@SecurityReviewer` block. |
 | 4.3 | No CRITICAL/HIGH `pending clarification` items | Both review outputs scanned. |
 
 ### Group 5 — Build & lint

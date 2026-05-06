@@ -1,4 +1,55 @@
 versions:
+  - version: "4.5.1"
+    released: "2026-05-06"
+    breaking: false
+    description: |
+      Pipeline wall-time optimization — three independent reviewers/checkers
+      now dispatched in parallel where they share inputs and write nothing.
+
+      Problem: the v4.5 quality-gates pipeline serialized every reviewer
+      dispatch even when reviewers had no shared output, inflating wall time
+      on every stage and on every feature close-out. Independent verifiers
+      (CodeReviewer, SecurityReviewer, TraceabilityChecker, CornerCaseReviewer
+      IMPLEMENTATION) emit verdicts but do not modify shared files, so they
+      can run concurrently without affecting correctness.
+
+      Three changes — all behavior-preserving, all backward-compatible:
+
+      1. EXECUTE step 7 — `@CodeReviewer` and `@SecurityReviewer` are now
+         dispatched **in one turn as parallel calls** (Main step 7.3, was
+         7.3a then 7.3b sequential). `@SecurityReviewer` still gates on the
+         security-surface trigger list; if `@CodeReviewer` later flags a
+         `(deferred to @SecurityReviewer)` smell that the surface check
+         missed, `@SecurityReviewer` is dispatched as a sequential follow-up.
+         Anti-Loop and DoDGate Group 4.2 logic unchanged.
+
+      2. Post-implementation checks — `@CornerCaseReviewer` (Mode=IMPLEMENTATION)
+         and `@TraceabilityChecker` are now dispatched **in parallel** after
+         `@QA IMPL FINAL` completes (Main steps 7b ‖ 7c, was 7b → 7c
+         sequential). Both are read-only verifiers over the same post-FINAL
+         artifacts; cycle counters tracked independently per check.
+
+      3. Requirements pipeline — `@CoverageChecker` (iteration 1) and
+         `@SystemAnalyst DRAFT` are now dispatched **in parallel** at the
+         start of step 4/5 (skill: requirements-pipeline). Both consume
+         requirements + corner-case register (frozen by step 2.5); SA reads
+         test-cases as informational input but its spec content derives from
+         requirements + CCs. Coverage FIX iterations remain sequential within
+         step 4 if needed.
+
+      No new agents, skills, commands, or manifest fields. No changes to
+      verdict semantics, retry caps, or DoD gate logic. Existing Anti-Loop
+      rules apply unchanged. Step renaming (7.3a + 7.3b → 7.3) is internal
+      doc reference only — DoDGate, SecurityReviewer, and the cross-reference
+      in definition-of-done skill updated accordingly.
+    files_changed:
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/SecurityReviewer.body.md.template
+      - kit/_shared/skills/definition-of-done/SKILL.md.template
+      - kit/_shared/skills/requirements-pipeline/SKILL.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.5.0"
     released: "2026-05-06"
     breaking: false

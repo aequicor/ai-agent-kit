@@ -175,23 +175,27 @@ Proceed to Step 4.
 
 ---
 
-## Step 4 — COVERAGE CHECK — loop
+## Step 4 ‖ Step 5 — COVERAGE CHECK and SYSTEM ANALYST DRAFT (parallel kickoff)
 
-**Max 2 iterations.**
+`@CoverageChecker` and `@SystemAnalyst DRAFT` consume **the same authoritative
+inputs** (requirements file + corner cases register) and produce independent
+outputs in different files. SA also reads test-cases.md, but only as
+informational input — its spec content derives from requirements + CCs (which
+are stable by this point: BA UPDATE loop closed in Step 2, register frozen in
+Step 2.5). CoverageChecker may add TCs derived from CCs that SA already saw,
+so re-running SA is unnecessary.
 
-### Iteration N:
+**Kickoff:** dispatch `@CoverageChecker` (iteration 1) and `@SystemAnalyst`
+(mode=DRAFT) **in one turn as parallel calls**, then resolve them
+independently as below.
 
-Dispatch `@CoverageChecker`:
+### Step 4 — COVERAGE CHECK loop (resumes from parallel kickoff)
 
-```
-Requirements file: [path from Step 1]
-Corner cases register: {{VAULT_PATH}}/concepts/[module]/plans/[feature]-corner-cases.md
-Test-cases file: [path from Step 3]
-```
+**Max 2 iterations.** Iteration 1 was dispatched in the parallel kickoff above.
 
-Parse result.
+Parse Coverage iteration 1 result.
 
-**If Verdict = PASS:** proceed to Step 5.
+**If Verdict = PASS:** Step 4 is done. Continue waiting for SA (Step 5).
 
 **If Verdict = GAPS and N < 2:**
 
@@ -204,25 +208,23 @@ Test-cases file: [path]
 Gaps: [gaps table from CoverageChecker]
 ```
 
-Continue loop with N+1.
+Then dispatch `@CoverageChecker` for iteration N+1. Repeat until PASS or N=2.
 
 **If Verdict = GAPS and N = 2:**
 
-STOP loop. Write checkpoint `BLOCKED: CoverageChecker gaps not resolved`. Surface to PO with remaining gaps.
+STOP Step 4 loop. Write checkpoint `BLOCKED: CoverageChecker gaps not resolved`. Surface to PO with remaining gaps.
 
-Write checkpoint after loop exit. Proceed.
+Write checkpoint after loop exit.
 
----
+### Step 5 — SYSTEM ANALYST DRAFT (resolves from parallel kickoff)
 
-## Step 5 — SYSTEM ANALYST DRAFT
-
-Dispatch `@SystemAnalyst` (mode=DRAFT):
+`@SystemAnalyst` was dispatched in the parallel kickoff. When its result returns:
 
 ```
 Mode: DRAFT
 Requirements file: [path]
 Corner cases register: [path]
-Test plan file: [path]
+Test plan file: [path from Step 3]   # informational; spec derives from requirements + CCs
 ```
 
 Parse result. Extract:
@@ -238,7 +240,7 @@ Write checkpoint:
 - UNRESOLVED: [list each unresolved item, or "none"]
 ```
 
-Proceed to Step 6 regardless — CornerCaseReviewer will surface architectural gaps explicitly.
+**Both Step 4 and Step 5 must complete before Step 6.** Proceed to Step 6 regardless of unresolved items — CornerCaseReviewer will surface architectural gaps explicitly.
 
 ---
 
