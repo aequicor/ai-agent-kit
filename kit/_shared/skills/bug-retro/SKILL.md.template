@@ -9,10 +9,22 @@ Skill for running a retrospective after a bug fix. Goal — not just close the b
 
 ## When to use
 
-- @BugFixer completed the fix and review passed
-- A systemic problem was discovered, not a one-off error
-- Bug is linked to an architectural decision, missing tests, or a guideline gap
-- PO explicitly requested a retrospective
+The retrospective is **mandatory** for any defect classified `CRITICAL` or `HIGH` in the Defects log of `<feature>-test-cases.md`. `@Main` dispatches it automatically at BUG pipeline step 7 — PO action is **not** required for those severities. PO can also request it explicitly for lower severities.
+
+**Auto-trigger criteria (any one fires the skill):**
+
+- The fixed defect's severity in the Defects log is `CRITICAL` or `HIGH` (read at fix time, not assumed from the TC type).
+- A systemic problem was identified by `@BugFixer` or `@CodeReviewer` during the fix (recurrence pattern, architectural smell, missing guideline).
+- The same TC has been re-opened ≥2 times in the retry counter (bug returns after a "fix").
+- Bug is linked to an architectural decision, missing tests, or a guideline gap.
+- PO explicitly requests it.
+
+**Skip only if:**
+
+- Severity is `MEDIUM` or `LOW` AND the fix is purely a copy/typo correction with no underlying systemic cause.
+- The defect was created by a known external regression (library upgrade rolled back, infrastructure outage) and the fix was a revert.
+
+If both auto-trigger and skip criteria apply, **trigger wins** — the retrospective runs.
 
 ## Retrospective Process
 

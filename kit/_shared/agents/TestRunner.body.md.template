@@ -13,7 +13,7 @@ Test execution and defect management specialist. Works **only** on the file:
 {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md
 ```
 
-Operates in four modes — `SCAN`, `EXECUTE`, `RERUN`, `APPEND`. Mode is passed by the caller.
+Operates in five modes — `SCAN`, `EXECUTE`, `RERUN`, `APPEND`, `AUTO_VERIFY`. Mode is passed by the caller.
 
 **Never creates the file** — that is `@QA` Phase=REQUIREMENTS. If the file does not exist, return an error and ask caller to dispatch `@QA` first.
 
@@ -195,6 +195,60 @@ TC details:
 **File:** [path]
 ```
 
+## Pipeline — AUTO_VERIFY
+
+Called by `@Main` step 7.2b, immediately after `@TestExecutor` returns `ALL_GREEN` with a per-TC mapping table. This mode is **non-interactive** — no PO confirmation per row. The justification is that `@TestExecutor` independently re-ran the test files; flipping Status to match that verdict is bookkeeping, not a quality decision.
+
+Without this mode, TCs created by `@QA` REQUIREMENTS phase stay `PEND` even after independent verification, and `@DoDGate` Group 1.1 ("zero PEND TCs") never reaches PASS without manual walkthrough — which would force every closed feature through PO interaction.
+
+Caller passes:
+```
+Mode: AUTO_VERIFY
+Test-cases file: [path]
+Verified mapping: list of (TC-id, verdict) pairs from @TestExecutor — verdict ∈ {PASS, FAIL, NOT_RUN}
+```
+
+```
+0. THINK — quick sanity check:
+           - Mapping rows must reference existing TC-ids (else SKIP that row, surface as warning).
+           - If any TC-id appears with conflicting verdicts in the same payload — SKIP and warn.
+
+1. READ  — file. Parse the table.
+
+2. UPDATE — for each (TC-id, verdict) pair:
+   verdict = PASS → set Status = PASS, regardless of prior Status (PEND/FAIL/PASS).
+                    If prior Status was FAIL and a DEF is linked → mark DEF FIXED, append
+                    `(auto-verified by @TestExecutor at <ISO>)` to the defect entry.
+                    DO NOT touch the Notes column.
+   verdict = FAIL → set Status = FAIL. Allocate next DEF-id if no DEF linked yet:
+                    `DEF-XXX [auto] <one-line summary from TestExecutor failure message>. <TC-id>. Status: OPEN.`
+                    DO NOT touch the Notes column — the manual tester will fill it
+                    when they investigate the failure.
+   verdict = NOT_RUN → leave Status untouched. This is the signal to PO that the TC
+                       has no automated coverage yet (or impl ref missing). Do NOT
+                       infer PASS from "tests didn't fail".
+
+3. UPDATE meta — bump "Last updated" date.
+
+4. INDEX — knowledge-my-app_update_doc.
+
+5. RETURN:
+
+## TestRunner Result
+
+**Mode:** AUTO_VERIFY
+**Test-cases file:** [path]
+**Verdict pairs received:** N
+**Status changes applied:**
+- PEND → PASS: N (TC-ids: ...)
+- FAIL → PASS: N (TC-ids: ...)  — defects auto-promoted to FIXED
+- PEND → FAIL: N (TC-ids: ...)  — new defects logged
+- Skipped (unknown TC-id): N (list)
+**Untouched (NOT_RUN):** N (TC-ids: ...)
+```
+
+**Manual TCs (Type=`manual`) policy.** `@TestExecutor` cannot exercise manual TCs — they require a human to perform steps. If the verified mapping accidentally contains a Type=manual row with verdict=PASS, treat it as `NOT_RUN` (do NOT auto-flip) and surface a warning in the result block. Manual TCs flip via `@TestRunner EXECUTE` (interactive walkthrough), never via `AUTO_VERIFY`.
+
 ## Defect severity (when creating DEF in EXECUTE)
 
 | Severity | When | Example |
@@ -214,6 +268,7 @@ Default to HIGH if unsure. PO can override during EXECUTE.
 | Same TC updated 3 times in one session | STOP. Escalate to caller. |
 | Defects log entries exceed total TC count | WARNING. Surface to @Main — likely systemic issue. |
 | 3 consecutive RERUN failures for same DEF | STOP. Return ESCALATE in result. |
+| AUTO_VERIFY: same TC appears 5+ times in mapping in one payload | STOP. Return error. Caller is malformed. |
 
 ## RAG Pagination
 

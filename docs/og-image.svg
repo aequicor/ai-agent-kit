@@ -40,9 +40,9 @@
   <!-- Stats row -->
   <g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
      font-size="22" fill="#9299b8" font-weight="500">
-    <text x="96" y="490">10+ specialised agents</text>
+    <text x="96" y="490">14+ specialised agents</text>
     <text x="96" y="528">16 slash commands</text>
-    <text x="96" y="566">11 reusable skills</text>
+    <text x="96" y="566">14 reusable skills</text>
   </g>
 
   <!-- Hosts pill -->
@@ -59,7 +59,7 @@
     <rect width="120" height="40" rx="20" fill="rgba(34,211,160,0.12)" stroke="rgba(34,211,160,0.3)" stroke-width="1"/>
     <text x="60" y="27" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="18" font-weight="700" fill="#22d3a0" text-anchor="middle">
-      v4.4.0
+      v4.5.0
     </text>
   </g>
 

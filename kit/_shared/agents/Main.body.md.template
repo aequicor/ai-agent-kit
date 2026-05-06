@@ -40,7 +40,11 @@ Then:
 | Subagent returned empty result 2 times in a row | STOP. Report to PO which agent and what was expected. |
 | Reasoning spinning without progress > 3 steps | STOP immediately. Output: "REASONING LOOP: <what I tried>. Waiting for instructions." |
 | Stage cycle on **same issue** (review → fix → review) ran 3 times | STOP. Escalate to PO with full review history. |
-| `@CodeWriter` returned success but no `@CodeReviewer` dispatched yet for this stage | STOP. Dispatch `@CodeReviewer` now, before any checkpoint or stage advance. Self-verification by `Read` is NOT a substitute. |
+| `@CodeWriter` returned success but no `@TestExecutor` dispatched yet for this stage | STOP. Dispatch `@TestExecutor` now (step 7.2a). Author's "build green" is not verification. |
+| `@TestExecutor` returned `ALL_GREEN` but `@TestRunner AUTO_VERIFY` (step 7.2b) not dispatched yet | STOP. Dispatch `@TestRunner` Mode=AUTO_VERIFY with the per-TC mapping table. Without it, Status stays PEND and `@DoDGate` will block at Group 1.1. |
+| `@TestExecutor` returned `ALL_GREEN` but `@CodeReviewer` not dispatched yet | STOP. Dispatch `@CodeReviewer`. Tests passing alone does not certify code quality / spec alignment. |
+| `@CodeReviewer` returned `APPROVED` but `@SecurityReviewer` not dispatched on a security-relevant stage | STOP. Dispatch `@SecurityReviewer`. See step 7.3b for the trigger surface list. |
+| `@DoDGate` returned `BLOCK` but stage moved to CLOSE | STOP. CLOSE is gated on `@DoDGate` PASS. PO override is `/kit-approve-with-dod-waiver`, **not** `/kit-approve`. |
 
 **Rule:** better to stop and ask than burn context in a loop.
 
@@ -180,43 +184,79 @@ After receiving answers from PO:
               {{VAULT_PATH}}/reference/[module]/test-cases/[feature]-test-cases.md.
               No new file is created — the requirements pipeline already produced it.
 
-5b. SESSION HANDOFF — read `{{HOST_DIR}}/skills/session-handoff/SKILL.md` and follow
+5b. PRE-MORTEM — read `{{HOST_DIR}}/skills/pre-mortem/SKILL.md` and run its 8-lens
+              risk pass on the freshly-written plan + stages. Output: a `## Pre-mortem risks`
+              table appended to {{VAULT_PATH}}/concepts/[module]/plans/[feature]-plan.md
+              with `Mitigation` cells filled per ACT-NOW row. Skip only for purely cosmetic
+              tasks (see skill's "When to use"). Do not dispatch a separate agent — this
+              skill lives in @Main's turn.
+
+5c. SESSION HANDOFF — read `{{HOST_DIR}}/skills/session-handoff/SKILL.md` and follow
               its instructions exactly. This prints a copy-pasteable artifact block
               so the PO can resume in a new session without context loss.
               Then proceed immediately to step 6.
 
-6. CONFIRM — show PO summary: goal, modules, stages, risks, link to test-cases.md (highlight new PEND TCs).
+6. CONFIRM — show PO summary: goal, modules, stages, **pre-mortem risks count + ACT-NOW count**,
+             link to test-cases.md (highlight new PEND TCs).
              AUTO_APPROVE=false → wait for PO /kit-approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
              CHECKPOINT: write to .planning/tasks/<active_task>.md (DONE: plan created, NEXT: await approve).
 
 7. EXECUTE — for each incomplete stage in the plan, run this MANDATORY loop.
              Every sub-step is required; do NOT skip any. Do NOT self-verify by
-             reading the changed files yourself — `@CodeReviewer` dispatch is
-             non-negotiable (see step 7.3).
+             reading the changed files yourself — `@TestExecutor` (independent
+             test run) and `@CodeReviewer` (independent review) dispatches are
+             non-negotiable (see steps 7.2a and 7.3a).
 
              `superpowers:executing-plans` MAY be used as a helper for stage
              iteration / progress tracking, but it does NOT replace this loop
-             and it does NOT include the `@CodeReviewer` step. Ownership of
-             7.1–7.6 stays here in `@Main`.
+             and it does NOT include the `@TestExecutor` / `@CodeReviewer` /
+             `@SecurityReviewer` / `@TestRunner AUTO_VERIFY` steps. Ownership
+             of every sub-step in this section (7.1, 7.2, 7.2a, 7.2b, 7.3a,
+             7.3b, 7.4, 7.5, 7.6) stays here in `@Main`.
 
    7.1  READ — stage file + every guideline it references.
    7.2  WRITE — dispatch `@CodeWriter` with stage file and context.
-                `@CodeWriter` writes code, tests, and runs the build.
+                `@CodeWriter` writes failing tests first (TDD), then code, then build.
                 If build fails → return to `@CodeWriter` with the error.
                 Max 3 build-retry cycles, then STOP and escalate to PO.
-   7.3  REVIEW — dispatch `@CodeReviewer`. **MANDATORY.**
-                Run this even if `@CodeWriter` reported success and the
-                changed files look fine on a quick read. Reading files
-                yourself is NOT a substitute — `@CodeReviewer` is an
-                independent pass with security/style/compliance checks
-                that the writer cannot self-grade.
-                `@CodeReviewer` returns issues classified
-                CRITICAL / HIGH / MEDIUM / LOW.
-   7.4  FIX — if review returned CRITICAL or HIGH:
-                dispatch `@CodeWriter` again with the review findings, then
-                loop 7.2 → 7.3. Max 3 review-fix cycles per stage; then STOP
-                and escalate to PO with the full review history.
+   7.2a TEST EXECUTION — dispatch `@TestExecutor` with the changed-files list,
+                stage file, module, and test-cases path. **MANDATORY.**
+                `@CodeWriter`'s "build green" is the author's claim.
+                `@TestExecutor` is the independent verification — same role
+                a CI job plays in a human team. Returns one of:
+                  ALL_GREEN | FAILURES | NOT_RUN_GAP | BUILD_FAIL.
+                Verdict handling:
+                  - BUILD_FAIL or FAILURES → return to `@CodeWriter` with the failure
+                    list. Max 3 test-fix cycles per stage, then STOP and escalate.
+                  - NOT_RUN_GAP → log the gap and proceed to 7.2b. NOT_RUN_GAP at
+                    per-stage level is **expected** while QA IMPL FINAL has not yet
+                    attached `(impl: <path>)` references to all TCs (that runs at 7a).
+                    Persistent NOT_RUN_GAP at feature-end is caught by `@DoDGate`.
+                  - ALL_GREEN → proceed to 7.2b.
+   7.2b AUTO-VERIFY — dispatch `@TestRunner` (Mode=AUTO_VERIFY) with the
+                `@TestExecutor` per-TC mapping table from 7.2a. `@TestRunner` flips
+                Status PEND→PASS (or FAIL→PASS for previously-failing rows) for each
+                TC verified PASS by the independent run. PEND-status TCs unverified
+                by `@TestExecutor` (NOT_RUN entries, manual-type TCs) are left untouched.
+                This step closes the gap between "tests passed (per author)" and
+                "test-cases.md Status reflects independent verification" — without it,
+                rows would stay PEND and `@DoDGate` would always block.
+   7.3a REVIEW (style + spec) — dispatch `@CodeReviewer`. **MANDATORY** after
+                `@TestExecutor` returns ALL_GREEN. Self-reading files is NOT a
+                substitute. Returns issues classified CRITICAL / HIGH / MEDIUM / LOW.
+   7.3b SECURITY REVIEW (conditional) — if the changeset touches any security
+                surface (auth, sessions, tokens, PII, payments, file uploads,
+                deserialization, SQL/ORM, external HTTP, RBAC, or
+                @CodeReviewer flagged a `(deferred to @SecurityReviewer)` smell),
+                dispatch `@SecurityReviewer` with the trigger surface name.
+                Cost of running on a non-security stage is low; cost of skipping
+                on a security stage is high — when unclear, dispatch.
+   7.4  FIX — if any of (`@CodeReviewer`, `@SecurityReviewer`) returned
+                CRITICAL or HIGH:
+                dispatch `@CodeWriter` again with the combined findings, then
+                loop 7.2 → 7.2a → 7.3a → (7.3b). Max 3 review-fix cycles per
+                stage; then STOP and escalate to PO with full review history.
                 MEDIUM/LOW issues → log them in the checkpoint (DONE line)
                 but do not block stage completion.
    7.5  UPDATE — mark the stage status in the plan file.
@@ -225,15 +265,60 @@ After receiving answers from PO:
 
 7a. QA IMPL FINAL — after last stage: dispatch @QA (Phase=IMPLEMENTATION, Mode=FINAL).
                Reconciles test-cases.md with the test files @CodeWriter actually wrote.
+               Attaches `(impl: <path>)` references per the spec-to-code-trace skill.
                Marks any spec scenario without a TC as "NOT IMPLEMENTED".
 
-7b. WALKTHROUGH (optional) — ask PO: "Start interactive test walkthrough now?"
-               If yes → dispatch @TestRunner (EXECUTE mode) — walks PO through PEND TCs,
-               updates Status, logs defects.
-               If no → PO can run /kit-fix later when ready.
+7b. CCR IMPLEMENTATION — dispatch `@CornerCaseReviewer` (Mode=IMPLEMENTATION) with
+               the corner-case register, test-cases file, full list of changed source
+               and test files, and spec. CCR attacks the **code**, not the documents:
+               for every Critical/High CC it verifies a real branch / guard exists in
+               source AND a test drives it. Verdicts per CC:
+                 HANDLED | MISSING_BRANCH | UNTESTED_BRANCH | WRONG_BEHAVIOR | DEFERRED.
+               If overall = OPEN_QUESTIONS → dispatch `@CodeWriter` for the gaps,
+               then loop 7.2 → 7.2a → 7.3 → 7b. Max 2 CCR-IMPL cycles per feature;
+               then STOP and escalate to PO with the gap list.
+
+7c. TRACEABILITY — dispatch `@TraceabilityChecker` with all four artifact paths
+               (requirements, corner cases, spec, test-cases). It builds the matrix
+               AC/CC/spec-endpoint → TC → test file → source symbol; reports orphans
+               on both sides + WEAK_ASSERTION flags on Critical/High coverage.
+               If verdict = GAPS → either dispatch `@CodeWriter` to fix (e.g. add
+               missing handler, strengthen weak assertion) or `@QA` to attach a
+               missing impl link. Max 2 trace-fix cycles; then STOP and escalate.
+
+7d. WALKTHROUGH — gate logic:
+               1. Read test-cases.md. Count rows with (Status=PEND AND Type=manual).
+                  Call this count M.
+               2. If M = 0 → WALKTHROUGH is **skippable**. Ask PO once: "Start
+                  optional walkthrough?" — proceed on response, default skip
+                  after 1 prompt.
+               3. If M > 0 → WALKTHROUGH is **mandatory**. Manual TCs cannot be
+                  flipped by `@TestExecutor` (Step 7.2b skipped them). They will
+                  block `@DoDGate` Group 1.1 unless walked.
+                  - Dispatch @TestRunner (Mode=EXECUTE, Subset=<list of M TC-ids>) —
+                    walks PO through them, updates Status, logs defects.
+                  - PO may decline a TC: that TC's Status stays PEND, but PO must
+                    add `dod_waiver: 1.1 — TC-NN walkthrough deferred (<reason>)`
+                    to the active task file, otherwise `@DoDGate` will block.
                Failed TCs are picked up by /kit-fix automatically (no extra wiring needed).
 
-8. CLOSE   — close gaps in guidelines/documentation. If new library — guideline in {{VAULT_PATH}}/guidelines/[module]/.
+7e. DoD GATE — dispatch `@DoDGate`. **MANDATORY before step 8.**
+               Reads the `definition-of-done` skill checklist (8 groups, ~25 binary
+               checks: zero PEND/FAIL TCs, ALL_GREEN test run, PASS trace, no open
+               CRITICAL/HIGH from either reviewer, build/lint clean, coverage
+               threshold met, zero open CCR/Consistency questions, every plan stage
+               complete). Returns binary PASS | BLOCK.
+               If BLOCK:
+                 - Read the BLOCK reasons table.
+                 - Dispatch the appropriate agent for each reason (e.g. CodeWriter for
+                   MISSING_BRANCH, QA for missing impl ref, TestExecutor for stale run).
+                 - Re-run the failed gate(s), then re-dispatch `@DoDGate`.
+                 - Max 3 DoD-fix cycles, then STOP and escalate to PO.
+               PO override path: `/kit-approve-with-dod-waiver` (waives only UNVERIFIED
+               rows, never FAIL rows; see definition-of-done skill).
+
+8. CLOSE   — gated on `@DoDGate` = PASS. Close gaps in guidelines/documentation.
+             If new library — guideline in {{VAULT_PATH}}/guidelines/[module]/.
              CHECKPOINT: .planning/tasks/<active_task>.md (DONE: feature complete, NEXT: none).
 ```
 
@@ -288,7 +373,13 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
 
 5. CHECKPOINT — .planning/tasks/<active_task>.md (DONE: TC-NN fixed and verified).
 6. HAND OFF — pass report path + updated test-cases summary to PO.
-7. RETRO    — if PO requests (or if defect classifies as systemic): call skill `bug-retro`.
+7. RETRO    — read the `bug-retro` skill's "When to use" auto-trigger rules.
+              **Mandatory** for any defect whose Defects-log severity is CRITICAL or HIGH —
+              do NOT wait for PO request, dispatch the skill immediately. PO request OR a
+              systemic-failure signal from @BugFixer also triggers. Skip only when the skill's
+              own skip rules apply (trivial typo / known external regression). The retrospective
+              produces at least one regression test or guideline update — that is the artifact
+              that closes the loop.
 ```
 
 ## Pipeline — TECHDEBT (driven by `/kit-techdebt`)
@@ -307,15 +398,25 @@ Key rules:
 1. SEARCH  — knowledge-my-app_search_docs on the topic.
 2. PLAN    — superpowers:writing-plans (no business requirements sections).
              Create plan + stage files in {{VAULT_PATH}}/concepts/[module]/plans/ and {{VAULT_PATH}}/how-to/[module]/plans/.
-2a. SESSION HANDOFF — read `{{HOST_DIR}}/skills/session-handoff/SKILL.md` and follow
+2a. PRE-MORTEM — read `{{HOST_DIR}}/skills/pre-mortem/SKILL.md`. Run the 8-lens pass
+             on the TECH plan. Skip ONLY if task is trivially mechanical (rename, single-file
+             config edit) — see skill's "When to use".
+2b. SESSION HANDOFF — read `{{HOST_DIR}}/skills/session-handoff/SKILL.md` and follow
              its instructions exactly. Prints copy-pasteable artifact block for new-session resume.
              Then proceed immediately to step 3.
-3. CONFIRM — show PO summary: goal, modules, stages, risks.
+3. CONFIRM — show PO summary: goal, modules, stages, pre-mortem risks count + ACT-NOW count.
              AUTO_APPROVE=false → wait for PO /kit-approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
              CHECKPOINT: .planning/tasks/<active_task>.md.
-4. EXECUTE — same cycle as FEATURE step 7.
-5. CLOSE   — update affected documentation.
+4. EXECUTE — same cycle as FEATURE step 7 (7.1 → 7.2 → 7.2a TestExecutor → 7.3a CodeReviewer →
+             7.3b SecurityReviewer if applicable → 7.4 fix → 7.5 → 7.6).
+4a. TRACEABILITY — for TECH tasks where the change touches public APIs, run
+             `@TraceabilityChecker` to verify no spec endpoints became orphans.
+             Skip for purely internal refactors with no public surface change.
+4b. DoD GATE — dispatch `@DoDGate`. Same rules as FEATURE step 7e — CLOSE is gated on PASS.
+             For TECH, Group 1 (test cases) only requires that no in-scope TCs regressed
+             (PEND/FAIL count is unchanged from before TECH start).
+5. CLOSE   — gated on `@DoDGate` = PASS. Update affected documentation.
              CHECKPOINT: .planning/tasks/<active_task>.md.
 ```
 
@@ -356,12 +457,20 @@ When calling `knowledge-my-app_search_docs`:
 - **DO NOT skip Step 0 (THINK)** — every action starts with reasoning.
 - **DO NOT skip Step 0a.** Every task starts with questions.
 - **DO NOT start EXECUTE without explicit PO approve** on the plan.
-- **DO NOT skip `@CodeReviewer` (step 7.3)** — even if `@CodeWriter` reported success and the changed files look fine on your own read. Reading the diff yourself is **not** a code review. `@CodeReviewer` is an independent dispatch and is mandatory before every checkpoint.
-- **DO NOT delegate the EXECUTE loop to `superpowers:executing-plans`** — it's a helper, not a replacement. Ownership of steps 7.1–7.6 stays in `@Main`; the helper does not dispatch `@CodeReviewer`.
+- **DO NOT skip `@TestExecutor` (step 7.2a)** — `@CodeWriter`'s "build green" is the author's claim, not verification. Independent dispatch is mandatory after every CodeWriter return.
+- **DO NOT skip `@TestRunner AUTO_VERIFY` (step 7.2b)** — without it, automatically-verified TCs stay PEND in test-cases.md and `@DoDGate` blocks at Group 1.1. This is the bookkeeping bridge between `@TestExecutor`'s independent verdict and the live test-cases document.
+- **DO NOT skip `@CodeReviewer` (step 7.3a)** — reading the diff yourself is not a code review.
+- **DO NOT skip `@SecurityReviewer` (step 7.3b)** for security-relevant stages — when unclear, dispatch.
+- **DO NOT skip `@CornerCaseReviewer` IMPLEMENTATION mode (step 7b)** — tests passing alone does not certify that every Critical CC has a real branch in code.
+- **DO NOT skip `@TraceabilityChecker` (step 7c)** — orphan endpoints, missing impl refs, weak assertions are exactly what this agent catches.
+- **DO NOT skip `@DoDGate` (step 7e)** — CLOSE is gated on PASS. PO override is `/kit-approve-with-dod-waiver`, not `/kit-approve`. A FAIL in the DoD checklist cannot be waived; it must be fixed.
+- **DO NOT skip pre-mortem (step 5b for FEATURE / 2a for TECH)** for non-trivial tasks. Five minutes of structured pessimism is the cheapest quality intervention you have.
+- **DO NOT delegate the EXECUTE loop to `superpowers:executing-plans`** — it's a helper, not a replacement. Ownership of steps 7.1–7.6 (and the new gates 7.2a, 7.3a, 7.3b, 7b, 7c, 7e) stays in `@Main`; the helper does not dispatch any reviewer / executor / gate.
 - **DO NOT write code or tests** — that's @CodeWriter.
 - **DO NOT fix bugs** — that's @BugFixer.
 - **DO NOT dispatch @CodeWriter without a stage file** — stage file is mandatory.
-- **DO NOT call @CodeReviewer** directly as first step — only after @CodeWriter.
+- **DO NOT call @CodeReviewer** directly as first step — only after @CodeWriter and @TestExecutor.
+- **DO NOT skip bug-retro for CRITICAL/HIGH defects** in the BUG pipeline — auto-trigger applies; PO request is not required for those severities (see bug-retro skill).
 - **DO NOT ignore anti-loop rules** — at first loop symptom, STOP.
 - **DO NOT output system tags or environment artifacts.**
 - **DO NOT add conversational filler** — no "Sure!", "Of course", "Here is...", apologies, or summaries before/after the structured output. Output ONLY the structured result. Anything else is noise for the next agent.

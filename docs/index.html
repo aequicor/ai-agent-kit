@@ -6,8 +6,8 @@
 <title>ai-agent-kit — AI Agent Team for Your Project</title>
 
 <!-- ── SEO ──────────────────────────────────────────────────────────────── -->
-<meta name="description" content="A complete AI agent team for any project — Main orchestrator, CodeWriter, CodeReviewer, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline. Works with Claude Code and OpenCode. No scripts, no runtimes — pasted as a single prompt.">
-<meta name="keywords" content="ai-agent-kit, AI agents, multi-agent system, Claude Code, OpenCode, code review, bug fix, requirements pipeline, software engineering automation, agent team, KnowledgeOS">
+<meta name="description" content="A complete AI agent team for any project — Main orchestrator, CodeWriter (TDD), TestExecutor, CodeReviewer, SecurityReviewer, TraceabilityChecker, DoDGate, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline and a Definition-of-Done quality gate. Works with Claude Code and OpenCode. No scripts, no runtimes — pasted as a single prompt.">
+<meta name="keywords" content="ai-agent-kit, AI agents, multi-agent system, Claude Code, OpenCode, code review, bug fix, requirements pipeline, definition of done, traceability, TDD, security review, software engineering automation, agent team, KnowledgeOS">
 <meta name="author" content="aequicor">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: dark)">
@@ -24,7 +24,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://aequicor.github.io/ai-agent-kit/">
 <meta property="og:title" content="ai-agent-kit — AI Agent Team for Your Project">
-<meta property="og:description" content="A complete AI agent team for any project — orchestrator, coder, reviewer, debugger, QA, plus a full requirements pipeline. Works with Claude Code and OpenCode. v4.4.0.">
+<meta property="og:description" content="A complete AI agent team for any project — orchestrator, TDD coder, independent test runner, code + security reviewers, traceability + Definition-of-Done gates, debugger, QA, plus a full requirements pipeline. Claude Code & OpenCode. v4.5.0.">
 <meta property="og:image" content="https://aequicor.github.io/ai-agent-kit/og-image.svg">
 <meta property="og:image:type" content="image/svg+xml">
 <meta property="og:image:width" content="1200">
@@ -38,7 +38,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:url" content="https://aequicor.github.io/ai-agent-kit/">
 <meta name="twitter:title" content="ai-agent-kit — AI Agent Team for Your Project">
-<meta name="twitter:description" content="A complete AI agent team for any project — orchestrator, coder, reviewer, debugger, QA, plus a full requirements pipeline. Works with Claude Code and OpenCode.">
+<meta name="twitter:description" content="A complete AI agent team — orchestrator, TDD coder, independent test runner, code + security reviewers, traceability + DoD gates, debugger, QA, plus a full requirements pipeline. Claude Code & OpenCode.">
 <meta name="twitter:image" content="https://aequicor.github.io/ai-agent-kit/og-image.svg">
 <meta name="twitter:image:alt" content="ai-agent-kit — agent-graph mark, tagline, and Claude Code / OpenCode badge">
 
@@ -64,13 +64,13 @@
       "@type": "SoftwareApplication",
       "@id": "https://aequicor.github.io/ai-agent-kit/#software",
       "name": "ai-agent-kit",
-      "softwareVersion": "4.4.0",
+      "softwareVersion": "4.5.0",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Cross-platform",
       "url": "https://aequicor.github.io/ai-agent-kit/",
       "downloadUrl": "https://github.com/aequicor/ai-agent-kit",
       "codeRepository": "https://github.com/aequicor/ai-agent-kit",
-      "description": "Drops a complete agent team into any project — Main orchestrator, CodeWriter, CodeReviewer, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline. 16 slash commands, 11 reusable skills.",
+      "description": "Drops a complete agent team into any project — Main orchestrator, CodeWriter (TDD-first), TestExecutor (independent test run), CodeReviewer, SecurityReviewer, TraceabilityChecker, DoDGate (Definition-of-Done), BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline. 16 slash commands, 14 reusable skills.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -816,8 +816,8 @@ footer a:hover { color: var(--text); }
   <div class="wrap" style="text-align:center">
     <div class="hero-badge">
       <span class="glow-dot"></span>
-      <span class="lang-en">v4.4.0 · Claude Code &amp; OpenCode</span>
-      <span class="lang-ru">v4.4.0 · Claude Code и OpenCode</span>
+      <span class="lang-en">v4.5.0 · Claude Code &amp; OpenCode</span>
+      <span class="lang-ru">v4.5.0 · Claude Code и OpenCode</span>
     </div>
     <h1>
       <span class="lang-en">An AI agent team<br>for every project</span>
@@ -866,17 +866,17 @@ footer a:hover { color: var(--text); }
 
     <div class="stats">
       <div>
-        <div class="stat-num">10+</div>
+        <div class="stat-num">14+</div>
         <div class="stat-label">
           <span class="lang-en">Specialised agents</span>
           <span class="lang-ru">Специализированных агентов</span>
         </div>
       </div>
       <div>
-        <div class="stat-num">2</div>
+        <div class="stat-num">8</div>
         <div class="stat-label">
-          <span class="lang-en">Hosts: Claude Code + OpenCode</span>
-          <span class="lang-ru">Хоста: Claude Code и OpenCode</span>
+          <span class="lang-en">Quality gates per feature</span>
+          <span class="lang-ru">Гейтов качества на фичу</span>
         </div>
       </div>
       <div>
@@ -887,7 +887,7 @@ footer a:hover { color: var(--text); }
         </div>
       </div>
       <div>
-        <div class="stat-num">11</div>
+        <div class="stat-num">14</div>
         <div class="stat-label">
           <span class="lang-en">Reusable skills</span>
           <span class="lang-ru">Переиспользуемых навыков</span>
@@ -1297,21 +1297,39 @@ footer a:hover { color: var(--text); }
               <span class="pipe-arrow">→</span>
             </div>
             <div class="pipe-step">
+              <span class="pipe-agent pa-main">pre-mortem</span>
+              <span class="pipe-arrow">→</span>
+            </div>
+            <div class="pipe-step">
               <span class="pipe-agent pa-code">@CodeWriter</span>
-              <span class="pipe-arrow">↔</span>
+              <span class="pipe-arrow">→</span>
+              <span class="pipe-agent pa-qa">@TestExecutor</span>
+              <span class="pipe-arrow">→</span>
               <span class="pipe-agent pa-review">@CodeReviewer</span>
+              <span class="pipe-arrow">→</span>
+              <span class="pipe-agent pa-review">@SecurityReviewer</span>
               <span class="pipe-loop">
-                <span class="lang-en">per stage</span>
-                <span class="lang-ru">на каждом этапе</span>
+                <span class="lang-en">per stage (TDD)</span>
+                <span class="lang-ru">на каждом этапе (TDD)</span>
               </span>
               <span class="pipe-arrow">→</span>
             </div>
             <div class="pipe-step">
               <span class="pipe-agent pa-qa">@QA final</span>
               <span class="pipe-arrow">→</span>
+              <span class="pipe-agent pa-review">CCR-IMPL</span>
+              <span class="pipe-arrow">→</span>
+              <span class="pipe-agent pa-review">@TraceabilityChecker</span>
+              <span class="pipe-arrow">→</span>
             </div>
             <div class="pipe-step">
               <span class="pipe-agent pa-code">@TestRunner</span>
+              <span class="pipe-arrow">→</span>
+              <span class="pipe-agent pa-review">@DoDGate</span>
+              <span class="pipe-loop">
+                <span class="lang-en">CLOSE gated on PASS</span>
+                <span class="lang-ru">CLOSE гейт на PASS</span>
+              </span>
             </div>
           </div>
           <div class="scenario-outputs">
@@ -1323,18 +1341,20 @@ footer a:hover { color: var(--text); }
               <span class="lang-ru">реализация + тесты</span>
             </span>
             <span class="output-chip">
-              <span class="lang-en">test-cases.md updated</span>
-              <span class="lang-ru">test-cases.md обновлён</span>
+              <span class="lang-en">test-cases.md auto-verified</span>
+              <span class="lang-ru">test-cases.md авто-верифицирован</span>
             </span>
+            <span class="output-chip">trace.md</span>
+            <span class="output-chip">dod.md</span>
           </div>
           <div class="scenario-note">
             <span class="lang-en">
               If requirements already exist in the vault, the pipeline skips straight to DESIGN.
-              Each CodeWriter stage is reviewed before the next begins — no big-bang diffs.
+              Every stage is independently test-executed before review, and CLOSE is hard-gated by @DoDGate's binary verdict.
             </span>
             <span class="lang-ru">
               Если требования уже есть в хранилище, пайплайн сразу переходит к DESIGN.
-              Каждый этап CodeWriter проверяется до начала следующего — никаких диффов одним куском.
+              Каждый этап проходит независимое исполнение тестов до ревью, а CLOSE жёстко гейтится бинарным вердиктом @DoDGate.
             </span>
           </div>
         </div>
@@ -1763,8 +1783,10 @@ footer a:hover { color: var(--text); }
       </div>
 
       <div style="margin-top:32px;font-size:0.8125rem;color:var(--muted);text-align:center;">
-        Backed by <span style="color:var(--text);font-weight:600;">11 reusable skills</span> —
-        <code>code-review-checklist</code>, <code>requirements-pipeline</code>,
+        Backed by <span style="color:var(--text);font-weight:600;">14 reusable skills</span> —
+        <code>code-review-checklist</code>, <code>definition-of-done</code>,
+        <code>pre-mortem</code>, <code>spec-to-code-trace</code>,
+        <code>requirements-pipeline</code>,
         <code>corner-case-refinement</code>, <code>bug-retro</code>, <code>knowledge-graph</code>,
         <code>look-up</code>, <code>mermaid-validate</code>, <code>session-handoff</code>,
         <code>session-replay</code>, <code>tech-debt-record</code>, <code>test-execution</code>.
@@ -1860,8 +1882,10 @@ footer a:hover { color: var(--text); }
       </div>
 
       <div style="margin-top:32px;font-size:0.8125rem;color:var(--muted);text-align:center;">
-        Подкреплено <span style="color:var(--text);font-weight:600;">11 переиспользуемыми навыками</span> —
-        <code>code-review-checklist</code>, <code>requirements-pipeline</code>,
+        Подкреплено <span style="color:var(--text);font-weight:600;">14 переиспользуемыми навыками</span> —
+        <code>code-review-checklist</code>, <code>definition-of-done</code>,
+        <code>pre-mortem</code>, <code>spec-to-code-trace</code>,
+        <code>requirements-pipeline</code>,
         <code>corner-case-refinement</code>, <code>bug-retro</code>, <code>knowledge-graph</code>,
         <code>look-up</code>, <code>mermaid-validate</code>, <code>session-handoff</code>,
         <code>session-replay</code>, <code>tech-debt-record</code>, <code>test-execution</code>.
@@ -2071,7 +2095,7 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">Agent roster</div>
       <h2 class="sec-title">Meet your team</h2>
       <p class="sec-sub">
-        Ten agents ship with every install. Five more join when you add the
+        Fourteen agents ship with every install. Five more join when you add the
         <code>requirements-pipeline</code> capability profile.
       </p>
     </div>
@@ -2079,7 +2103,7 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">Состав команды</div>
       <h2 class="sec-title">Знакомьтесь с командой</h2>
       <p class="sec-sub">
-        Десять агентов идут с каждой установкой. Ещё пятеро присоединяются, когда вы
+        Четырнадцать агентов идут с каждой установкой. Ещё пятеро присоединяются, когда вы
         добавляете capability-профиль <code>requirements-pipeline</code>.
       </p>
     </div>
@@ -2102,8 +2126,19 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@CodeWriter</div>
         <div class="agent-role">
-          <span class="lang-en">Implements code stage by stage, never as a big bang. Each stage is reviewed before the next begins.</span>
-          <span class="lang-ru">Реализует код этапами, а не одним куском. Каждый этап проверяется до начала следующего.</span>
+          <span class="lang-en">Implements code stage by stage, <strong>TDD-first</strong>: failing tests → minimal code → green build. Every stage is verified independently before the next begins.</span>
+          <span class="lang-ru">Реализует код этапами по принципу <strong>TDD</strong>: сначала падающие тесты → минимальный код → зелёная сборка. Каждый этап независимо проверяется перед следующим.</span>
+        </div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-tag">
+          <span class="lang-en">Always present · v4.5</span>
+          <span class="lang-ru">Всегда в команде · v4.5</span>
+        </div>
+        <div class="agent-name">@TestExecutor</div>
+        <div class="agent-role">
+          <span class="lang-en">Independent run of the full module test suite (build + unit + integration) after CodeWriter, before any reviewer. Closes the leak where "build green" was self-graded.</span>
+          <span class="lang-ru">Независимый прогон полного suite модуля (build + unit + integration) после CodeWriter, до любого ревьюера. Закрывает дыру, когда "build green" был самооценкой.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2113,8 +2148,41 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@CodeReviewer</div>
         <div class="agent-role">
-          <span class="lang-en">Read-only review after every CodeWriter stage. Blocks progression on unresolved issues.</span>
-          <span class="lang-ru">Ревью в режиме только-чтения после каждого этапа CodeWriter. Блокирует продолжение, пока есть нерешённые проблемы.</span>
+          <span class="lang-en">Read-only review of style + spec + structure + surface-level security smells. Runs after the independent test pass; deep security work delegates to @SecurityReviewer.</span>
+          <span class="lang-ru">Ревью только-чтения по стилю, ТЗ, структуре и поверхностным security-смеллам. Запускается после независимого прогона тестов; глубокий security уходит к @SecurityReviewer.</span>
+        </div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-tag">
+          <span class="lang-en">Always present · v4.5</span>
+          <span class="lang-ru">Всегда в команде · v4.5</span>
+        </div>
+        <div class="agent-name">@SecurityReviewer</div>
+        <div class="agent-role">
+          <span class="lang-en">Adversarial OWASP-aligned pass for stages touching auth, sessions, tokens, PII, payments, file uploads, deserialization, SQL/ORM, external HTTP, or RBAC. Findings classified CRITICAL / HIGH / MEDIUM / LOW.</span>
+          <span class="lang-ru">Состязательный OWASP-проход для этапов, затрагивающих auth, сессии, токены, PII, платежи, загрузку файлов, десериализацию, SQL/ORM, внешний HTTP или RBAC. Классификация: CRITICAL / HIGH / MEDIUM / LOW.</span>
+        </div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-tag">
+          <span class="lang-en">Always present · v4.5</span>
+          <span class="lang-ru">Всегда в команде · v4.5</span>
+        </div>
+        <div class="agent-name">@TraceabilityChecker</div>
+        <div class="agent-role">
+          <span class="lang-en">Builds the matrix AC / corner case / spec endpoint → test case → test file → source symbol. Reports orphans on both sides + weak-assertion flags on Critical / High coverage.</span>
+          <span class="lang-ru">Строит матрицу AC / corner case / endpoint ТЗ → test case → файл теста → символ кода. Сообщает о orphans с обеих сторон + флагах слабых ассертов на Critical / High.</span>
+        </div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-tag">
+          <span class="lang-en">Always present · v4.5</span>
+          <span class="lang-ru">Всегда в команде · v4.5</span>
+        </div>
+        <div class="agent-name">@DoDGate</div>
+        <div class="agent-role">
+          <span class="lang-en">Definition-of-Done auditor — last gate before CLOSE. Runs an 8-group, ~25-row binary checklist over every artifact + the last test run + the last reviews. Returns PASS or BLOCK.</span>
+          <span class="lang-ru">Аудитор Definition of Done — финальный гейт перед CLOSE. Прогоняет чеклист из 8 групп (~25 бинарных проверок) по всем артефактам + последнему запуску тестов + последним ревью. Возвращает PASS или BLOCK.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2124,8 +2192,8 @@ footer a:hover { color: var(--text); }
         </div>
         <div class="agent-name">@BugFixer</div>
         <div class="agent-role">
-          <span class="lang-en">Root-cause analysis, fix, regression test, and updates the living test-cases file atomically.</span>
-          <span class="lang-ru">Анализ первопричины, фикс, регресс-тест и атомарное обновление живого файла тест-кейсов.</span>
+          <span class="lang-en">Root-cause analysis, fix, regression test, and atomic update of the living test-cases file. CRITICAL / HIGH defects auto-trigger the <code>bug-retro</code> retrospective for systemic prevention.</span>
+          <span class="lang-ru">Анализ первопричины, фикс, регресс-тест и атомарное обновление живого файла тест-кейсов. CRITICAL / HIGH дефекты автоматически запускают ретроспективу <code>bug-retro</code> для системной профилактики.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2206,8 +2274,8 @@ footer a:hover { color: var(--text); }
         <div class="agent-tag">requirements-pipeline</div>
         <div class="agent-name">@CornerCaseReviewer</div>
         <div class="agent-role">
-          <span class="lang-en">Stress-tests requirements for edge cases, loops until no new issues are found.</span>
-          <span class="lang-ru">Прогоняет требования по корнер-кейсам, повторяет, пока не находит новых проблем.</span>
+          <span class="lang-en">Three modes: <strong>BUSINESS</strong> attacks requirements, <strong>TECHNICAL</strong> attacks the spec, and <strong>IMPLEMENTATION</strong> (v4.5+) attacks the code itself — verifies every Critical / High corner case has a real branch in source AND a test driving it.</span>
+          <span class="lang-ru">Три режима: <strong>BUSINESS</strong> атакует требования, <strong>TECHNICAL</strong> — ТЗ, <strong>IMPLEMENTATION</strong> (v4.5+) — сам код: проверяет, что у каждого Critical / High corner case есть реальная ветка в исходниках И тест, её прогоняющий.</span>
         </div>
       </div>
       <div class="agent-card">
@@ -2673,7 +2741,7 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <p>
       <a href="https://github.com/aequicor/ai-agent-kit" target="_blank">aequicor/ai-agent-kit</a>
-      &nbsp;·&nbsp; v4.4.0
+      &nbsp;·&nbsp; v4.5.0
       &nbsp;·&nbsp; <a href="https://github.com/aequicor/ai-agent-kit/blob/master/docs/migration/changelog.yaml" target="_blank">
         <span class="lang-en">Changelog</span>
         <span class="lang-ru">История изменений</span>

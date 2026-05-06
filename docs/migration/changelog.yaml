@@ -1,4 +1,154 @@
 versions:
+  - version: "4.5.0"
+    released: "2026-05-06"
+    breaking: false
+    description: |
+      Quality-gates pipeline — independent test execution, traceability,
+      Definition-of-Done, split security review, IMPLEMENTATION-mode corner-case
+      attack, TDD-first CodeWriter, mandatory bug-retro for CRIT/HIGH defects.
+
+      Problem: the v4.4 pipeline produced excellent paperwork (requirements,
+      corner-case register, test-cases.md, spec, stage files) and conducted
+      strong document-level review (CCR×2 + CoverageChecker + ConsistencyChecker)
+      but the execution side had only one writer (CodeWriter) and one read-only
+      reviewer (CodeReviewer). Defects leaked through despite all the planning
+      because:
+        1. "Build green" was self-graded by CodeWriter, never independently rerun.
+        2. There was no spec ↔ code traceability gate — Critical CCs could quietly
+           drop out of implementation.
+        3. CornerCaseReviewer attacked documents only, never the code.
+        4. CodeReviewer's security focus area was crowded out by style/structure
+           feedback on large diffs.
+        5. CodeWriter wrote tests after code — tests rationalized the code that
+           existed instead of describing the contract first.
+        6. There was no Definition-of-Done gate before CLOSE — features closed
+           on prose checkpoints, not machine-checkable assertions.
+        7. bug-retro was opt-in even for CRITICAL/HIGH defects — systemic
+           prevention loop was weak.
+
+      Fix: four new agents, three new skills, six existing agents/skills updated,
+      one new capability profile, and a rewritten Main FEATURE/TECH/BUG pipeline.
+
+      Pipeline changes (Main FEATURE):
+
+        Old:  PLAN -> CONFIRM -> EXECUTE(CodeWriter -> CodeReviewer -> fix) ->
+              QA IMPL FINAL -> optional walkthrough -> CLOSE
+        New:  PLAN -> pre-mortem (5b) -> CONFIRM ->
+              EXECUTE(CodeWriter -> TestExecutor -> TestRunner AUTO_VERIFY ->
+                      CodeReviewer -> SecurityReviewer conditional -> fix) ->
+              QA IMPL FINAL -> CornerCaseReviewer IMPLEMENTATION (7b) ->
+              TraceabilityChecker (7c) -> WALKTHROUGH (conditional-mandatory
+              if any manual-type TC is PEND) -> DoDGate (7e — mandatory binary
+              gate before CLOSE) -> CLOSE.
+
+      New agents (4) — body + opencode wrapper + claude wrapper for each:
+
+        - @TestExecutor — independent build + unit + integration test runner
+          after CodeWriter, before CodeReviewer. Maps in-scope TCs to
+          PASS / FAIL / NOT_RUN. Verdicts: ALL_GREEN | FAILURES | NOT_RUN_GAP
+          | BUILD_FAIL. Read-only on src/. Writes the run report to
+          {{VAULT_PATH}}/guidelines/<module>/reports/test-runs/.
+
+        - @TraceabilityChecker — read-only audit linking AC / CC / spec endpoints
+          -> TC -> test file -> source symbol. Reports orphans both directions
+          plus WEAK_ASSERTION flags on Critical/High coverage. Writes
+          <feature>-trace.md to spec dir.
+
+        - @DoDGate — last gate before CLOSE. Reads the definition-of-done skill
+          (8 groups, ~25 binary checks) over every artifact + last test run +
+          last reviews. Returns binary PASS / BLOCK. PO override path is
+          /kit-approve-with-dod-waiver and waives only UNVERIFIED rows; a
+          FAIL row cannot be waived. Writes <feature>-dod.md to spec dir.
+
+        - @SecurityReviewer — adversarial OWASP-aligned pass after CodeReviewer
+          for stages whose changeset touches a security surface (auth, sessions,
+          tokens, PII, payments, file uploads, deserialization, SQL/ORM,
+          external HTTP, RBAC). Read-only on src/.
+
+      New skills (3):
+
+        - definition-of-done — canonical DoD checklist read by @DoDGate. 8
+          groups: test cases / test run / trace / reviews / build & lint /
+          coverage / open questions / plan. Each row binary, evidence required.
+          PO waiver via dod_waiver: lines (UNVERIFIED only).
+
+        - pre-mortem — lightweight 8-lens pre-execute risk pass run by @Main
+          between PLAN and CONFIRM. Risks table appended to plan file.
+
+        - spec-to-code-trace — heuristics + conventions for the trace chain.
+          Tag prefixes ([AC-N], [CC-N <Sev>], [spec], [premortem-R<N>]),
+          (impl: <path>) notation, endpoint-to-handler patterns per framework,
+          weak-assertion criterion. Single source of truth.
+
+      Updated agents / skills (7):
+
+        - CornerCaseReviewer.body — added IMPLEMENTATION mode. Attacks the
+          code (not docs): per-CC verdicts HANDLED | MISSING_BRANCH |
+          UNTESTED_BRANCH | WRONG_BEHAVIOR | DEFERRED.
+        - CodeWriter.body — TDD-first ordering. Step 2 "Failing Tests First"
+          before Step 3 "Write Code". What-NOT-to-do forbids vacuous assertions
+          and pre-test production code.
+        - CodeReviewer.body — security focus area reduced to surface-level
+          smells with `(deferred to @SecurityReviewer)` note. Scope-split table
+          with @SecurityReviewer in role section.
+        - TestRunner.body — added AUTO_VERIFY mode (5th mode alongside SCAN /
+          EXECUTE / RERUN / APPEND). Non-interactive bulk Status update from
+          @TestExecutor's per-TC mapping after step 7.2a — closes the gap
+          where TCs would stay PEND despite independent test verification and
+          @DoDGate Group 1.1 would always block. Manual-type TCs are excluded
+          (they require interactive walkthrough).
+        - bug-retro skill — auto-trigger rules. Mandatory for CRITICAL/HIGH
+          defects (Defects-log severity at fix time).
+        - Main.body — FEATURE/TECH/BUG pipelines rewritten end-to-end.
+          Anti-Loop, What-NOT-to-do extended. Step 7d WALKTHROUGH is now
+          conditional-mandatory: skippable only when zero manual-type TCs
+          remain in PEND status; otherwise PO must walk through them or add
+          a per-TC dod_waiver line.
+        - _shared.md.template + FILE_STRUCTURE.md.template — workflow tree,
+          File Access Matrix, vault tree, system paths, and built-in skills
+          list updated.
+
+      New capability profile (1):
+
+        - profiles/capability/quality-gates.yaml — language-agnostic
+          forbidden_patterns covering vacuous assertions, untraceable tests,
+          hidden skips, untested branches on Critical/High CCs, TDD bypasses,
+          flakiness, test-data smells, and DoD-gate bypass attempts. Opt-in
+          via stack.profiles.
+
+      Backward compatibility: no manifest schema change. Existing pipelines
+      continue to work — the new gates add MANDATORY steps. New PO override
+      path /kit-approve-with-dod-waiver waives only UNVERIFIED DoD rows when
+      tooling is missing (e.g. no coverage tool configured).
+    files_changed:
+      - kit/.claude/agents/DoDGate.md.template
+      - kit/.claude/agents/SecurityReviewer.md.template
+      - kit/.claude/agents/TestExecutor.md.template
+      - kit/.claude/agents/TraceabilityChecker.md.template
+      - kit/.opencode/agents/DoDGate.md.template
+      - kit/.opencode/agents/SecurityReviewer.md.template
+      - kit/.opencode/agents/TestExecutor.md.template
+      - kit/.opencode/agents/TraceabilityChecker.md.template
+      - kit/_index.txt
+      - kit/_shared/FILE_STRUCTURE.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_shared/agents/CodeReviewer.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/agents/CornerCaseReviewer.body.md.template
+      - kit/_shared/agents/DoDGate.body.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/SecurityReviewer.body.md.template
+      - kit/_shared/agents/TestExecutor.body.md.template
+      - kit/_shared/agents/TestRunner.body.md.template
+      - kit/_shared/agents/TraceabilityChecker.body.md.template
+      - kit/_shared/skills/bug-retro/SKILL.md.template
+      - kit/_shared/skills/definition-of-done/SKILL.md.template
+      - kit/_shared/skills/pre-mortem/SKILL.md.template
+      - kit/_shared/skills/spec-to-code-trace/SKILL.md.template
+      - profiles/capability/quality-gates.yaml
+    manifest_changes:
+      added_fields: []
+
   - version: "4.4.0"
     released: "2026-05-06"
     breaking: false

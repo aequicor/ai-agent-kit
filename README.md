@@ -1,6 +1,6 @@
-# AI-agent kit `v4.4.0`
+# AI-agent kit `v4.5.0`
 
-AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
+AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter (TDD-first), TestExecutor, CodeReviewer, SecurityReviewer, TraceabilityChecker, DoDGate, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker) and a Definition-of-Done quality gate.
 
 **Multi-host:** pick `opencode`, `claude-code`, or both — projects can run on either runtime, or on both side-by-side. Subagent prompts are shared via the kit's `_shared/` tree, while host-specific frontmatter and config files (`opencode.json`, `.claude/settings.json`) are rendered per host.
 
@@ -104,14 +104,14 @@ Profiles are organised along five **orthogonal axes**. Each profile is restricte
 | `framework` | 0..N | `ui`, `code_quality.forbidden_patterns` | `compose-multiplatform`, `paper-plugin` |
 | `host` | 1..N | which template tree is rendered, host config file, agent frontmatter format, instruction file | `opencode`, `claude-code` |
 | `provider` | exactly 1 IF `opencode` ∈ hosts, else 0 | `provider`, `models` (used only by OpenCode rendering) | `routerai` (default), `ollama-cloud` |
-| `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agents via skills | `security-baseline`, `solid`, `requirements-pipeline` |
+| `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agents via skills | `security-baseline`, `solid`, `requirements-pipeline`, `quality-gates` |
 
 **Common combos:**
 
 ```yaml
-# KMP app on OpenCode + RouterAI with the requirements pipeline:
+# KMP app on OpenCode + RouterAI with the requirements pipeline + quality gates:
 stack:
-  profiles: [kotlin-gradle, compose-multiplatform, opencode, routerai, security-baseline, requirements-pipeline]
+  profiles: [kotlin-gradle, compose-multiplatform, opencode, routerai, security-baseline, requirements-pipeline, quality-gates]
 
 # Same project on Claude Code (Anthropic native — no provider profile):
 stack:
@@ -136,14 +136,18 @@ The setup prompt asks one question per axis, validates cardinality, and checks e
 
 ## Agent roster
 
-### Always present (10 base agents)
+### Always present (14 base agents)
 
 | Agent | Role |
 |---|---|
 | `@Main` | Orchestrator — your single entry point. Runs FEATURE / BUG / TECH pipelines. **In Claude Code installs this role lives in the main session via `CLAUDE.md`** (no separate `Main.md` subagent file). |
-| `@CodeWriter` | Implements code stage by stage. |
-| `@CodeReviewer` | Read-only review after each CodeWriter stage. |
-| `@BugFixer` | Root-cause analysis + fix + regression test + updates test-cases.md. |
+| `@CodeWriter` | Implements code stage by stage **TDD-first** (failing tests → minimal code → green). |
+| `@TestExecutor` | Independent run of full module test suite (build + unit + integration) after `@CodeWriter`, before `@CodeReviewer`. Maps in-scope TCs to PASS / FAIL / NOT_RUN. (v4.5+) |
+| `@CodeReviewer` | Read-only review after `@TestExecutor` — style + spec + structure + surface-level security smell. |
+| `@SecurityReviewer` | Adversarial OWASP-aligned pass for stages touching auth / sessions / PII / payments / SQL / external HTTP / RBAC. (v4.5+) |
+| `@TraceabilityChecker` | Read-only matrix audit AC / CC / spec-endpoint → TC → test file → source symbol. Reports orphans + weak assertions. (v4.5+) |
+| `@DoDGate` | Definition-of-Done gate — last gate before CLOSE. Runs the `definition-of-done` skill checklist (8 groups, ~25 binary checks). Returns binary PASS / BLOCK. (v4.5+) |
+| `@BugFixer` | Root-cause analysis + fix + regression test + updates test-cases.md. CRIT/HIGH defects auto-trigger `bug-retro`. |
 | `@Debugger` | Read-only investigation — produces failing test for complex bugs. |
 | `@QA` | Owns `<feature>-test-cases.md` (REQUIREMENTS phase creates, IMPLEMENTATION phase appends). |
 | `@TestRunner` | Operates on test-cases.md (SCAN / EXECUTE / RERUN / APPEND). |
@@ -153,7 +157,7 @@ The setup prompt asks one question per axis, validates cardinality, and checks e
 
 ### Requirements-pipeline profile (5 additional)
 
-`@BusinessAnalyst`, `@CornerCaseReviewer`, `@SystemAnalyst`, `@CoverageChecker`, `@ConsistencyChecker`. Invoked automatically by `@Main` via the `requirements-pipeline` skill — never selected manually.
+`@BusinessAnalyst`, `@CornerCaseReviewer` (BUSINESS / TECHNICAL / **IMPLEMENTATION** modes — the last attacks code, not docs, after `@TestExecutor` PASS), `@SystemAnalyst`, `@CoverageChecker`, `@ConsistencyChecker`. Invoked automatically by `@Main` via the `requirements-pipeline` skill — never selected manually.
 
 ---
 
@@ -258,7 +262,8 @@ ai-agent-kit/
 │   └── capability/
 │       ├── security-baseline.yaml         #   auto-added on every install
 │       ├── solid.yaml
-│       └── requirements-pipeline.yaml
+│       ├── requirements-pipeline.yaml
+│       └── quality-gates.yaml             #   v4.5+ test-quality + traceability forbidden patterns
 └── kit/                                   # everything that gets rendered into your project
     ├── _index.txt                         # complete file list — AI reads this to know what to fetch
     ├── manifest.schema.json               # JSON Schema for the assembled manifest
@@ -274,13 +279,13 @@ ai-agent-kit/
     │   ├── FILE_STRUCTURE.md.template
     │   ├── sessions/SESSIONS.md.template
     │   ├── i18n/{en,ru}.md
-    │   ├── agents/        (15 .body.md.template — agent prose without frontmatter)
+    │   ├── agents/        (19 .body.md.template — agent prose without frontmatter)
     │   ├── commands/      (16 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-requirements-pipeline, ...)
-    │   └── skills/        (11 — bug-retro, code-review-checklist, requirements-pipeline, tech-debt-record, ...)
+    │   └── skills/        (14 — bug-retro, code-review-checklist, definition-of-done, pre-mortem, requirements-pipeline, spec-to-code-trace, tech-debt-record, ...)
     ├── .opencode/
-    │   └── agents/        (15 .md.template — OpenCode frontmatter + INCLUDE directive)
+    │   └── agents/        (19 .md.template — OpenCode frontmatter + INCLUDE directive)
     ├── .claude/
-    │   ├── agents/        (14 .md.template — Claude Code frontmatter + INCLUDE; Main lives in CLAUDE.md)
+    │   ├── agents/        (18 .md.template — Claude Code frontmatter + INCLUDE; Main lives in CLAUDE.md)
     │   └── settings.json.template
     ├── .planning/
     │   ├── CURRENT.md.template
