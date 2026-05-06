@@ -597,7 +597,31 @@ footer a:hover { color: var(--text); }
 }
 .axes {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px; margin-top: 32px;
+  gap: 16px; margin-top: 18px;
+}
+.profile-example {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  padding: 16px 18px; margin: 22px 0 18px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.profile-example .ex-op {
+  color: var(--muted); font-weight: 700; font-size: 1rem;
+}
+.profile-example .ex-result {
+  font-size: 0.82rem; color: var(--green); font-weight: 600;
+}
+.profile-intro-line {
+  font-size: 0.875rem; color: var(--subtle); line-height: 1.65;
+  margin-bottom: 4px;
+}
+.axes-heading {
+  font-size: 1.0625rem; font-weight: 700;
+  margin-top: 32px; margin-bottom: 6px;
+}
+.axes-heading-sub {
+  font-size: 0.875rem; color: var(--subtle); line-height: 1.6;
+  margin-bottom: 0;
 }
 .axis {
   background: var(--card); border: 1px solid var(--border);
@@ -1650,26 +1674,78 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <div class="lang-en">
       <div class="sec-label">Profile architecture</div>
-      <h2 class="sec-title">Five orthogonal axes, conflict-free by design</h2>
+      <h2 class="sec-title">Build your setup from profiles</h2>
       <p class="sec-sub">
-        Profiles are organised along five axes — each axis owns specific manifest fields,
-        so profiles never overwrite each other. Mix and match whatever you need.
+        A <strong>profile</strong> is one building block of your kit setup — like ticking
+        one checkbox on an order form. Each profile says one thing: <em>"I'm using Kotlin,"</em>
+        <em>"I'm building a Compose app,"</em> <em>"Run on Claude Code,"</em>
+        <em>"Add security rules."</em>
+      </p>
+      <div class="profile-example">
+        <span class="prof-chip">kotlin-gradle</span>
+        <span class="ex-op">+</span>
+        <span class="prof-chip">compose-multiplatform</span>
+        <span class="ex-op">+</span>
+        <span class="prof-chip">claude-code</span>
+        <span class="ex-op">+</span>
+        <span class="prof-chip">security-baseline</span>
+        <span class="ex-op">=</span>
+        <span class="ex-result">your project setup</span>
+      </div>
+      <p class="profile-intro-line">
+        You pick a few when you install — the kit assembles them into your project.
+        Want SOLID design principles later? Add the <code>solid</code> profile;
+        language, framework, and host stay untouched. Switching from Claude Code
+        to OpenCode? Replace just the host profile.
+      </p>
+      <h3 class="axes-heading">The five categories of profiles</h3>
+      <p class="axes-heading-sub">
+        Every profile belongs to one of these five categories (technically called
+        <em>axes</em>). Each category answers a different question about your project,
+        so profiles never overlap or conflict.
       </p>
       <div class="power-user-note">
-        Don't worry if this looks technical — it's for power users who want to
-        customise the kit. The install prompt picks sensible defaults for you.
+        Specific profile names look technical, but you don't need to memorise them.
+        The install prompt asks plain questions ("What language?", "Which AI assistant?")
+        and picks the right profiles for you.
       </div>
     </div>
     <div class="lang-ru">
       <div class="sec-label">Архитектура профилей</div>
-      <h2 class="sec-title">Пять ортогональных осей — без конфликтов by design</h2>
+      <h2 class="sec-title">Соберите свою конфигурацию из профилей</h2>
       <p class="sec-sub">
-        Профили разложены по пяти осям — каждая ось владеет своими полями манифеста,
-        поэтому профили никогда не перезаписывают друг друга. Сочетайте как нужно.
+        <strong>Профиль</strong> — это один кирпичик настройки кита, как одна галочка
+        на бланке заказа. Каждый профиль говорит одну вещь: <em>«у меня Kotlin»</em>,
+        <em>«я делаю приложение на Compose»</em>, <em>«работаю в Claude Code»</em>,
+        <em>«добавь правила безопасности»</em>.
+      </p>
+      <div class="profile-example">
+        <span class="prof-chip">kotlin-gradle</span>
+        <span class="ex-op">+</span>
+        <span class="prof-chip">compose-multiplatform</span>
+        <span class="ex-op">+</span>
+        <span class="prof-chip">claude-code</span>
+        <span class="ex-op">+</span>
+        <span class="prof-chip">security-baseline</span>
+        <span class="ex-op">=</span>
+        <span class="ex-result">конфигурация вашего проекта</span>
+      </div>
+      <p class="profile-intro-line">
+        На установке вы выбираете несколько штук — кит их собирает в проект.
+        Захотелось добавить принципы SOLID позже? Добавьте профиль <code>solid</code> —
+        язык, фреймворк и хост не тронутся. Переходите с Claude Code на OpenCode?
+        Замените только профиль хоста.
+      </p>
+      <h3 class="axes-heading">Пять категорий профилей</h3>
+      <p class="axes-heading-sub">
+        Каждый профиль принадлежит одной из пяти категорий (технически они называются
+        <em>осями</em>). Каждая категория отвечает на свой вопрос о вашем проекте,
+        поэтому профили никогда не пересекаются и не конфликтуют.
       </p>
       <div class="power-user-note">
-        Если это выглядит технически — не пугайтесь. Раздел для опытных пользователей,
-        которые хотят кастомизировать кит. Установочный промпт сам выберет разумные значения по умолчанию.
+        Названия конкретных профилей выглядят технически, но запоминать их не нужно.
+        Установочный промпт задаёт простые вопросы («Какой язык?», «Какой ИИ-ассистент?»)
+        и сам выбирает нужные профили.
       </div>
     </div>
 
