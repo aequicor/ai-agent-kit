@@ -309,14 +309,25 @@ nav {
 
 /* ── stats row ── */
 .stats {
-  display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
   margin-top: 56px; padding-top: 56px; border-top: 1px solid var(--border);
+  text-align: center;
 }
+.stats > div { min-width: 0; }
 .stat-num {
   font-size: 1.875rem; font-weight: 800; color: var(--accent2);
   letter-spacing: -0.03em;
 }
-.stat-label { font-size: 0.8125rem; color: var(--muted); margin-top: 2px; }
+.stat-label {
+  font-size: 0.78rem; color: var(--muted); margin-top: 4px;
+  line-height: 1.35;
+}
+@media (max-width: 880px) {
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+}
+@media (max-width: 460px) {
+  .stats { grid-template-columns: 1fr; gap: 22px; }
+}
 
 /* ── section heading ── */
 .sec-label {
@@ -388,8 +399,12 @@ nav {
 
 /* ── how it works ── */
 .steps {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 24px; margin-top: 48px;
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 24px 28px; margin-top: 48px;
+}
+.steps .step-arrow { display: none; }
+@media (max-width: 720px) {
+  .steps { grid-template-columns: 1fr; }
 }
 .step {
   background: var(--card); border: 1px solid var(--border);
@@ -509,6 +524,38 @@ nav {
   background: rgba(107,114,150,0.1); border: 1px dashed var(--border);
   border-radius: 4px; padding: 2px 6px; margin-left: 2px;
 }
+/* Compact phase narrative — replaces dense agent chip flow */
+.phases {
+  display: grid; gap: 12px; margin-top: 8px;
+}
+.phase {
+  display: grid; grid-template-columns: 32px 1fr; gap: 14px;
+  align-items: start;
+  background: rgba(99,102,241,0.04);
+  border: 1px solid rgba(99,102,241,0.18);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.phase-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(99,102,241,0.18);
+  color: var(--accent2); font-weight: 700; font-size: 0.875rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.phase-body h4 {
+  font-size: 0.95rem; font-weight: 700; margin-bottom: 4px;
+  color: var(--text);
+}
+.phase-body p {
+  font-size: 0.84rem; color: var(--subtle); line-height: 1.55; margin: 0;
+}
+.phase-roles {
+  margin-top: 8px;
+  font-size: 0.72rem; color: var(--muted);
+  font-family: 'SF Mono', ui-monospace, monospace;
+  letter-spacing: -0.01em;
+}
+
 .scenario-outputs {
   display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
 }
@@ -869,15 +916,15 @@ footer a:hover { color: var(--text); }
       <div>
         <div class="stat-num">14+</div>
         <div class="stat-label">
-          <span class="lang-en">AI specialists working as a team</span>
-          <span class="lang-ru">ИИ-специалистов в одной команде</span>
+          <span class="lang-en">AI specialists in one team</span>
+          <span class="lang-ru">ИИ-специалистов в команде</span>
         </div>
       </div>
       <div>
         <div class="stat-num">8</div>
         <div class="stat-label">
-          <span class="lang-en">Quality checks before each release</span>
-          <span class="lang-ru">Проверок качества перед релизом</span>
+          <span class="lang-en">Quality checks per release</span>
+          <span class="lang-ru">Проверок на каждом релизе</span>
         </div>
       </div>
       <div>
@@ -890,8 +937,8 @@ footer a:hover { color: var(--text); }
       <div>
         <div class="stat-num">0</div>
         <div class="stat-label">
-          <span class="lang-en">Scripts, servers, or runtimes to install</span>
-          <span class="lang-ru">Скриптов, серверов и сред — ничего ставить не надо</span>
+          <span class="lang-en">Scripts or servers to install</span>
+          <span class="lang-ru">Скриптов и серверов ставить</span>
         </div>
       </div>
     </div>
@@ -905,8 +952,10 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">What is this, really?</div>
       <h2 class="sec-title">A whole studio inside your AI assistant</h2>
       <p class="sec-sub">
-        Forget the technical words for a minute. Here's the simple version,
-        no programming background needed.
+        A single AI assistant working alone makes mistakes — it forgets context, skips
+        verification, and writes code nobody double-checks. This system splits the work
+        across specialised AI roles that cross-check each other, so an error caught by
+        the reviewer or the test runner never reaches your codebase.
       </p>
 
       <div class="analogy">
@@ -955,8 +1004,10 @@ footer a:hover { color: var(--text); }
       <div class="sec-label">Что это, если простыми словами?</div>
       <h2 class="sec-title">Целая студия внутри вашего ИИ-ассистента</h2>
       <p class="sec-sub">
-        Забудьте на минуту про технические термины. Вот объяснение простыми словами —
-        опыт в программировании не требуется.
+        Один ИИ-ассистент в одиночку ошибается — теряет контекст, пропускает проверки,
+        пишет код, который никто не перепроверяет. Эта система разделяет работу между
+        специализированными ИИ-ролями, которые проверяют друг друга. Ошибка, пойманная
+        ревьюером или тестировщиком, никогда не доходит до вашего кода.
       </p>
 
       <div class="analogy">
@@ -1275,68 +1326,51 @@ footer a:hover { color: var(--text); }
             </span>
           </div>
           <div class="pipeline-label">
-            <span class="lang-en">Agent pipeline</span>
-            <span class="lang-ru">Пайплайн агентов</span>
+            <span class="lang-en">How the work flows</span>
+            <span class="lang-ru">Как идёт работа</span>
           </div>
-          <div class="pipeline">
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">@Main</span>
-              <span class="pipe-arrow">→</span>
+          <div class="phases">
+            <div class="phase">
+              <div class="phase-num">1</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Plan</span>
+                  <span class="lang-ru">Планирование</span>
+                </h4>
+                <p>
+                  <span class="lang-en">Your one-line idea is expanded into a clear product brief and a technical blueprint. Other specialists stress-test it for unanswered questions ("what if the user does X?", "what if Y goes down?") and loop until none are left.</span>
+                  <span class="lang-ru">Ваша идея в одной строке разворачивается в понятный продуктовый бриф и технический чертёж. Другие специалисты стресс-тестируют его на нерешённые вопросы («а если пользователь сделает X?», «а если Y упадёт?») и крутят цикл, пока вопросов не остаётся.</span>
+                </p>
+                <div class="phase-roles">Analyst · Stress-tester · QA · Coverage check · Cross-check</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-ba">@BusinessAnalyst</span>
-              <span class="pipe-arrow">→</span>
+            <div class="phase">
+              <div class="phase-num">2</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Build with safety nets</span>
+                  <span class="lang-ru">Сборка с подстраховкой</span>
+                </h4>
+                <p>
+                  <span class="lang-en">Code is written in small steps, tests first. After each step an independent specialist re-runs the entire test set from scratch — and only then a code reviewer reads the change. If the step touches sensitive areas (login, payments, personal data), a separate security review is triggered. Nothing moves to the next step on the author's say-so alone.</span>
+                  <span class="lang-ru">Код пишется маленькими шагами, сначала тесты. После каждого шага независимый специалист с нуля прогоняет весь набор тестов — и только потом ревьюер читает изменение. Если шаг касается чувствительных мест (вход, платежи, персональные данные) — запускается отдельное security-ревью. Ни один шаг не идёт дальше только по слову автора.</span>
+                </p>
+                <div class="phase-roles">Coder · Test runner · Code reviewer · Security reviewer</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-qa">@QA</span>
-              <span class="pipe-loop">
-                <span class="lang-en">requirements review</span>
-                <span class="lang-ru">проверка требований</span>
-              </span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">DESIGN</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">PLAN</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">pre-mortem</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-code">@CodeWriter</span>
-              <span class="pipe-arrow">→</span>
-              <span class="pipe-agent pa-qa">@TestExecutor</span>
-              <span class="pipe-arrow">→</span>
-              <span class="pipe-agent pa-review">@CodeReviewer</span>
-              <span class="pipe-arrow">→</span>
-              <span class="pipe-agent pa-review">@SecurityReviewer</span>
-              <span class="pipe-loop">
-                <span class="lang-en">per stage (TDD)</span>
-                <span class="lang-ru">на каждом этапе (TDD)</span>
-              </span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-qa">@QA final</span>
-              <span class="pipe-arrow">→</span>
-              <span class="pipe-agent pa-review">CCR-IMPL</span>
-              <span class="pipe-arrow">→</span>
-              <span class="pipe-agent pa-review">@TraceabilityChecker</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-code">@TestRunner</span>
-              <span class="pipe-arrow">→</span>
-              <span class="pipe-agent pa-review">@DoDGate</span>
-              <span class="pipe-loop">
-                <span class="lang-en">CLOSE gated on PASS</span>
-                <span class="lang-ru">CLOSE гейт на PASS</span>
-              </span>
+            <div class="phase">
+              <div class="phase-num">3</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Verify and ship</span>
+                  <span class="lang-ru">Верификация и релиз</span>
+                </h4>
+                <p>
+                  <span class="lang-en">A final auditor walks through a 25-point release checklist — every promise has a passing test, no security issue is open, no work is half-done. The feature can't be marked finished until every check passes (or you explicitly waive a check with a written reason).</span>
+                  <span class="lang-ru">Финальный аудитор проходит по 25-пунктному релиз-чеклисту — у каждого обещания есть проходящий тест, нет открытых security-замечаний, нет недоделанных работ. Фича не может быть отмечена готовой, пока все пункты не пройдены (или пока вы явно не отметите конкретный пункт как принятый с письменным обоснованием).</span>
+                </p>
+                <div class="phase-roles">Tester · Trace auditor · Release gate</div>
+              </div>
             </div>
           </div>
           <div class="scenario-outputs">
@@ -1407,36 +1441,51 @@ footer a:hover { color: var(--text); }
             </span>
           </div>
           <div class="pipeline-label">
-            <span class="lang-en">Agent pipeline</span>
-            <span class="lang-ru">Пайплайн агентов</span>
+            <span class="lang-en">How the work flows</span>
+            <span class="lang-ru">Как идёт работа</span>
           </div>
-          <div class="pipeline">
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">@TestRunner SCAN</span>
-              <span class="pipe-arrow">→</span>
+          <div class="phases">
+            <div class="phase">
+              <div class="phase-num">1</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Find the real cause</span>
+                  <span class="lang-ru">Найти настоящую причину</span>
+                </h4>
+                <p>
+                  <span class="lang-en">The test list is scanned for failing items. For tricky bugs, an investigator first builds a small repeatable scenario that reliably triggers the failure — so the fixer starts with a clear target instead of guessing.</span>
+                  <span class="lang-ru">Список тестов сканируется на упавшие пункты. Для непростых багов сначала исследователь строит маленький воспроизводимый сценарий, который стабильно вызывает падение — фиксер получает чёткую цель вместо догадок.</span>
+                </p>
+                <div class="phase-roles">Test runner · Debugger</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">TRIAGE</span>
-              <span class="pipe-arrow">→</span>
+            <div class="phase">
+              <div class="phase-num">2</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Fix and protect</span>
+                  <span class="lang-ru">Починить и защитить</span>
+                </h4>
+                <p>
+                  <span class="lang-en">The bug-fixer repairs the underlying cause (not just the symptom) and adds a regression test — a small permanent safety check that prevents the same bug from coming back. The reviewer reads the fix before it lands.</span>
+                  <span class="lang-ru">Баг-фиксер устраняет первопричину (не симптом) и добавляет регрессионный тест — небольшую постоянную страховку, чтобы тот же баг не вернулся. Ревьюер читает исправление до того, как оно попадает в код.</span>
+                </p>
+                <div class="phase-roles">Bug fixer · Code reviewer</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-debug">@Debugger</span>
-              <span class="pipe-loop">
-                <span class="lang-en">if complex</span>
-                <span class="lang-ru">если сложно</span>
-              </span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-fix">@BugFixer</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-review">@CodeReviewer</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-code">@TestRunner RERUN</span>
+            <div class="phase">
+              <div class="phase-num">3</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Confirm and learn</span>
+                  <span class="lang-ru">Подтвердить и извлечь урок</span>
+                </h4>
+                <p>
+                  <span class="lang-en">You re-verify the fix interactively. For serious defects, a short retrospective runs automatically: the team identifies the root cause and updates rules or adds new tests so the same class of error doesn't repeat.</span>
+                  <span class="lang-ru">Вы интерактивно перепроверяете исправление. Для серьёзных дефектов автоматически запускается короткая ретроспектива: команда определяет глубинную причину и обновляет правила или добавляет тесты, чтобы такой класс ошибок больше не повторялся.</span>
+                </p>
+                <div class="phase-roles">Test runner · Bug retrospective</div>
+              </div>
             </div>
           </div>
           <div class="scenario-outputs">
@@ -1507,51 +1556,51 @@ footer a:hover { color: var(--text); }
             </span>
           </div>
           <div class="pipeline-label">
-            <span class="lang-en">Agent pipeline</span>
-            <span class="lang-ru">Пайплайн агентов</span>
+            <span class="lang-en">How the work flows</span>
+            <span class="lang-ru">Как идёт работа</span>
           </div>
-          <div class="pipeline">
-            <div class="pipe-step">
-              <span class="pipe-agent pa-ba">@BusinessAnalyst</span>
-              <span class="pipe-arrow">→</span>
+          <div class="phases">
+            <div class="phase">
+              <div class="phase-num">1</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Idea → product brief</span>
+                  <span class="lang-ru">Идея → продуктовый бриф</span>
+                </h4>
+                <p>
+                  <span class="lang-en">The analyst expands one sentence into a structured brief — what the user needs, what success looks like, what is and isn't in scope. A stress-tester loops over the brief looking for unanswered scenarios until none remain.</span>
+                  <span class="lang-ru">Аналитик разворачивает одно предложение в структурированный бриф — что нужно пользователю, как выглядит успех, что входит в работу и что нет. Стресс-тестер крутит бриф в поисках нерешённых сценариев, пока их не остаётся.</span>
+                </p>
+                <div class="phase-roles">Analyst · Stress-tester</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-ba">@CornerCaseReviewer</span>
-              <span class="pipe-loop">
-                <span class="lang-en">loop</span>
-                <span class="lang-ru">цикл</span>
-              </span>
-              <span class="pipe-arrow">→</span>
+            <div class="phase">
+              <div class="phase-num">2</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Brief → test list → blueprint</span>
+                  <span class="lang-ru">Бриф → список тестов → чертёж</span>
+                </h4>
+                <p>
+                  <span class="lang-en">QA writes the test list (every promise → at least one test). A coverage auditor confirms nothing's missing. Then a senior-engineer-style specialist writes the technical blueprint from the brief and the test list combined.</span>
+                  <span class="lang-ru">QA пишет список тестов (на каждое обещание — минимум один тест). Аудитор покрытия подтверждает, что ничего не пропущено. Затем специалист уровня senior-инженера пишет технический чертёж по брифу и списку тестов вместе.</span>
+                </p>
+                <div class="phase-roles">QA · Coverage auditor · Tech blueprint author</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-qa">@QA</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-ba">@CoverageChecker</span>
-              <span class="pipe-loop">
-                <span class="lang-en">loop</span>
-                <span class="lang-ru">цикл</span>
-              </span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-ba">@SystemAnalyst</span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-ba">@ConsistencyChecker</span>
-              <span class="pipe-loop">
-                <span class="lang-en">loop</span>
-                <span class="lang-ru">цикл</span>
-              </span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">
-                <span class="lang-en">PO sign-off</span>
-                <span class="lang-ru">PO утверждает</span>
-              </span>
+            <div class="phase">
+              <div class="phase-num">3</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Cross-check and sign off</span>
+                  <span class="lang-ru">Перекрёстная сверка и утверждение</span>
+                </h4>
+                <p>
+                  <span class="lang-en">A contradiction-finder compares brief, test list, and blueprint against each other and surfaces every place they disagree. The team loops until all three documents tell the same story. Then you sign off — the result is a feature description any developer (human or AI) can implement confidently.</span>
+                  <span class="lang-ru">Специалист по противоречиям сверяет бриф, список тестов и чертёж между собой и поднимает каждое расхождение. Команда крутит цикл, пока три документа не расскажут одну историю. Затем вы утверждаете — на выходе описание фичи, которое уверенно реализует любой разработчик (человек или ИИ).</span>
+                </p>
+                <div class="phase-roles">Contradiction finder · Sign-off</div>
+              </div>
             </div>
           </div>
           <div class="scenario-outputs">
@@ -1620,46 +1669,51 @@ footer a:hover { color: var(--text); }
             </span>
           </div>
           <div class="pipeline-label">
-            <span class="lang-en">Agent pipeline</span>
-            <span class="lang-ru">Пайплайн агентов</span>
+            <span class="lang-en">How the work flows</span>
+            <span class="lang-ru">Как идёт работа</span>
           </div>
-          <div class="pipeline">
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">@Main SCAN</span>
-              <span class="pipe-arrow">→</span>
+          <div class="phases">
+            <div class="phase">
+              <div class="phase-num">1</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">See the backlog</span>
+                  <span class="lang-ru">Увидеть бэклог</span>
+                </h4>
+                <p>
+                  <span class="lang-en">All the small non-critical findings the team noticed during regular work — duplicated code in sibling files, compiler warnings, deprecated calls, stale TODO notes — are surfaced as a single backlog grouped by severity. You decide what's worth draining now.</span>
+                  <span class="lang-ru">Все мелкие некритичные находки, замеченные командой по ходу обычной работы — дублирующийся код в соседних файлах, предупреждения компилятора, устаревшие вызовы, протухшие TODO — собираются в один бэклог, сгруппированный по важности. Вы решаете, что разгребать сейчас.</span>
+                </p>
+                <div class="phase-roles">Triage</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">TRIAGE</span>
-              <span class="pipe-loop">
-                <span class="lang-en">PO picks</span>
-                <span class="lang-ru">PO выбирает</span>
-              </span>
-              <span class="pipe-arrow">→</span>
+            <div class="phase">
+              <div class="phase-num">2</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Fix with the same safety nets</span>
+                  <span class="lang-ru">Чинить с той же подстраховкой</span>
+                </h4>
+                <p>
+                  <span class="lang-en">Each picked entry goes through the same review-gated cycle as a regular task: the appropriate specialist makes the change, the reviewer reads it, the build passes. Trivial entries take a direct path; bigger ones go through a planned path with stages.</span>
+                  <span class="lang-ru">Каждая выбранная запись проходит тот же цикл с проверками, что и обычная задача: нужный специалист вносит правку, ревьюер читает, сборка зелёная. Мелкие правки идут прямым путём; крупные — плановым путём с этапами.</span>
+                </p>
+                <div class="phase-roles">Bug fixer · Coder · Code reviewer</div>
+              </div>
             </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-fix">@BugFixer</span>
-              <span class="pipe-loop">
-                <span class="lang-en">DIRECT path</span>
-                <span class="lang-ru">прямой путь</span>
-              </span>
-              <span class="pipe-arrow">|</span>
-              <span class="pipe-agent pa-code">@CodeWriter</span>
-              <span class="pipe-loop">
-                <span class="lang-en">PLAN path</span>
-                <span class="lang-ru">план</span>
-              </span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-review">@CodeReviewer</span>
-              <span class="pipe-loop">
-                <span class="lang-en">per entry</span>
-                <span class="lang-ru">на запись</span>
-              </span>
-              <span class="pipe-arrow">→</span>
-            </div>
-            <div class="pipe-step">
-              <span class="pipe-agent pa-main">ARCHIVE</span>
+            <div class="phase">
+              <div class="phase-num">3</div>
+              <div class="phase-body">
+                <h4>
+                  <span class="lang-en">Archive and report</span>
+                  <span class="lang-ru">Архив и отчёт</span>
+                </h4>
+                <p>
+                  <span class="lang-en">Closed entries move to a "done" folder. The team produces a single batch report so you can show the work in a status update or sprint review without compiling it by hand.</span>
+                  <span class="lang-ru">Закрытые записи переезжают в папку «готово». Команда формирует единый отчёт по батчу, чтобы вы могли показать работу в статусе или на ревью спринта без ручной сборки.</span>
+                </p>
+                <div class="phase-roles">Archive · Batch report</div>
+              </div>
             </div>
           </div>
           <div class="scenario-outputs">
