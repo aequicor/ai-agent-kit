@@ -34,15 +34,15 @@
   <!-- Subtitle -->
   <text x="248" y="318" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
         font-size="32" font-weight="500" fill="#a5b4fc">
-    A complete AI agent team for your project
+    14+ AI specialists. Five-minute install. Fewer defects.
   </text>
 
   <!-- Stats row -->
   <g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
      font-size="22" fill="#9299b8" font-weight="500">
-    <text x="96" y="490">14+ specialised agents</text>
-    <text x="96" y="528">16 slash commands</text>
-    <text x="96" y="566">14 reusable skills</text>
+    <text x="96" y="490">14+ AI specialists in one team</text>
+    <text x="96" y="528">8 quality checks before each release</text>
+    <text x="96" y="566">0 scripts or servers to install</text>
   </g>
 
   <!-- Hosts pill -->
