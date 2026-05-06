@@ -79,6 +79,5 @@
   },
   "env": {
     "KIT_LANG": "{{KIT_LANG}}"
-  },
-  "mcpServers": {{MCP_SERVERS_BLOCK}}
+  }
 }

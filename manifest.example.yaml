@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "4.3.1"
+kit_version: "4.3.2"
 
 # ─────────────────────────────────────────────
 # LANGUAGE

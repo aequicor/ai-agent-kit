@@ -136,7 +136,7 @@ Fetch `RAW_BASE/kit/_index.txt`.
 
 ### 3.3. Classify each kit file by host
 
-Use the same classification table as setup.md 3.3: files under `kit/.opencode/` render only if `opencode` ∈ `manifest.hosts`; files under `kit/.claude/` render only if `claude-code` ∈ hosts; files under `kit/_shared/` are not written directly — they are only inlined via INCLUDE; root files (`AGENTS.md.template`, `CLAUDE.md.template`, `opencode.json.template`, `kit/.claude/settings.json.template`) are host-scoped accordingly.
+Use the same classification table as setup.md 3.3: files under `kit/.opencode/` render only if `opencode` ∈ `manifest.hosts`; files under `kit/.claude/` render only if `claude-code` ∈ hosts; files under `kit/_shared/` are not written directly — they are only inlined via INCLUDE; root files (`AGENTS.md.template`, `CLAUDE.md.template`, `opencode.json.template`, `kit/.claude/settings.json.template`, `kit/.mcp.json.template`) are host-scoped accordingly. `kit/.mcp.json.template` is additionally gated on at least one MCP server being `enabled: true` (when all are disabled, do not write `.mcp.json` and remove a stale one if present).
 
 ### 3.4. Resolve INCLUDEs
 

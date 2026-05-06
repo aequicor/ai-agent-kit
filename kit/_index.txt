@@ -13,6 +13,7 @@ kit/.claude/agents/QA.md.template
 kit/.claude/agents/SystemAnalyst.md.template
 kit/.claude/agents/TestRunner.md.template
 kit/.claude/settings.json.template
+kit/.mcp.json.template
 kit/.opencode/agents/AutoApprover.md.template
 kit/.opencode/agents/BugFixer.md.template
 kit/.opencode/agents/BusinessAnalyst.md.template

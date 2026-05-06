@@ -1,4 +1,43 @@
 versions:
+  - version: "4.3.2"
+    released: "2026-05-06"
+    breaking: false
+    description: |
+      Fix MCP servers not connecting in Claude Code installs.
+
+      Problem: kit/.claude/settings.json.template carried a "mcpServers"
+      key that the setup prompt rendered with the enabled MCP servers
+      from the manifest. The file rendered cleanly, but Claude Code
+      silently ignored those entries — "mcpServers" is not a recognized
+      field in .claude/settings.json. Project-scope MCP server
+      definitions live exclusively in .mcp.json at the project root,
+      and settings.json only carries MCP policies (allow/deny lists).
+      Result: users with claude-code as a host saw zero MCP servers
+      connect even when their manifest enabled context7, knowledge,
+      and serena.
+
+      Fix:
+        - Removed the "mcpServers" key (and its placeholder) from
+          kit/.claude/settings.json.template.
+        - Added kit/.mcp.json.template with body
+          `{ "mcpServers": {{MCP_SERVERS_BLOCK}} }`. Setup renders it
+          to <target>/.mcp.json only when claude-code ∈ hosts AND at
+          least one MCP server is enabled — otherwise the file is not
+          created (and is removed on update if it had become stale).
+        - Updated docs/prompts/setup.md (Rule B3 + render-scope table),
+          docs/prompts/update.md (root-files list), and
+          docs/prompts/uninstall.md (added .mcp.json removal step) to
+          reflect the new render target.
+
+      No manifest schema change. Existing manifests work as-is — re-run
+      /kit-update to materialize .mcp.json for Claude Code installs.
+    files_changed:
+      - kit/.claude/settings.json.template
+      - kit/.mcp.json.template
+      - kit/_index.txt
+    manifest_changes:
+      added_fields: []
+
   - version: "4.3.1"
     released: "2026-05-05"
     breaking: false

@@ -369,7 +369,7 @@ Then build a substitution map per host. The base map (host-agnostic placeholders
 | `REVIEWER_MODEL` | `models.reviewer` | `claude_code.models.reviewer` |
 | `DESIGNER_MODEL` | `models.designer` (fallback to `coder` if null) | `claude_code.models.designer` (fallback to `coder` if null) |
 | `SMALL_MODEL` | `models.small` (fallback to `coder` if missing) | `claude_code.models.small` (fallback to `coder` if missing) |
-| `MCP_SERVERS_BLOCK` | (unused — OpenCode renders MCPs inside `opencode.json` directly) | JSON object with only enabled MCPs (rule B3) |
+| `MCP_SERVERS_BLOCK` | (unused — OpenCode renders MCPs inside `opencode.json` directly) | JSON object with only enabled MCPs, inserted into `.mcp.json` at project root (rule B3) |
 
 #### Rule M1 — `MODULE_TABLE`
 ```
@@ -430,7 +430,9 @@ A JSON object listing only enabled MCP servers. Build it dynamically from the ma
   "serena": { "type": "stdio", "command": "serena", "args": ["start-mcp-server"] }
 }
 ```
-Include only the entries whose corresponding manifest flag is `enabled: true`. The whole block is inserted as-is in place of `{{MCP_SERVERS_BLOCK}}` in `kit/.claude/settings.json.template`.
+Include only the entries whose corresponding manifest flag is `enabled: true`. The whole block is inserted as-is in place of `{{MCP_SERVERS_BLOCK}}` in `kit/.mcp.json.template`, which renders to `<target>/.mcp.json`. If every MCP flag is `false`, skip rendering `.mcp.json` entirely.
+
+**Why `.mcp.json` and not `.claude/settings.json`:** Claude Code reads project-scope MCP server definitions exclusively from `.mcp.json` at the project root. The `mcpServers` key is not part of the `.claude/settings.json` schema and is silently ignored — placing servers there will look correct but they will never connect. `.claude/settings.json` only carries MCP *policies* (`allowedMcpServers` / `deniedMcpServers`), not server definitions.
 
 #### Rule D1 — `DEPENDENCY_FILES_LIST`
 By language: `kotlin`/`java` → `gradle/libs.versions.toml` or `build.gradle.kts`; `python` → `requirements.txt` / `pyproject.toml`; `typescript` → `package.json`; `go` → `go.mod`; `rust` → `Cargo.toml`; otherwise → `Primary dependency manifest`.
@@ -451,6 +453,7 @@ For every path `kit/<rel-path>`:
 | `kit/opencode.json.template` | OpenCode host | Render only if `opencode` ∈ hosts. Target = `<target>/opencode.json`. |
 | `kit/AGENTS.md.template` | OpenCode host | Render only if `opencode` ∈ hosts. Target = `<target>/AGENTS.md`. |
 | `kit/CLAUDE.md.template` | Claude Code host | Render only if `claude-code` ∈ hosts. Target = `<target>/CLAUDE.md`. |
+| `kit/.mcp.json.template` | Claude Code host | Render only if `claude-code` ∈ hosts AND at least one MCP server is `enabled: true` (else SKIP — do not write an empty `.mcp.json`). Target = `<target>/.mcp.json`. Claude Code reads project-scope MCP servers exclusively from this file; the `mcpServers` key is NOT a recognized field in `.claude/settings.json` and is silently ignored there. |
 | `kit/AUTO_MEMORY.md.template` | both hosts (universal) | Always render. Target = `<target>/AUTO_MEMORY.md`. Render with the FIRST host's substitution map (placeholders inside this file are host-agnostic). |
 | `kit/.planning/...`, `kit/.vault/...` | scaffold (host-agnostic) | Always render. Target = same path with `kit/` dropped (and `.vault/` rewritten to `<vault_path>/`). Substitute with the FIRST host's map. |
 | `kit/manifest.schema.json`, `kit/profile.schema.json`, `kit/_index.txt` | meta — DO NOT copy to target | Skip. |

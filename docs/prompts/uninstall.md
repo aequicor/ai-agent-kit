@@ -115,6 +115,7 @@ For each file in the list, if it exists → delete it; else → "not found, skip
 Files to delete:
 - For each `I` in `HOST_INSTRUCTIONS`: `<target>/<I>` (e.g. `<target>/AGENTS.md`, `<target>/CLAUDE.md`).
 - For each `C` in `HOST_CONFIGS`: `<target>/<C>` (e.g. `<target>/opencode.json`, `<target>/.claude/settings.json`). Note: `.claude/settings.json` is already removed when `<target>/.claude/` is deleted in 3.1; the explicit removal here is a no-op for that case but stays in the list for completeness.
+- `<target>/.mcp.json` — only if `claude-code` ∈ `HOSTS`. This is the project-scope MCP server file rendered by the kit when at least one MCP server was enabled.
 - `<target>/AUTO_MEMORY.md`
 - `<target>/<vault_path>/_INDEX.md` (only if `VAULT_CHOICE == keep`; if `delete`, it was already removed with the vault root)
 - `<target>/<MANIFEST_FILE>`
