@@ -291,6 +291,16 @@ PO can edit it directly — flip a Status to FAIL, add a new TC row, edit Notes 
 7. RETRO    — if PO requests (or if defect classifies as systemic): call skill `bug-retro`.
 ```
 
+## Pipeline — TECHDEBT (driven by `/kit-techdebt`)
+
+Tech-debt entries live at `{{VAULT_PATH}}/tech-debt/<module>/<slug>.md` (archived to `<module>/done/`). Subagents record them via the `tech-debt-record` skill while doing other work. `/kit-techdebt` is the entry point that drains the backlog in a controlled batch. The full pipeline (SCAN → TRIAGE → batch task creation → DIRECT vs PLAN classification → fix loop → ARCHIVE → REPORT) is defined in `{{HOST_DIR}}/commands/kit-techdebt.md` — follow that command's steps verbatim when invoked.
+
+Key rules:
+- **One active task at a time.** If `.planning/CURRENT.md` already has a non-techdebt task → STOP, do not start a batch.
+- **Each entry runs through @CodeReviewer.** No DIRECT-path shortcut bypasses review.
+- **Status lifecycle is authoritative.** `open → in-progress` (mark before dispatch, prevents parallel re-fix) → `fixed` (move to `done/`) or `wont-fix` (after auto-stop).
+- **Failures stay open.** If review-fix loop hits the cap, mark `wont-fix` with a Notes line and move on; do not delete the entry.
+
 ## Pipeline — TECH
 
 ```

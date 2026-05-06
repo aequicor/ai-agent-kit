@@ -359,6 +359,8 @@ nav {
                border: 1px solid rgba(244,63,94,0.28); }
 .tag-req     { background: rgba(34,211,160,0.12); color: var(--green);
                border: 1px solid rgba(34,211,160,0.28); }
+.tag-tech    { background: rgba(245,158,11,0.12); color: var(--amber);
+               border: 1px solid rgba(245,158,11,0.28); }
 .scenario-body { padding: 24px; }
 .scenario-trigger {
   display: flex; align-items: flex-start; gap: 12px; margin-bottom: 22px;
@@ -371,6 +373,7 @@ nav {
 .ti-feature { background: rgba(99,102,241,0.15); }
 .ti-bug     { background: rgba(244,63,94,0.12); }
 .ti-req     { background: rgba(34,211,160,0.12); }
+.ti-tech    { background: rgba(245,158,11,0.12); }
 .trigger-text { flex: 1; }
 .trigger-label {
   font-size: 0.75rem; color: var(--muted); font-weight: 500;
@@ -732,8 +735,8 @@ footer a:hover { color: var(--text); }
   <div class="wrap" style="text-align:center">
     <div class="hero-badge">
       <span class="glow-dot"></span>
-      <span class="lang-en">v4.3.2 · Claude Code &amp; OpenCode</span>
-      <span class="lang-ru">v4.3.2 · Claude Code и OpenCode</span>
+      <span class="lang-en">v4.4.0 · Claude Code &amp; OpenCode</span>
+      <span class="lang-ru">v4.4.0 · Claude Code и OpenCode</span>
     </div>
     <h1>
       <span class="lang-en">An AI agent team<br>for every project</span>
@@ -1136,7 +1139,7 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <div class="lang-en">
       <div class="sec-label">User scenarios</div>
-      <h2 class="sec-title">Three workflows, zero manual wiring</h2>
+      <h2 class="sec-title">Four workflows, zero manual wiring</h2>
       <p class="sec-sub">
         Every workflow is a single command. The orchestrator coordinates the agent
         pipeline, gating each stage on quality checks before moving forward.
@@ -1144,7 +1147,7 @@ footer a:hover { color: var(--text); }
     </div>
     <div class="lang-ru">
       <div class="sec-label">Сценарии</div>
-      <h2 class="sec-title">Три рабочих процесса, без ручного связывания</h2>
+      <h2 class="sec-title">Четыре рабочих процесса, без ручного связывания</h2>
       <p class="sec-sub">
         Каждый процесс — это одна команда. Оркестратор согласует работу агентов и
         проверяет качество на каждом этапе перед тем, как идти дальше.
@@ -1474,6 +1477,122 @@ footer a:hover { color: var(--text); }
         </div>
       </div>
 
+      <!-- ── Scenario 4: Tech debt ── -->
+      <div class="scenario">
+        <div class="scenario-head">
+          <h3>
+            <span class="lang-en">Draining the tech-debt backlog</span>
+            <span class="lang-ru">Разгрести технический долг</span>
+          </h3>
+          <span class="scenario-tag tag-tech">
+            <span class="lang-en">Tech debt</span>
+            <span class="lang-ru">Тех. долг</span>
+          </span>
+        </div>
+        <div class="scenario-body">
+          <div class="scenario-trigger">
+            <div class="trigger-icon ti-tech">⚙</div>
+            <div class="trigger-text">
+              <div class="trigger-label">
+                <span class="lang-en">You type</span>
+                <span class="lang-ru">Вы пишете</span>
+              </div>
+              <code class="trigger-cmd">/kit-techdebt</code>
+            </div>
+          </div>
+          <div class="plain-summary">
+            <span class="lang-en">
+              <strong>What's actually happening:</strong> while doing other work, the code-touching
+              agents quietly recorded non-critical findings — duplicated blocks in sibling files,
+              compiler warnings, deprecated calls, stale TODOs — into a per-module folder in the
+              vault. None of it expanded their current diff. When you're ready, you run this
+              command, see the full backlog grouped by severity, pick what to drain, and the team
+              fixes each entry through the same review-gated loop as a regular task.
+            </span>
+            <span class="lang-ru">
+              <strong>Что происходит на самом деле:</strong> пока агенты делали другую работу,
+              они тихо записывали некритичные находки — дублирующиеся блоки в соседних файлах,
+              предупреждения компилятора, deprecated-вызовы, протухшие TODO — в папку модуля
+              в хранилище. Это не раздувало их текущий диф. Когда вы готовы, запускаете команду,
+              видите весь бэклог сгруппированный по важности, выбираете что чинить — и команда
+              исправляет каждую запись через тот же ревью-цикл, что и обычную задачу.
+            </span>
+          </div>
+          <div class="pipeline-label">
+            <span class="lang-en">Agent pipeline</span>
+            <span class="lang-ru">Пайплайн агентов</span>
+          </div>
+          <div class="pipeline">
+            <div class="pipe-step">
+              <span class="pipe-agent pa-main">@Main SCAN</span>
+              <span class="pipe-arrow">→</span>
+            </div>
+            <div class="pipe-step">
+              <span class="pipe-agent pa-main">TRIAGE</span>
+              <span class="pipe-loop">
+                <span class="lang-en">PO picks</span>
+                <span class="lang-ru">PO выбирает</span>
+              </span>
+              <span class="pipe-arrow">→</span>
+            </div>
+            <div class="pipe-step">
+              <span class="pipe-agent pa-fix">@BugFixer</span>
+              <span class="pipe-loop">
+                <span class="lang-en">DIRECT path</span>
+                <span class="lang-ru">прямой путь</span>
+              </span>
+              <span class="pipe-arrow">|</span>
+              <span class="pipe-agent pa-code">@CodeWriter</span>
+              <span class="pipe-loop">
+                <span class="lang-en">PLAN path</span>
+                <span class="lang-ru">план</span>
+              </span>
+              <span class="pipe-arrow">→</span>
+            </div>
+            <div class="pipe-step">
+              <span class="pipe-agent pa-review">@CodeReviewer</span>
+              <span class="pipe-loop">
+                <span class="lang-en">per entry</span>
+                <span class="lang-ru">на запись</span>
+              </span>
+              <span class="pipe-arrow">→</span>
+            </div>
+            <div class="pipe-step">
+              <span class="pipe-agent pa-main">ARCHIVE</span>
+            </div>
+          </div>
+          <div class="scenario-outputs">
+            <span class="output-chip">
+              <span class="lang-en">entries closed → done/</span>
+              <span class="lang-ru">записи закрыты → done/</span>
+            </span>
+            <span class="output-chip">
+              <span class="lang-en">fix commits</span>
+              <span class="lang-ru">фикс-коммиты</span>
+            </span>
+            <span class="output-chip">
+              <span class="lang-en">batch report</span>
+              <span class="lang-ru">отчёт по батчу</span>
+            </span>
+          </div>
+          <div class="scenario-note">
+            <span class="lang-en">
+              Filter the batch with <code>/kit-techdebt severity=high</code>,
+              <code>/kit-techdebt module=server</code>, or pass a single
+              <code>TD-id</code> to drain just one entry. Real bugs and security issues are
+              never recorded as tech debt — those still escalate or get fixed in place.
+            </span>
+            <span class="lang-ru">
+              Фильтруйте батч через <code>/kit-techdebt severity=high</code>,
+              <code>/kit-techdebt module=server</code> или передайте конкретный
+              <code>TD-id</code>, чтобы починить только одну запись. Настоящие баги и
+              security-проблемы никогда не записываются как тех. долг — они эскалируются
+              или чинятся на месте.
+            </span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -1483,7 +1602,7 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <div class="lang-en">
       <div class="sec-label">Slash commands</div>
-      <h2 class="sec-title">15 commands cover the whole lifecycle</h2>
+      <h2 class="sec-title">16 commands cover the whole lifecycle</h2>
       <p class="sec-sub">
         From requirements to deploy. Every command is a single entry point that the orchestrator
         expands into the right pipeline of agents.
@@ -1518,6 +1637,10 @@ footer a:hover { color: var(--text); }
         <div class="cmd-card">
           <div class="cmd-name">/kit-lint</div>
           <div class="cmd-desc">Project-aware lint pass with auto-fix where safe.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/kit-techdebt</div>
+          <div class="cmd-desc">Drain the per-module tech-debt backlog written by other agents — pick by severity, module, or TD-id; each entry runs through review-gated fix.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-checkpoint</div>
@@ -1566,17 +1689,17 @@ footer a:hover { color: var(--text); }
       </div>
 
       <div style="margin-top:32px;font-size:0.8125rem;color:var(--muted);text-align:center;">
-        Backed by <span style="color:var(--text);font-weight:600;">10 reusable skills</span> —
+        Backed by <span style="color:var(--text);font-weight:600;">11 reusable skills</span> —
         <code>code-review-checklist</code>, <code>requirements-pipeline</code>,
         <code>corner-case-refinement</code>, <code>bug-retro</code>, <code>knowledge-graph</code>,
         <code>look-up</code>, <code>mermaid-validate</code>, <code>session-handoff</code>,
-        <code>session-replay</code>, <code>test-execution</code>.
+        <code>session-replay</code>, <code>tech-debt-record</code>, <code>test-execution</code>.
       </div>
     </div>
 
     <div class="lang-ru">
       <div class="sec-label">Слэш-команды</div>
-      <h2 class="sec-title">15 команд покрывают весь жизненный цикл</h2>
+      <h2 class="sec-title">16 команд покрывают весь жизненный цикл</h2>
       <p class="sec-sub">
         От требований до деплоя. Каждая команда — это единая точка входа, которую
         оркестратор разворачивает в нужный пайплайн агентов.
@@ -1611,6 +1734,10 @@ footer a:hover { color: var(--text); }
         <div class="cmd-card">
           <div class="cmd-name">/kit-lint</div>
           <div class="cmd-desc">Линт под ваш проект с автоисправлениями там, где это безопасно.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/kit-techdebt</div>
+          <div class="cmd-desc">Разгрести бэклог тех. долга по модулям, который накопили другие агенты — выбираете по важности, модулю или TD-id; каждая запись проходит ревью-цикл.</div>
         </div>
         <div class="cmd-card">
           <div class="cmd-name">/kit-checkpoint</div>
@@ -1659,11 +1786,11 @@ footer a:hover { color: var(--text); }
       </div>
 
       <div style="margin-top:32px;font-size:0.8125rem;color:var(--muted);text-align:center;">
-        Подкреплено <span style="color:var(--text);font-weight:600;">10 переиспользуемыми навыками</span> —
+        Подкреплено <span style="color:var(--text);font-weight:600;">11 переиспользуемыми навыками</span> —
         <code>code-review-checklist</code>, <code>requirements-pipeline</code>,
         <code>corner-case-refinement</code>, <code>bug-retro</code>, <code>knowledge-graph</code>,
         <code>look-up</code>, <code>mermaid-validate</code>, <code>session-handoff</code>,
-        <code>session-replay</code>, <code>test-execution</code>.
+        <code>session-replay</code>, <code>tech-debt-record</code>, <code>test-execution</code>.
       </div>
     </div>
   </div>
@@ -2472,7 +2599,7 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <p>
       <a href="https://github.com/aequicor/ai-agent-kit" target="_blank">aequicor/ai-agent-kit</a>
-      &nbsp;·&nbsp; v4.3.2
+      &nbsp;·&nbsp; v4.4.0
       &nbsp;·&nbsp; <a href="https://github.com/aequicor/ai-agent-kit/blob/master/docs/migration/changelog.yaml" target="_blank">
         <span class="lang-en">Changelog</span>
         <span class="lang-ru">История изменений</span>

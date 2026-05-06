@@ -1,4 +1,72 @@
 versions:
+  - version: "4.4.0"
+    released: "2026-05-06"
+    breaking: false
+    description: |
+      Add a tech-debt capture-and-fix loop.
+
+      Problem: agents (CodeWriter, BugFixer, CodeReviewer) routinely notice
+      non-critical issues outside the scope of the current task — compiler
+      warnings, duplicated blocks in sibling files, deprecated calls, stale
+      TODOs. Until now they had no recording surface short of escalation,
+      so most of these findings were silently dropped. The few that were
+      raised expanded the current diff or distracted PO mid-task.
+
+      Fix: a per-module tech-debt folder in the vault plus a batch-fix
+      command.
+
+        - New skill `tech-debt-record` (kit/_shared/skills/tech-debt-record/
+          SKILL.md.template) — defines exactly what to record (warning,
+          duplication, smell, complexity, deprecation, todo) vs. what to
+          fix or escalate (bugs, security, in-scope issues). Caps per
+          task: 5 entries from CodeWriter / CodeReviewer, 3 from BugFixer.
+        - New template kit/.vault/_templates/tech-debt.md — frontmatter
+          (category, severity, status, module, files, discovered_by) +
+          required body sections (Files, Description, Why not critical now,
+          optional Suggested fix, Resolution).
+        - Storage layout: {{VAULT_PATH}}/tech-debt/<module>/<slug>.md for
+          open / in-progress entries; <module>/done/<slug>.md for archived.
+        - New command `/kit-techdebt` (kit/_shared/commands/
+          kit-techdebt.md.template) — SCAN with optional filter (TD-id,
+          module=name, severity=high, free-form substring) → TRIAGE with PO
+          → batch task file under .planning/tasks/techdebt-batch-<ISO>.md →
+          per-entry classification (DIRECT for low/medium ≤2 files, PLAN
+          for high / cross-cutting / ≥3 files) → fix loop reusing
+          @CodeWriter/@CodeReviewer and @BugFixer-style cycles → ARCHIVE
+          to done/ on success → REPORT.
+        - Carve-out for @CodeReviewer: previously read-only on all files,
+          now permitted to write tech-debt entries (analytical artifact,
+          not source code). The role line and What-NOT-to-do list updated
+          to reflect this. CRITICAL/HIGH issues never become tech-debt —
+          they stay in the review and block the verdict.
+        - File-access matrix and FILE_STRUCTURE.md updated with the new
+          path and writers. Vault _INDEX.md updated with tech-debt/<module>/
+          row in the per-module layout. _shared.md genre table gained a
+          tech-debt row.
+        - i18n: tech_debt and record_tech_debt action labels added in
+          en.md and ru.md; /kit-techdebt added to commands list.
+        - @Main body gained a brief TECHDEBT pipeline block referencing
+          the command for the full step-by-step process.
+
+      No manifest schema change — backward-compatible. Existing manifests
+      will gain the new command and skill on `/kit-update`.
+    files_changed:
+      - kit/.vault/_INDEX.md.template
+      - kit/.vault/_templates/tech-debt.md
+      - kit/_index.txt
+      - kit/_shared/FILE_STRUCTURE.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_shared/agents/BugFixer.body.md.template
+      - kit/_shared/agents/CodeReviewer.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/commands/kit-techdebt.md.template
+      - kit/_shared/i18n/en.md
+      - kit/_shared/i18n/ru.md
+      - kit/_shared/skills/tech-debt-record/SKILL.md.template
+    manifest_changes:
+      added_fields: []
+
   - version: "4.3.2"
     released: "2026-05-06"
     breaking: false

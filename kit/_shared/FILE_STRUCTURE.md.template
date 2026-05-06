@@ -51,6 +51,10 @@
 
   guidelines/libs/                   ← external library API documentation cache
     <lib>-<version>.md               ← (@CodeWriter, @BugFixer)
+
+  tech-debt/<module>/                ← deferred non-critical findings (@CodeWriter, @BugFixer, @CodeReviewer)
+    <slug>.md                        ← open / in-progress entries
+    done/<slug>.md                   ← archived after `/kit-techdebt` closes them
 ```
 
 ### Modules
@@ -67,6 +71,9 @@
 | `{{VAULT_PATH}}/_templates/bug-report.md` | (template) | Template for @BugFixer |
 | `{{VAULT_PATH}}/_templates/spec.md` | (template) | Template for @Main |
 | `{{VAULT_PATH}}/_templates/requirements.md` | (template) | Template for @Main |
+| `{{VAULT_PATH}}/_templates/tech-debt.md` | (template) | Template for `tech-debt-record` skill |
+| `{{VAULT_PATH}}/tech-debt/<module>/<slug>.md` | @CodeWriter, @BugFixer, @CodeReviewer | Open tech-debt entries (status: open\|in-progress) |
+| `{{VAULT_PATH}}/tech-debt/<module>/done/<slug>.md` | @Main (via `/kit-techdebt`) | Closed entries (status: fixed\|wont-fix) |
 
 ---
 

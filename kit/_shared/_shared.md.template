@@ -52,6 +52,7 @@ Structure follows [Diátaxis](https://diataxis.fr/) genre layout.
 | `tutorials/<module>/` | **How to learn?** | Getting started, module docs | As needed |
 | `guidelines/<module>/` | **What rules to follow?** | Conventions, patterns, reports/ | @Main, @Designer, @CodeWriter, @BugFixer |
 | `guidelines/libs/` | **How to use library?** | External API cache | @CodeWriter, @BugFixer |
+| `tech-debt/<module>/` | **What is deferred?** | Non-critical smells/duplication/warnings recorded for `/kit-techdebt` | @CodeWriter, @BugFixer, @CodeReviewer (via `tech-debt-record` skill) |
 
 Per-module path examples:
 - Requirements: `{{VAULT_PATH}}/concepts/<module>/requirements/<feature>.md`
@@ -63,6 +64,7 @@ Per-module path examples:
 - Guidelines: `{{VAULT_PATH}}/guidelines/<module>/<topic>.md`
 - Bug reports: `{{VAULT_PATH}}/guidelines/<module>/reports/<bug-name>.md`
 - External API cache: `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md`
+- Tech debt entries: `{{VAULT_PATH}}/tech-debt/<module>/<slug>.md` (archived: `<module>/done/<slug>.md`)
 
 **Indexing rule:** when creating or updating any document, immediately call `knowledge-my-app_write_guideline` (new) or `knowledge-my-app_update_doc` (update).
 
@@ -244,6 +246,7 @@ In both flows, `@Main` does **not** modify requirements, corner cases, or spec f
 | `{{VAULT_PATH}}/guidelines/<module>/` | @Main, @Designer, @CodeWriter | all |
 | `{{VAULT_PATH}}/guidelines/<module>/reports/` | @BugFixer | all |
 | `{{VAULT_PATH}}/guidelines/libs/` | @CodeWriter, @BugFixer | all |
+| `{{VAULT_PATH}}/tech-debt/<module>/` | @CodeWriter, @BugFixer, @CodeReviewer (via `tech-debt-record`); @Main (status updates via `/kit-techdebt`) | all |
 | `{{HOST_DIR}}/agents/`, `{{HOST_DIR}}/skills/` | @PromptEngineer | all |
 | `.planning/CURRENT.md` (local pointer, gitignored) | @Main | all |
 | `.planning/tasks/<slug>.md` | @Main, @RequirementsPipeline (checkpoint after each step) | all |
@@ -270,6 +273,7 @@ KnowledgeOS tools use a **hyphen** in `my-app`, not underscore:
 - `code-review-checklist` — pre-commit systematic review checklist.
 - `test-execution` — AI-driven test execution and defect management. Generates test cases from spec/requirements, provides structured template for manual testing with defect logging, and supports transactional updates (re-run after fixes, add new test cases when defects reveal edge cases).
 - `bug-retro` — post-bug root cause analysis and prevention.
+- `tech-debt-record` — capture a non-critical code smell / duplication / warning as a tech-debt entry under `{{VAULT_PATH}}/tech-debt/<module>/`. Drained by `/kit-techdebt`.
 - `knowledge-graph` — semantic document indexing and cross-reference.
 - `look-up` — proactive external API documentation lookup.
 - `session-replay` — past session analysis for patterns.

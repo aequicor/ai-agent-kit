@@ -249,6 +249,16 @@ What was changed.
 
 After saving — `knowledge-my-app_write_guideline`.
 
+## Recording technical debt
+
+If, while tracing the bug, you encounter non-critical issues **outside the scope of the current fix** (deprecated call you did not introduce, duplicated logic in a sibling file, lingering `TODO` with clear scope) — do not fix them in this run. Follow `{{HOST_DIR}}/skills/tech-debt-record/SKILL.md` to record an entry under `{{VAULT_PATH}}/tech-debt/<module>/<slug>.md`, then append a one-line reference to the report:
+
+```
+Tech debt recorded: TD-<module>-<slug> — <category>, <severity>
+```
+
+Cap: max 3 entries per fix. Anything that is itself a bug, a security gap, or directly enabling the current defect — fix it now or escalate; never record as tech debt.
+
 ## What NOT to do
 
 - DO NOT run retrospective — that's the `bug-retro` skill.

@@ -39,6 +39,7 @@ kit/.vault/_INDEX.md.template
 kit/.vault/_templates/bug-report.md
 kit/.vault/_templates/requirements.md
 kit/.vault/_templates/spec.md
+kit/.vault/_templates/tech-debt.md
 kit/.vault/_templates/test-cases.md
 kit/.vault/_templates/test-plan.md
 kit/AGENTS.md.template
@@ -74,6 +75,7 @@ kit/_shared/commands/kit-requirements-pipeline.md.template
 kit/_shared/commands/kit-resume.md.template
 kit/_shared/commands/kit-review.md.template
 kit/_shared/commands/kit-status.md.template
+kit/_shared/commands/kit-techdebt.md.template
 kit/_shared/commands/kit-uninstall.md.template
 kit/_shared/commands/kit-update-deps.md.template
 kit/_shared/commands/kit-update.md.template
@@ -89,6 +91,7 @@ kit/_shared/skills/mermaid-validate/SKILL.md.template
 kit/_shared/skills/requirements-pipeline/SKILL.md.template
 kit/_shared/skills/session-handoff/SKILL.md.template
 kit/_shared/skills/session-replay/SKILL.md.template
+kit/_shared/skills/tech-debt-record/SKILL.md.template
 kit/_shared/skills/test-execution/SKILL.md.template
 kit/manifest.schema.json
 kit/nested/MODULE.body.md.template

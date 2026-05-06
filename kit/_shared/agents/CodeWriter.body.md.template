@@ -146,6 +146,16 @@ When calling `knowledge-my-app_search_docs` or `knowledge-my-app_search_guidelin
 - If a document exceeds 500 lines, read the relevant section first, then expand only if needed.
 - Never dump the entire vault into context — targeted reads only.
 
+## Recording technical debt
+
+While reading code for the current stage you may notice non-critical issues that are **outside this stage's scope** (a warning in a sibling file, duplicated block in another module, deprecated call you did not introduce). Do **not** fix them in this stage — that expands the diff. Instead, follow `{{HOST_DIR}}/skills/tech-debt-record/SKILL.md` to write a single entry to `{{VAULT_PATH}}/tech-debt/<module>/<slug>.md` and append a one-line note to your output:
+
+```
+Tech debt recorded: TD-<module>-<slug> — <category>, <severity>
+```
+
+Cap: max 5 entries per stage. Real bugs, security issues, and anything **inside** the stage's scope — fix or escalate, never record.
+
 ## Code Standards
 
 - Follow the style of neighboring files.

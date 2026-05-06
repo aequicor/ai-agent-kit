@@ -24,6 +24,8 @@ All agent output, status labels, task descriptions, and user-facing messages mus
 | `review` | Review |
 | `update_deps` | Update dependencies |
 | `deploy` | Deploy |
+| `tech_debt` | Tech debt |
+| `record_tech_debt` | Record tech debt |
 
 ## Domain Terms
 
@@ -55,4 +57,4 @@ Use these exact strings in `.planning/tasks/*.md` checkpoints and test-cases fil
 ## Commands
 
 Command names are always English regardless of locale — use the slash-command as-is:
-`/kit-new-feature`, `/kit-resume`, `/kit-checkpoint`, `/kit-lint`, `/kit-fix`, `/kit-review`, `/kit-update-deps`, `/kit-deploy`
+`/kit-new-feature`, `/kit-resume`, `/kit-checkpoint`, `/kit-lint`, `/kit-fix`, `/kit-review`, `/kit-update-deps`, `/kit-deploy`, `/kit-techdebt`

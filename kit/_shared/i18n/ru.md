@@ -24,6 +24,8 @@
 | `review` | Ревью |
 | `update_deps` | Обновить зависимости |
 | `deploy` | Деплой |
+| `tech_debt` | Технический долг |
+| `record_tech_debt` | Записать технический долг |
 
 ## Доменные термины
 
@@ -55,4 +57,4 @@
 ## Команды
 
 Имена команд всегда на английском вне зависимости от локали — используй слэш-команду как есть:
-`/kit-new-feature`, `/kit-resume`, `/kit-checkpoint`, `/kit-lint`, `/kit-fix`, `/kit-review`, `/kit-update-deps`, `/kit-deploy`
+`/kit-new-feature`, `/kit-resume`, `/kit-checkpoint`, `/kit-lint`, `/kit-fix`, `/kit-review`, `/kit-update-deps`, `/kit-deploy`, `/kit-techdebt`

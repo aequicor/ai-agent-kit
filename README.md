@@ -1,4 +1,4 @@
-# AI-agent kit `v4.3.2`
+# AI-agent kit `v4.4.0`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter, CodeReviewer, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker).
 
@@ -13,6 +13,7 @@ AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code]
 | `/kit-requirements-pipeline "<feature>"` | BusinessAnalyst → CornerCaseReviewer (loop) → @QA REQUIREMENTS → CoverageChecker (loop) → SystemAnalyst → CornerCaseReviewer (loop) → ConsistencyChecker (loop) → PO sign-off | requirements.md, corner-cases.md, **living test-cases.md**, spec.md |
 | `/kit-new-feature "<feature>"` | (auto-runs requirements-pipeline if needed) → SEARCH → DESIGN → PLAN → @QA IMPL DRAFT → CONFIRM → CodeWriter ↔ CodeReviewer (per stage) → @QA IMPL FINAL → optional @TestRunner walkthrough → CLOSE | implementation + tests + updated test-cases.md |
 | `/kit-fix [TC-id\|description]` or `/kit-fix` | SCAN test-cases.md → TRIAGE → DEBUG (if needed) → BugFixer → RERUN | fixed code, regression test, test-cases.md updated (Status FAIL→PASS, Defects log OPEN→FIXED) |
+| `/kit-techdebt [TD-id\|module=<n>\|severity=<lvl>]` | SCAN `vault/tech-debt/<module>/` → TRIAGE with PO → DIRECT or PLAN fix loop per entry → @CodeReviewer → ARCHIVE to `done/` | closed tech-debt entries, fix commits, batch report (open entries are written by @CodeWriter/@BugFixer/@CodeReviewer via the `tech-debt-record` skill while doing other work) |
 
 The **living test-cases file** at `<vault_path>/reference/<module>/test-cases/<feature>-test-cases.md` is the single source of truth for `/kit-fix`. PO can edit it manually — change Status to `FAIL`, append a new TC row, edit Notes — and `/kit-fix` will pick it up. (`vault_path` is set in the manifest, default `vault`.)
 
@@ -170,6 +171,27 @@ You never have to leave the markdown file — it's the source of truth.
 
 ---
 
+## Tech-debt capture and fix
+
+Agents that touch code (`@CodeWriter`, `@BugFixer`, `@CodeReviewer`) routinely notice non-critical issues outside the scope of their current task — compiler warnings, duplicated blocks in sibling files, deprecated calls, stale TODOs. Instead of expanding the current diff or interrupting PO mid-task, they record these via the `tech-debt-record` skill.
+
+**Recording (automatic, during normal work):**
+
+Each finding becomes one file under `<vault_path>/tech-debt/<module>/<slug>.md` with frontmatter (`category`, `severity`, `status`, `module`, `files`) and a body explaining what it is and why it was deferred. The skill's strict criteria filter out vague impressions, in-scope issues, and anything that is actually a bug or security gap (those escalate or get fixed). Each agent has a per-task cap (5 entries for CodeWriter / CodeReviewer, 3 for BugFixer) so the backlog cannot be flooded.
+
+**Fixing (when PO is ready):**
+
+```
+/kit-techdebt                    # scan all modules, ask which to fix
+/kit-techdebt module=server      # only entries in `server` module
+/kit-techdebt severity=high      # only high-severity entries
+/kit-techdebt TD-server-dup-tok  # one specific entry by ID
+```
+
+The command shows the PO a triage view, asks which entries to drain, and runs each through either a DIRECT fix loop (`@BugFixer`-style ANALYZE → FIX → `@CodeReviewer` → BUILD — for low/medium severity, ≤2 files) or a PLAN loop (stage files + `@CodeWriter` per stage — for high severity or cross-cutting refactors). Entries archive to `<vault_path>/tech-debt/<module>/done/<slug>.md` on success and stay open with a Notes line on auto-stop. The whole batch runs as a single TECH task in `.planning/tasks/techdebt-batch-<ISO>.md` so it closes cleanly.
+
+---
+
 ## Extending
 
 ### Add a profile
@@ -253,8 +275,8 @@ ai-agent-kit/
     │   ├── sessions/SESSIONS.md.template
     │   ├── i18n/{en,ru}.md
     │   ├── agents/        (15 .body.md.template — agent prose without frontmatter)
-    │   ├── commands/      (15 .md.template — /kit-new-feature, /kit-fix, /kit-requirements-pipeline, ...)
-    │   └── skills/        (8 — bug-retro, code-review-checklist, requirements-pipeline, ...)
+    │   ├── commands/      (16 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-requirements-pipeline, ...)
+    │   └── skills/        (11 — bug-retro, code-review-checklist, requirements-pipeline, tech-debt-record, ...)
     ├── .opencode/
     │   └── agents/        (15 .md.template — OpenCode frontmatter + INCLUDE directive)
     ├── .claude/
@@ -266,7 +288,7 @@ ai-agent-kit/
     │   └── tasks/TASK.md.template         # per-task planning stubs
     └── .vault/                                # rendered to <vault_path>/ at install time
         ├── _INDEX.md.template
-        └── _templates/{bug-report,requirements,spec,test-cases,test-plan}.md
+        └── _templates/{bug-report,requirements,spec,tech-debt,test-cases,test-plan}.md
 ```
 
 ---

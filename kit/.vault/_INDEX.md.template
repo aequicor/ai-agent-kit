@@ -53,8 +53,11 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 ├── guidelines/<module>/               ← conventions, patterns, anti-patterns
 │   ├── <topic>.md
 │   └── reports/<bug-name>.md
-└── guidelines/libs/                   ← external library API usage rules
-    └── <lib>-<version>.md
+├── guidelines/libs/                   ← external library API usage rules
+│   └── <lib>-<version>.md
+└── tech-debt/<module>/                ← deferred non-critical findings (drained by `/kit-techdebt`)
+    ├── <slug>.md                      ← open / in-progress
+    └── done/<slug>.md                 ← archived after fix
 ```
 
 ---
