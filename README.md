@@ -1,4 +1,4 @@
-# AI-agent kit `v4.5.1`
+# AI-agent kit `v4.6.0`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter (TDD-first), TestExecutor, CodeReviewer, SecurityReviewer, TraceabilityChecker, DoDGate, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker) and a Definition-of-Done quality gate.
 
@@ -91,6 +91,32 @@ The command (defined in [`kit/.opencode/commands/kit-extend.md`](kit/.opencode/c
 - records external profiles in `stack.external_profiles[<name>] = <url>` so `/kit-update` can re-validate them later.
 
 To author your own external profile, follow the [Add a profile](#add-a-profile) instructions and host the YAML anywhere reachable over HTTPS.
+
+---
+
+## Reconfigure the installed kit
+
+`/kit-config` edits the installed manifest in place using a plain-language description of what to change. It re-renders only the kit-managed files affected by the change. It does **not** bump `kit_version` (use `/kit-update` for that) and does **not** add profiles (use `/kit-extend` for that).
+
+```
+/kit-config switch the reviewer model to claude-opus-4-7
+/kit-config выключи MCP serena, он больше не нужен
+/kit-config поменяй провайдера на ollama-cloud, ключ в OLLAMA_KEY
+/kit-config add a forbidden pattern: no var declarations in Kotlin
+/kit-config rename module server to backend
+/kit-config                                # interactive — picks a section, asks what to change
+```
+
+The command (defined in [`kit/_shared/commands/kit-config.md.template`](kit/_shared/commands/kit-config.md.template), backed by [`docs/prompts/config.md`](docs/prompts/config.md)):
+
+- locates the manifest, parses your plain-language request (any natural language);
+- translates intent to a list of `<field path> : <old> → <new>` edits, asking one clarifying question if the request is ambiguous;
+- refuses and redirects edits to `kit_version`, `hosts`, or `stack.profiles[]` (those have dedicated commands);
+- schema-validates every edit and security-scans every `*api_key_env` change for literal-key patterns;
+- classifies blast radius (LOW / MEDIUM / HIGH), shows a unified manifest diff + the file re-render set + warnings for HIGH-blast changes (`vault_path`, `modules[]` rename, `project.name`);
+- waits for `/kit-approve` (or dispatches `@AutoApprover` if `AUTO_APPROVE=true`);
+- writes the manifest, re-renders only affected files in merge mode (same skip-list as `/kit-update`);
+- re-validates manifest + every host config (`opencode.json` / `.claude/settings.json`); surfaces failures with paths and lets PO decide.
 
 ---
 
@@ -244,6 +270,7 @@ ai-agent-kit/
 │   │   ├── setup.md                       # AI-driven install (no scripts)
 │   │   ├── update.md                      # AI-driven update (no scripts)
 │   │   ├── extend.md                      # AI-driven /kit-extend — add one profile by URL
+│   │   ├── config.md                      # AI-driven /kit-config — edit manifest fields in plain language
 │   │   └── uninstall.md                   # AI-driven uninstall (no scripts)
 │   └── migration/changelog.yaml           # version history + breaking changes + new fields
 ├── profiles/                              # one subdirectory per axis — directory name == _profile_axis
@@ -280,7 +307,7 @@ ai-agent-kit/
     │   ├── sessions/SESSIONS.md.template
     │   ├── i18n/{en,ru}.md
     │   ├── agents/        (19 .body.md.template — agent prose without frontmatter)
-    │   ├── commands/      (16 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-requirements-pipeline, ...)
+    │   ├── commands/      (17 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-requirements-pipeline, /kit-config, ...)
     │   └── skills/        (14 — bug-retro, code-review-checklist, definition-of-done, pre-mortem, requirements-pipeline, spec-to-code-trace, tech-debt-record, ...)
     ├── .opencode/
     │   └── agents/        (19 .md.template — OpenCode frontmatter + INCLUDE directive)

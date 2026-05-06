@@ -77,6 +77,7 @@ kit/_shared/agents/TestRunner.body.md.template
 kit/_shared/agents/TraceabilityChecker.body.md.template
 kit/_shared/commands/kit-approve.md.template
 kit/_shared/commands/kit-checkpoint.md.template
+kit/_shared/commands/kit-config.md.template
 kit/_shared/commands/kit-deploy.md.template
 kit/_shared/commands/kit-diagram.md.template
 kit/_shared/commands/kit-extend.md.template

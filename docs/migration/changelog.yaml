@@ -1,4 +1,56 @@
 versions:
+  - version: "4.6.0"
+    released: "2026-05-06"
+    breaking: false
+    description: |
+      New command `/kit-config` — edit installed manifest in plain language.
+
+      Problem: changing models, provider, MCP toggles, language, modules,
+      formatter, lsp, ui, or code-quality patterns in an installed kit
+      previously required either editing the manifest YAML by hand and
+      re-running `setup.md` (heavy, full re-render), or directly editing
+      the rendered host configs (`opencode.json`, `.claude/settings.json`)
+      and risking drift with the manifest. There was no targeted, intent-
+      driven reconfigure path.
+
+      Fix: a new command `/kit-config <plain-language description>` (or
+      `/kit-config` for interactive mode) that:
+        - locates the project manifest;
+        - parses the PO's free-form request (any natural language) into
+          field-level edits;
+        - asks one clarifying question if ambiguous;
+        - refuses and redirects edits to `kit_version` (use `/kit-update`),
+          `hosts` and `stack.profiles[]` (use `/kit-extend`);
+        - schema-validates every edit and security-scans every
+          `*api_key_env` change for literal-key patterns;
+        - classifies blast radius (LOW / MEDIUM / HIGH) and shows the
+          unified manifest diff + the file re-render set + warnings
+          for HIGH-blast changes (`vault_path`, `modules[]` rename,
+          `project.name`);
+        - waits for `/kit-approve` (or `@AutoApprover` if `AUTO_APPROVE=true`);
+        - writes the manifest, re-renders only the affected files in merge
+          mode (same skip-list as `/kit-update`);
+        - re-validates manifest + every host config (`opencode.json` /
+          `.claude/settings.json`); surfaces failures with file paths
+          and lets PO decide.
+
+      No new manifest fields. No changes to existing pipelines, agents, or
+      skills. The command is host-agnostic — single source under
+      `kit/_shared/commands/`, rendered into every host's `commands/`.
+
+      Examples:
+        /kit-config switch the reviewer model to claude-opus-4-7
+        /kit-config выключи MCP serena, он больше не нужен
+        /kit-config поменяй провайдера на ollama-cloud, ключ в OLLAMA_KEY
+        /kit-config add a forbidden pattern: no var declarations in Kotlin
+        /kit-config rename module server to backend
+        /kit-config                    # interactive picker
+    files_changed:
+      - kit/_shared/commands/kit-config.md.template
+      - kit/_index.txt
+    manifest_changes:
+      added_fields: []
+
   - version: "4.5.1"
     released: "2026-05-06"
     breaking: false
