@@ -114,9 +114,56 @@ Waiting for response.
 
 ## Auto-approve flag
 
-If the manifest has `auto_approve: true` (or PO's task contains the override `--auto-approve`), the CONFIRM step is skipped and the pipeline proceeds straight from PLAN to EXECUTE. PO can interrupt at any time. There is no `@AutoApprover` agent in v5; the flag is just a flag.
+The manifest's `auto_approve` field controls whether `@Main` skips the CONFIRM step. Two forms are accepted:
 
-If `auto_approve: false` (default), the CONFIRM step waits for PO `/kit-approve` before EXECUTE.
+**Form A — boolean (simple).**
+
+```yaml
+auto_approve: true        # auto-approve every class
+auto_approve: false       # always confirm (default)
+```
+
+**Form B — object (granular, v5.1+).**
+
+```yaml
+auto_approve:
+  feature: false      # FEATURE pipeline CONFIRM
+  tech: false         # TECH pipeline CONFIRM
+  techdebt: true      # /kit-techdebt batches
+  bug:
+    low: true
+    medium: true
+    high: false       # always confirm HIGH bugs
+    critical: false   # always confirm CRITICAL bugs
+```
+
+**Resolution rule** at every CONFIRM gate, per current task class:
+
+```
+1. Determine task class:
+   - FEATURE pipeline → "feature"
+   - TECH pipeline    → "tech"
+   - /kit-techdebt    → "techdebt"
+   - /kit-fix         → "bug.<severity>" where severity is read from the
+                         Defects log entry. Free-form intake without a
+                         logged severity defaults to "medium" unless the
+                         TC's Verifies cell references a Critical EC, in
+                         which case treat as "critical".
+
+2. Read `auto_approve` from manifest.
+   - If boolean → that's the answer for every class.
+   - If object  → look up the matching key.
+                  - Missing key (e.g. `bug.high` not set when checking high)
+                    → treat as `false` (safe default).
+
+3. If resolved value is true → log "auto-approved (auto_approve=<class>)"
+   in the checkpoint and proceed.
+   If false → wait for PO `/kit-approve`.
+```
+
+PO can override per-task with `--no-auto-approve` in the task prompt to force CONFIRM regardless of manifest. There is no override the other way (you cannot bypass a `false` flag); for that, edit the manifest with `/kit-config enable auto_approve.<class>`.
+
+There is no `@AutoApprover` agent in v5+; the flag is just a flag. Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit `/kit-approve` regardless of `auto_approve`.
 
 ## Pipeline — FEATURE
 

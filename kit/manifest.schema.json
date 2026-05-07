@@ -34,9 +34,47 @@
       "default": "en"
     },
     "auto_approve": {
-      "type": "boolean",
-      "description": "When true, @Main skips the CONFIRM step in FEATURE/TECH pipelines and proceeds straight from PLAN to EXECUTE. PO can still interrupt at any time. Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit PO approval — auto_approve does not affect them. Replaces the v4 AUTO_APPROVE=true magic string and @AutoApprover agent.",
-      "default": false
+      "description": "Controls whether @Main skips the CONFIRM step. Two forms: (a) boolean — same setting for all task classes; (b) object with per-class flags. Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit PO approval — auto_approve does not affect them. Replaces the v4 AUTO_APPROVE=true magic string and @AutoApprover agent. Granular form added in v5.1.",
+      "default": false,
+      "oneOf": [
+        {
+          "type": "boolean",
+          "description": "Simple form: true = auto-approve all classes; false = always confirm."
+        },
+        {
+          "type": "object",
+          "description": "Granular form: per-class booleans. Missing keys default to false.",
+          "properties": {
+            "feature": {
+              "type": "boolean",
+              "default": false,
+              "description": "Auto-approve FEATURE pipeline CONFIRM (after PLAN, before EXECUTE)."
+            },
+            "tech": {
+              "type": "boolean",
+              "default": false,
+              "description": "Auto-approve TECH pipeline CONFIRM."
+            },
+            "techdebt": {
+              "type": "boolean",
+              "default": false,
+              "description": "Auto-approve /kit-techdebt batch entry-by-entry plan confirms."
+            },
+            "bug": {
+              "type": "object",
+              "description": "Per-severity auto-approve for /kit-fix BUG pipeline. Missing keys default to false. Severity is read from the Defects log entry; for free-form intake without an explicit severity, Status FAIL on a TC verifying a Critical EC = critical, otherwise medium.",
+              "properties": {
+                "low": {"type": "boolean", "default": false},
+                "medium": {"type": "boolean", "default": false},
+                "high": {"type": "boolean", "default": false},
+                "critical": {"type": "boolean", "default": false}
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "project": {
       "type": "object",

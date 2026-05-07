@@ -1,4 +1,4 @@
-# AI-agent kit `v5.0.0`
+# AI-agent kit `v5.1.0`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete, **deliberately small** agent team into your project — 9 agents instead of v4's 19, one design doc per feature instead of seven, seven Definition-of-Done checks instead of twenty-five.
 

@@ -1,4 +1,91 @@
 versions:
+  - version: "5.1.0"
+    released: "2026-05-07"
+    breaking: false
+    description: |
+      Closes the three production gaps identified by the v5.0 self-audit
+      (see commit 191dd0d):
+
+      1. **Deterministic enforcement layer** — Claude Code lifecycle hooks
+         (PreToolUse, SessionStart, Stop) for things prompt rules cannot
+         reliably enforce: hard-deny `git push --force` to main/master,
+         hard-deny writes to credential files, pre-commit sync check
+         (src/ staged without test or test-cases.md → ask PO), and a
+         session-start context loader that surfaces active task + branch.
+         OpenCode parity: tightened `permission` table in `opencode.json`
+         covers the same patterns through bash-pattern allow/ask/deny.
+         Both hosts now reach the same deterministic guardrail level.
+
+      2. **Granular auto_approve** — `auto_approve` accepts either a
+         boolean (back-compat with v5.0) or an object with per-class flags
+         (`feature`, `tech`, `techdebt`, `bug.{low|medium|high|critical}`).
+         Lets PO auto-drain low-severity bug fixes and tech-debt batches
+         while still confirming new features and CRITICAL bugs by default.
+         Resolution rule documented in `@Main`'s "Auto-approve flag"
+         section; missing object keys default to `false` (safe).
+
+      3. **Long-horizon eval tier** — addresses the [SWE-EVO 2026]
+         (https://arxiv.org/html/2512.18470v1) finding that short-horizon
+         evals saturate while long-horizon ones stay sensitive to
+         architecture changes. Two new seed tasks
+         (feature-004 multi-module data export, tech-002 extract shared
+         domain), a tier-specific metrics document
+         (`evals/long-horizon-tier.md`) covering sessions used / replan
+         events / cross-day continuity / build-green checkpoint rate, and
+         updates to `evals/README.md` and `evals/metrics.md` to track
+         long-horizon as a separate tier with its own pass criteria.
+
+      ## Cross-platform hook design
+
+      Hooks are written in cross-platform Node.js (`.mjs`) per
+      [Claude Code 2026 cross-platform guidance]
+      (https://claudefa.st/blog/tools/hooks/cross-platform-hooks).
+      Settings.json invokes them as `node .claude/hooks/<name>.mjs` —
+      Node.js is required by Claude Code on every platform, so no
+      bash/PowerShell wrappers are needed. All three hooks are fail-soft:
+      any internal error → exit 0 with no JSON, agent falls through to
+      the permission table. A broken hook never blocks the agent.
+
+      ## Affected files
+
+      - **NEW:** `kit/.claude/hooks/{session-start-context,pre-tool-bash-guard,stop-status-reminder}.mjs`
+      - **NEW:** `kit/.claude/hooks/README.md`
+      - **NEW:** `evals/seed-tasks/feature-004-multi-module-data-export.md`
+      - **NEW:** `evals/seed-tasks/tech-002-extract-shared-domain.md`
+      - **NEW:** `evals/long-horizon-tier.md`
+      - **MODIFIED:** `kit/.claude/settings.json.template` (hooks block + node hooks/* in allow-list)
+      - **MODIFIED:** `kit/opencode.json.template` (denied push to main/master/prod, denied .env writes via redirects/cp/mv/tee)
+      - **MODIFIED:** `kit/manifest.schema.json` (auto_approve as oneOf bool|object)
+      - **MODIFIED:** `kit/_shared/agents/Main.body.md.template` (auto_approve resolution rule)
+      - **MODIFIED:** `kit/_shared/_shared.md.template` (HITL gates table + deterministic enforcement section)
+      - **MODIFIED:** `manifest.example.yaml` (granular form documented)
+      - **MODIFIED:** `evals/README.md` and `evals/metrics.md` (long-horizon tier rows + columns)
+
+      ## Migration
+
+      Backward-compatible: existing v5.0.0 manifests with `auto_approve: false`
+      or `auto_approve: true` continue to validate unchanged. New
+      installations on `claude-code` host receive the hooks scripts and
+      wired settings.json automatically; on `opencode` they receive the
+      tightened permission table. Existing v5.0.0 installs that run
+      `/kit-update` get all of the above without any manifest changes
+      required from the PO. To enable the granular `auto_approve` form,
+      PO can run `/kit-config enable auto_approve.techdebt` (or set the
+      keys directly in the manifest).
+    files_changed:
+      - kit/.claude/hooks/session-start-context.mjs
+      - kit/.claude/hooks/pre-tool-bash-guard.mjs
+      - kit/.claude/hooks/stop-status-reminder.mjs
+      - kit/.claude/hooks/README.md
+      - kit/.claude/settings.json.template
+      - kit/opencode.json.template
+      - kit/manifest.schema.json
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_index.txt
+    manifest_changes:
+      added_fields: []
+
   - version: "5.0.0"
     released: "2026-05-07"
     breaking: true

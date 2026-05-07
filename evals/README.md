@@ -43,20 +43,34 @@ A release should not regress on any of:
 
 A regression on any axis means the release goes back for revision; it does not block the merge if there is a documented reason.
 
+## Tiers
+
+Seed tasks are split into two tiers:
+
+| Tier | Wall time | When to run | Tasks |
+|---|---|---|---|
+| **short-horizon** | 30 min – 3 h | every release | feature-001, feature-002, feature-003, bug-001, bug-002, tech-001 |
+| **long-horizon** | 4 h – 16 h | every minor release (and any change that touches the orchestration loop) | feature-004, tech-002 |
+
+The long-horizon tier was added in v5.1.0 to address the [SWE-EVO 2026](https://arxiv.org/html/2512.18470v1) finding that short-horizon evals saturate while long-horizon ones stay sensitive to architecture changes. See [`long-horizon-tier.md`](long-horizon-tier.md) for what makes a task long-horizon, the extra metrics to record, and the multi-session flow.
+
 ## Layout
 
 ```
 evals/
-├── README.md           # this file
-├── metrics.md          # field-by-field recording template
-├── seed-tasks/         # five canonical tasks (3 FEATURE / 2 BUG / 1 TECH)
-│   ├── feature-001-add-rate-limit.md
-│   ├── feature-002-csv-export.md
-│   ├── feature-003-ui-toggle.md
-│   ├── bug-001-null-on-empty-input.md
-│   ├── bug-002-timezone-off-by-one.md
-│   └── tech-001-extract-service.md
-└── runs/               # one folder per release
+├── README.md                # this file
+├── metrics.md               # field-by-field recording template
+├── long-horizon-tier.md     # rules for long-horizon tasks
+├── seed-tasks/
+│   ├── feature-001-add-rate-limit.md       # short-horizon
+│   ├── feature-002-csv-export.md           # short-horizon
+│   ├── feature-003-ui-toggle.md            # short-horizon
+│   ├── feature-004-multi-module-data-export.md   # LONG-HORIZON
+│   ├── bug-001-null-on-empty-input.md      # short-horizon
+│   ├── bug-002-timezone-off-by-one.md      # short-horizon
+│   ├── tech-001-extract-service.md         # short-horizon
+│   └── tech-002-extract-shared-domain.md   # LONG-HORIZON
+└── runs/                                   # one folder per release
     └── <version>/
         ├── SUMMARY.md
         └── <task-id>.md

@@ -267,14 +267,27 @@ After completing a unit of work — always `compress`.
 
 | Gate | Trigger | Approval required | Blocked action |
 |------|---------|-------------------|----------------|
-| PLAN_CONFIRM | After plan, before EXECUTE | PO /kit-approve OR `auto_approve=true` flag | All implementation |
+| PLAN_CONFIRM | After plan, before EXECUTE | PO /kit-approve OR matching `auto_approve` flag (per-class in v5.1+) | All implementation |
 | DEPLOY | Any deploy/publish/release command | PO must approve | `docker push`, `npm publish`, deploy scripts |
 | DESTROY | Destructive infra/data ops | PO must approve | `terraform destroy`, `DROP TABLE`, etc. |
 | SECRET_ROTATE | Key rotation, credential changes | PO must approve | Any `.env` modification |
 | MIGRATION | DB schema migration | PO must approve | Migration scripts |
 | EXTERNAL_API | New outbound 3rd-party API call | PO must approve | Adding new external HTTP calls |
 
-The `auto_approve` manifest flag automates only PLAN_CONFIRM. All other gates always require explicit PO approval. v4's `AUTO_APPROVE=true` magic string and `@AutoApprover` agent are gone — the manifest flag is the only switch.
+The `auto_approve` manifest flag automates **only** PLAN_CONFIRM. All other gates always require explicit PO approval — the flag has no effect on them.
+
+`auto_approve` accepts two forms:
+
+- **Boolean:** `auto_approve: true|false` — single switch for all task classes.
+- **Object (v5.1+):** per-class booleans for `feature`, `tech`, `techdebt`, and `bug.{low|medium|high|critical}`. Missing keys default to `false`. See `@Main`'s "Auto-approve flag" section for the resolution rule.
+
+v4's `AUTO_APPROVE=true` magic string and `@AutoApprover` agent are gone — the manifest flag is the only switch.
+
+### Deterministic enforcement (Claude Code hosts only)
+
+Claude Code installs additionally enforce the destructive-action gates via lifecycle **hooks** registered in `.claude/settings.json`. Hooks fire on `PreToolUse` for `Bash` and can return a structured permission decision (`allow` / `deny` / `ask`) that the agent cannot bypass — they execute outside the LLM. See `.claude/hooks/` for the kit's bundled hooks (pre-commit test-cases-sync check, session-start context loader, stop reminder).
+
+OpenCode hosts achieve equivalent enforcement through the `permission` table in `opencode.json` — the kit ships a tightened table covering the same destructive patterns the Claude Code hooks block. Both hosts therefore reach the same level of deterministic protection; only the mechanism differs.
 
 **No agent may bypass gates.** Subagents that hit a gate condition must escalate, not proceed.
 

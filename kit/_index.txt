@@ -6,6 +6,10 @@ kit/.claude/agents/DoDGate.md.template
 kit/.claude/agents/Reviewer.md.template
 kit/.claude/agents/TestKeeper.md.template
 kit/.claude/agents/TraceabilityChecker.md.template
+kit/.claude/hooks/README.md
+kit/.claude/hooks/pre-tool-bash-guard.mjs
+kit/.claude/hooks/session-start-context.mjs
+kit/.claude/hooks/stop-status-reminder.mjs
 kit/.claude/settings.json.template
 kit/.mcp.json.template
 kit/.opencode/agents/Analyst.md.template
