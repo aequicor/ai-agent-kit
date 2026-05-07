@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "5.1.0"
+kit_version: "5.2.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE

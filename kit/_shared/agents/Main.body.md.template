@@ -223,7 +223,10 @@ Five steps. Every step writes a checkpoint. Steps that ask the PO are clearly ma
                   TEST_CASES: <test-cases.md path>
                 CodeWriter writes failing tests first (TDD), then code, then build.
                 Build fail → return to @CodeWriter with the error.
-                Max 3 build-retry cycles, then STOP and escalate.
+                Max 3 build-retry cycles. If @CodeWriter returns BLOCKED on a
+                missing dependency from a future step → consider invoking
+                `replan-on-discovery` skill (Pattern D) before escalating to PO;
+                otherwise STOP and escalate.
 
    5.3  VERIFY — dispatch @TestKeeper MODE=EXECUTE with CHANGED_FILES from 5.2.
                 Verdict ∈ {ALL_GREEN, FAILURES, BUILD_FAIL, NOT_RUN_GAP}:
@@ -240,7 +243,10 @@ Five steps. Every step writes a checkpoint. Steps that ask the PO are clearly ma
                 Verdict ∈ {CRITICAL_OR_HIGH_FOUND, CLEAN}:
                   - CLEAN → proceed to 5.5.
                   - CRITICAL_OR_HIGH_FOUND → dispatch @CodeWriter with the findings table.
-                    Re-loop 5.2 → 5.3 → 5.4. Max 3 review-fix cycles per step, then escalate.
+                    Re-loop 5.2 → 5.3 → 5.4. Max 3 review-fix cycles per step.
+                    If finding is structural (Pattern A — code is right, spec is
+                    wrong) → consider `replan-on-discovery` skill before escalating.
+                    Otherwise STOP and escalate.
                 MEDIUM/LOW issues → log in checkpoint, do not block.
 
    5.5  UPDATE — mark the step as done in feature.md § "Implementation plan"
@@ -254,11 +260,17 @@ Five steps. Every step writes a checkpoint. Steps that ask the PO are clearly ma
    5.7  RECONCILE — dispatch @TestKeeper MODE=RECONCILE.
                     Attaches `Test impl` references; runs full feature test set;
                     flags any Critical/High EC still uncovered.
+                    If RECONCILE reports a Critical/High EC uncovered AND no
+                    plan step covers it → consider `replan-on-discovery` skill
+                    (Pattern B) instead of treating as a fix-in-place gap.
 
    5.8  TRACE — dispatch @TraceabilityChecker. Read-only matrix audit
                 AC/EC → TC → test file → source symbol. Reports orphans.
                 If GAPS → dispatch @CodeWriter (or @TestKeeper for missing impl link),
                 then re-run @TraceabilityChecker. Max 2 trace-fix cycles.
+                If GAPS include ENDPOINT_ORPHAN on a Critical-surface endpoint
+                → consider `replan-on-discovery` skill (Pattern C) before
+                escalating.
 
    5.9  DoD GATE — dispatch @DoDGate. **MANDATORY before step 6.**
                    Returns binary PASS | BLOCK over 7 checks (see definition-of-done skill).
@@ -270,8 +282,27 @@ Five steps. Every step writes a checkpoint. Steps that ask the PO are clearly ma
 6. CLOSE     — gated on @DoDGate = PASS. Append `Status: DONE` to feature.md.
                Update guidelines if new patterns emerged.
                CHECKPOINT: .planning/tasks/<active_task>.md (DONE: feature complete).
+               If `evals/runs/` exists in the project root → invoke
+                 `eval-collector` skill (auto-fills per-task metrics into
+                 evals/runs/<kit_version>/<task-slug>.md). Skip if directory
+                 absent — auto-discovery, no warning.
                Move task file to .planning/tasks/done/.
 ```
+
+## Replan-on-discovery (optional skill, v5.2+)
+
+`@Main` may invoke the `replan-on-discovery` skill at four trigger points in EXECUTE before falling through to escalation:
+
+- **Pattern A** — `@Reviewer` flags an AC-violation root in spec (code right, spec wrong).
+- **Pattern B** — `@TestKeeper RECONCILE` finds a Critical/High EC uncovered and no plan step owns it.
+- **Pattern C** — `@TraceabilityChecker` reports an `ENDPOINT_ORPHAN` on a Critical surface.
+- **Pattern D** — `@CodeWriter` returns BLOCKED on a missing dependency from a future step.
+
+The skill writes a bounded plan amendment (≤ 3 new steps) into `feature.md § Implementation plan` with a `<!-- REPLAN-N -->` marker and increments the replan counter in `.planning/tasks/<active_task>.md`. Hard cap: max 2 replan events per feature; on the 3rd structural discovery, fall through to escalation.
+
+Replan respects `auto_approve.feature` (or the matching class flag): if `false`, await `/kit-approve` after the amendment is written; if `true`, log "auto-approved replan-N" and continue.
+
+If the skill is not installed (kit rendered without `kit/_shared/skills/replan-on-discovery/`), `@Main`'s behaviour at every escalation point is identical to v5.1.0 — escalate to PO. Removing this skill is safe and back-compat.
 
 ## Pipeline — BUG
 
@@ -306,6 +337,8 @@ The single source of truth for what's broken is the live `test-cases.md` file at
             Max 3 RERUN cycles per defect; on retry=3 → STOP, escalate.
 
 4. CHECKPOINT — .planning/tasks/<active_task>.md.
+            If `evals/runs/` exists in project root → invoke `eval-collector`
+              skill (auto-fills metrics for this BUG run; skip if absent).
 
 5. HAND OFF — pass retro entry path + updated test-cases summary to PO.
 

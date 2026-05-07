@@ -1,4 +1,4 @@
-# AI-agent kit `v5.1.0`
+# AI-agent kit `v5.2.0`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete, **deliberately small** agent team into your project — 9 agents instead of v4's 19, one design doc per feature instead of seven, seven Definition-of-Done checks instead of twenty-five.
 
@@ -270,7 +270,7 @@ ai-agent-kit/
     │   ├── i18n/{en,ru}.md
     │   ├── agents/        (9 .body.md.template — agent prose without frontmatter)
     │   ├── commands/      (12 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-config, ...)
-    │   └── skills/        (6 — bug-retro, definition-of-done, look-up, pre-mortem, spec-to-code-trace, tech-debt-record)
+    │   └── skills/        (8 — bug-retro, definition-of-done, look-up, pre-mortem, spec-to-code-trace, tech-debt-record + v5.2 optional: replan-on-discovery, eval-collector)
     ├── .opencode/
     │   └── agents/        (9 .md.template — OpenCode frontmatter + INCLUDE directive)
     ├── .claude/

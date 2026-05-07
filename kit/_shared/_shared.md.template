@@ -219,7 +219,9 @@ KnowledgeOS tools use a **hyphen** in `my-app`, not underscore:
 
 ## MCP and Skills (v5)
 
-**Built-in skills (8):**
+**Built-in skills (8 — 6 core + 2 optional v5.2+):**
+
+Core (always present, used by base pipelines):
 
 - `bug-retro` — post-bug root cause analysis. **Mandatory** for CRITICAL/HIGH defects (auto-trigger; no PO request needed).
 - `tech-debt-record` — capture a non-critical code smell as a tech-debt entry under `{{VAULT_PATH}}/tech-debt/<module>/`.
@@ -227,7 +229,11 @@ KnowledgeOS tools use a **hyphen** in `my-app`, not underscore:
 - `pre-mortem` — optional 8-lens risk pass on demand (no longer mandatory in the FEATURE pipeline).
 - `look-up` — proactive external API documentation lookup helper.
 - `spec-to-code-trace` — heuristics for AC/EC → TC → test file → source symbol mapping. Read by `@TraceabilityChecker`.
-- `bug-retro` is auto-triggered; the others are invoked on demand.
+
+Optional (added in v5.2; removable without breaking the kit):
+
+- `replan-on-discovery` — bounded adaptive replanning when an EXECUTE-phase agent surfaces a structural gap (4 trigger patterns). Hard cap: max 2 replan events per feature, ≤ 3 new steps each. Fall-through is the v5.1 escalation behaviour if the skill is absent.
+- `eval-collector` — auto-fills `evals/runs/<kit_version>/<task-slug>.md` at task CLOSE. Auto-discovers via `evals/runs/` directory presence; no-op if absent. Records ~70 % of metrics-template fields from filesystem; marks the rest `(manual)`.
 
 (v4 had 15 skills. The v5 cut: `requirements-pipeline`, `stage-shape-check`, `corner-case-refinement`, `code-review-checklist`, `test-execution`, `consistency-check`, `session-handoff`, `session-replay`, `knowledge-graph`, and `mermaid-validate` are gone — their logic is folded into the merged agents or removed as ceremony.)
 

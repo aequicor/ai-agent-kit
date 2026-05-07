@@ -1,4 +1,118 @@
 versions:
+  - version: "5.2.0"
+    released: "2026-05-07"
+    breaking: false
+    description: |
+      Closes the two remaining backlog items from the v5.1 self-audit.
+      Both shipped as **optional** skills (removable without breaking the
+      kit) — base pipelines run unchanged when either is absent.
+
+      ## 1. replan-on-discovery (adaptive replanning)
+
+      New skill `kit/_shared/skills/replan-on-discovery/SKILL.md`. Replaces
+      immediate escalation with a bounded plan amendment when an
+      EXECUTE-phase agent discovers a structural gap (not a fix-in-place
+      issue). Four trigger patterns:
+
+        - **Pattern A** — @Reviewer flags AC-violation root in spec
+          (code right, spec wrong).
+        - **Pattern B** — @TestKeeper RECONCILE finds a Critical/High EC
+          uncovered with no plan step owning it.
+        - **Pattern C** — @TraceabilityChecker reports ENDPOINT_ORPHAN on
+          a Critical surface.
+        - **Pattern D** — @CodeWriter returns BLOCKED on a missing
+          dependency from a future step.
+
+      Hard caps prevent runaway scope:
+
+        - Max 2 replan events per feature (counted across feature.md
+          markers and task-file entries).
+        - Max 3 new steps per replan event.
+        - Replan only amends `§ Implementation plan`; never touches
+          `§ Acceptance Criteria` or `§ Edge Cases` (those are @Analyst's
+          domain).
+        - 3rd structural discovery → fall through to v5.1 escalation.
+
+      Replan respects `auto_approve.feature` (or matching class flag): if
+      `false`, await /kit-approve after amendment is written; if `true`,
+      log "auto-approved replan-N" and continue. PO can refuse a replan
+      with /kit-approve denied; @Main escalates with reason.
+
+      Wired into @Main FEATURE pipeline at:
+        - Step 5.2 (CodeWriter BLOCKED → consider Pattern D)
+        - Step 5.4 (Reviewer CRITICAL on spec-alignment → consider Pattern A)
+        - Step 5.7 (RECONCILE flags Critical EC uncovered → consider Pattern B)
+        - Step 5.8 (TraceabilityChecker ENDPOINT_ORPHAN → consider Pattern C)
+
+      ## 2. eval-collector (auto-telemetry)
+
+      New skill `kit/_shared/skills/eval-collector/SKILL.md`. Auto-fills
+      `evals/runs/<kit_version>/<task-slug>.md` at task CLOSE so eval
+      runs do not require manual transcription of every metric.
+
+      **Honest about what is automatable:**
+
+        - **Auto (~70% of fields):** turns (checkpoint count), wall time
+          (timestamp delta), artifact counts and sizes (filesystem stat),
+          DoD verdict (parse feature.md), AC/EC/TC counts (parse markdown
+          tables), replan events (count REPLAN-N markers), test verdicts
+          (test-cases.md Status column).
+        - **Manual (~30%):** total tokens (provider dashboard only),
+          post-CLOSE bug rate (24h window), subjective notes.
+
+      Auto-discovery: skill checks `evals/runs/` directory presence as
+      the opt-in signal. No manifest field. PO who wants tracking does
+      `mkdir -p evals/runs/<kit_version>`; PO who doesn't, leaves it
+      absent and skill is no-op (no warning, no log entry).
+
+      Cross-host: pure prompt + filesystem operations, no hooks needed.
+      Identical behaviour on OpenCode and Claude Code.
+
+      Long-horizon-aware: detects `tier: long-horizon` in seed-task files
+      and additionally fills sessions_used, replan_events,
+      steps_planned/executed, escalations.
+
+      Wired into:
+        - FEATURE step 6 CLOSE (after CHECKPOINT, before task archive)
+        - BUG step 4 CHECKPOINT
+        - TECH step 6 CLOSE (inherited from FEATURE structure)
+
+      ## Net change
+
+      - Skills: 6 → 8 (both new ones optional, kit works without them).
+      - Main.body: +1 section ("Replan-on-discovery") + 4 trigger lines.
+      - _shared.md: skill list reorganized into "core" + "optional" buckets.
+
+      ## Files affected
+
+      - **NEW:** `kit/_shared/skills/replan-on-discovery/SKILL.md.template`
+      - **NEW:** `kit/_shared/skills/eval-collector/SKILL.md.template`
+      - **MODIFIED:** `kit/_shared/agents/Main.body.md.template` (4 trigger points + Replan section + CLOSE eval-collector hook)
+      - **MODIFIED:** `kit/_shared/_shared.md.template` (skill list reorganization)
+      - **MODIFIED:** `kit/_index.txt`
+      - **MODIFIED:** `manifest.example.yaml` (kit_version)
+      - **MODIFIED:** `README.md` (version badge + skill count)
+
+      ## Migration
+
+      Backward-compatible. v5.1 manifests validate against v5.2 schema
+      unchanged. v5.1 installs that run /kit-update receive both new
+      skills automatically; replan-on-discovery activates at the first
+      structural-gap trigger; eval-collector remains dormant unless PO
+      creates `evals/runs/<kit_version>/` in the project root.
+
+      Removing either skill: `rm -r vault/.opencode/skills/<name>` (or
+      `.claude/skills/<name>`) — kit falls through to v5.1 behaviour
+      cleanly. No manifest edit required.
+    files_changed:
+      - kit/_shared/skills/replan-on-discovery/SKILL.md.template
+      - kit/_shared/skills/eval-collector/SKILL.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_index.txt
+    manifest_changes:
+      added_fields: []
+
   - version: "5.1.0"
     released: "2026-05-07"
     breaking: false
