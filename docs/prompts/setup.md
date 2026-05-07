@@ -13,17 +13,44 @@ You are an AI agent applying ai-agent-kit to a target project. Your only job is 
 
 ---
 
+## PHASE 0 — Setup language (ask BEFORE anything else)
+
+Before any Q&A, ask PO which language to use for the rest of the setup conversation. This single answer drives two things:
+
+1. **Interaction language for the rest of this setup run.** Every question label, default hint, validation error, table heading, status update, confirmation prompt, and final summary you emit from PHASE 1 onwards MUST be rendered in this language.
+2. **`manifest.language_code`** — the same value is stored in the manifest and propagated to installed agents (PHASE 2.2 maps it as `<Q0>`), so agents will use it for their user-facing messages too.
+
+Because at this point you don't yet know PO's language, the question itself is bilingual. Emit it verbatim:
+
+```
+Q0. Language / Язык [default: en]
+  - en — English
+  - ru — Russian / Русский
+
+  Setup will continue in the chosen language, and installed agents will use it for their user-facing output.
+  Настройка продолжится на выбранном языке, и установленные агенты будут использовать его для пользовательских сообщений.
+```
+
+Map answers liberally:
+- `en`, `english`, `англ`, `English` → `en`
+- `ru`, `russian`, `русский`, `ру`, `Русский` → `ru`
+- Any other input → re-ask once with the bilingual prompt above, then on the second miss default to `en` and tell PO: "Defaulted to English — you can rerun setup or edit `language_code` in the manifest to change this."
+
+Once PO has answered:
+- Store the resolved code as `Q0_ANSWER` (`en` or `ru`).
+- **Switch to that language for ALL subsequent output for the remainder of this run** — every PHASE 1 question, every PHASE 2/3/4 status line, every error, every confirmation, every summary in PHASE 5.
+- Internal field names (manifest keys, profile names, axis names like `language`/`framework`/`host`/`provider`/`capability`, command names like `/kit-update`, file paths, env-var names, model IDs, regex patterns) stay in English exactly as written below — only the natural-language wrapping around them is translated. Code blocks, YAML samples, tables of profile names, and schema fragments are NOT translated.
+- The defaults shown in `[brackets]` (e.g. `[default: en]`, `[default: routerai]`) keep their values verbatim in English; only the word "default" itself may be translated.
+
+If `Q0_ANSWER == ru`, treat the question texts in PHASE 1 below as a guide to **meaning**, not a literal script — render each question to PO in idiomatic Russian, preserving all technical tokens, defaults, and the question identifier (e.g. `Q4a`, `Q9`).
+
+---
+
 ## PHASE 1 — Q&A
 
 Ask PO every question below in a numbered list. Wait for ALL answers before proceeding. Defaults shown in `[brackets]`.
 
-### 0. Language
-
-- **Q0.** Agent output language — controls how agents label tasks, statuses, and user-facing messages. `[default: en]`
-  - `en` — English
-  - `ru` — Russian (Русский)
-
-If PO answers with a language name or phrase (e.g. "russian", "русский"), map it to the corresponding code (`ru`). If the code is not in `{en, ru}` → re-ask, max 2 retries, then default to `en`.
+> **Reminder:** every question label and explanation you emit must be in the language chosen in PHASE 0 (`Q0_ANSWER`). The English text below is the source of truth for *content*; translate it to Russian if `Q0_ANSWER == ru`. Technical tokens (manifest keys, profile names, defaults, paths, env vars, model IDs) stay in English.
 
 ### 1. Target
 

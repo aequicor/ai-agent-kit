@@ -1,4 +1,36 @@
 versions:
+  - version: "4.7.1"
+    released: "2026-05-07"
+    breaking: false
+    description: |
+      Setup language gate — `setup.md` now opens with a dedicated PHASE 0 that
+      asks PO which language to use for the rest of the install conversation
+      *before* any other Q&A. The question itself is bilingual (English /
+      Русский) because at that point the agent does not yet know PO's
+      language. The chosen code (`en` / `ru`) is stored as `Q0_ANSWER` and
+      becomes binding: every PHASE 1 question, every PHASE 2/3/4 status line,
+      every error, every confirmation, and the PHASE 5 summary must be
+      rendered in that language. The same value is still mapped to
+      `manifest.language_code` in PHASE 2.2, so installed agents keep the
+      locale they were configured with — no schema change.
+
+      Translation discipline is explicit in the prompt: technical tokens
+      (manifest keys, profile names, axis names, command names, file paths,
+      env-var names, model IDs, regex patterns) stay in English; only the
+      natural-language wrapping around them is translated. Code blocks, YAML
+      samples, and schema fragments are not translated.
+
+      Prior behaviour shipped Q0 as the first item inside PHASE 1, and the
+      install conversation always ran in English regardless of the answer —
+      Russian-speaking POs had to mentally translate the questions even after
+      asking for `ru`. This release fixes that asymmetry.
+
+      Backward-compatible: no manifest, schema, or `kit/` file changed; the
+      only edit is to `docs/prompts/setup.md`.
+    files_changed: []
+    manifest_changes:
+      added_fields: []
+
   - version: "4.7.0"
     released: "2026-05-07"
     breaking: false
