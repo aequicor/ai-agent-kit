@@ -309,7 +309,7 @@ ai-agent-kit/
     │   ├── i18n/{en,ru}.md
     │   ├── agents/        (19 .body.md.template — agent prose without frontmatter)
     │   ├── commands/      (17 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-requirements-pipeline, /kit-config, ...)
-    │   └── skills/        (14 — bug-retro, code-review-checklist, definition-of-done, pre-mortem, requirements-pipeline, spec-to-code-trace, tech-debt-record, ...)
+    │   └── skills/        (15 — bug-retro, code-review-checklist, definition-of-done, pre-mortem, requirements-pipeline, spec-to-code-trace, stage-shape-check, tech-debt-record, ...)
     ├── .opencode/
     │   └── agents/        (19 .md.template — OpenCode frontmatter + INCLUDE directive)
     ├── .claude/

@@ -107,6 +107,7 @@ kit/_shared/skills/requirements-pipeline/SKILL.md.template
 kit/_shared/skills/session-handoff/SKILL.md.template
 kit/_shared/skills/session-replay/SKILL.md.template
 kit/_shared/skills/spec-to-code-trace/SKILL.md.template
+kit/_shared/skills/stage-shape-check/SKILL.md.template
 kit/_shared/skills/tech-debt-record/SKILL.md.template
 kit/_shared/skills/test-execution/SKILL.md.template
 kit/manifest.schema.json

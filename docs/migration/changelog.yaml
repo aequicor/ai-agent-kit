@@ -1,4 +1,71 @@
 versions:
+  - version: "4.8.0"
+    released: "2026-05-07"
+    breaking: false
+    description: |
+      Stage shape gate — new skill `stage-shape-check` plus binding
+      constraints in `@Main`, `@AutoApprover`, and `@CodeWriter` that keep
+      implementation stage files as *contracts* (owned AC/CC/TC ids, file
+      paths, public signatures, guideline refs, Definition of Done) instead
+      of pre-cooked solutions with full method, class, or test bodies
+      duplicated from spec and test-cases.
+
+      Why: stages are dispatched to `@CodeWriter` for TDD-first work
+      (failing test → minimal code → green). When a stage already contains
+      complete bodies, three things break.
+        1. TDD degenerates into copy-paste — tests rationalize the code
+           that already exists in the stage instead of describing the
+           contract first.
+        2. `spec.md`, `test-cases.md`, and `corner-cases.md` are already
+           canonical for "what the code should look like". A third copy
+           in the stage drifts as those files evolve.
+        3. `@CodeWriter` re-reads the same content as both "stage" and
+           "spec", inflating context for zero new information.
+
+      Concrete changes:
+
+        - **New skill** `kit/_shared/skills/stage-shape-check/SKILL.md.template`.
+          Read-only validator. Six required sections (Goal, Owned IDs,
+          Files, Public Signatures, Guidelines, DoD). Code-density check
+          (any single full-body fence ≥ 5 lines, or full-body lines / total
+          lines > 25 %, or > 1 full-body test fence → MAJOR). Duplication
+          check on requirements / spec / corner-case prose. Verdict
+          PASS / MINOR / MAJOR. Single-pass; never edits the stage.
+
+        - **`@Main` step 5 PLAN (FEATURE)** now binds
+          `superpowers:writing-plans` to the six-section shape and lists
+          forbidden content explicitly. Adds a per-stage post-write skill
+          invocation: PASS continue, MINOR log-and-continue, MAJOR rewrite
+          in the same turn (max 2 attempts, then escalate). Same rule
+          applies to step 2 PLAN of the TECH pipeline. Anti-skip line
+          added to "What NOT to do".
+
+        - **`@AutoApprover` Plan completeness checklist** gains a "Stage
+          shape" row. The agent runs `stage-shape-check` over every
+          referenced stage before issuing APPROVED; aggregated MAJOR is a
+          BLOCKER, MINOR is a WARNING.
+
+        - **`@CodeWriter` Step 1 + "What NOT to do"** clarify that the
+          stage is a contract; if it contains pre-cooked bodies, those are
+          a smell to be rewritten via TDD (Step 2 → Step 3), not the
+          answer to copy verbatim. CodeWriter is instructed to escalate
+          bloated stages back to `@Main` rather than paper over them.
+
+      Backward-compatible: no manifest schema change. Stage files written
+      before this release that already follow the contract shape pass the
+      new gate unchanged. Older bloated stages will trigger MINOR/MAJOR
+      findings on the next plan review — that is the intended migration
+      path (PO rewrites the stage with the suggested replacements before
+      EXECUTE).
+    files_changed:
+      - kit/_shared/skills/stage-shape-check/SKILL.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/AutoApprover.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_index.txt
+    manifest_changes:
+      added_fields: []
+
   - version: "4.7.1"
     released: "2026-05-07"
     breaking: false

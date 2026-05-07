@@ -32,6 +32,7 @@ Required fields:
 | No ambiguous steps | No vague verbs ("improve", "refactor") without specifics |
 | Stage count sane | ≤ 10 stages for a single feature |
 | No monolith stages | Each stage is focused, not "implement everything" |
+| **Stage shape** | Each stage is a *contract* (Goal, Owned AC/CC/TC ids, Files, Public Signatures, Guidelines, DoD) — NOT a pre-cooked solution with full method/class/test bodies duplicated from spec. Run `stage-shape-check` skill per stage; aggregated MAJOR finding = BLOCKER. |
 
 ### 2. Spec and requirements alignment (skip if N/A)
 
@@ -65,7 +66,15 @@ Required fields:
    Record 2-3 key conclusions. Do NOT skip this step.
 
 1. READ  — plan file, requirements file, spec file (whichever are not N/A).
+           Also enumerate every stage file referenced from the plan
+           (typically {{VAULT_PATH}}/how-to/[module]/plans/[feature]-stage-NN.md).
 2. CHECK — go through every checklist item above.
+           For the **Stage shape** row: read `{{HOST_DIR}}/skills/stage-shape-check/SKILL.md`
+           and run it once per stage file (`STAGE_FILE=<that path>`). Collect all
+           verdicts. Aggregation rule:
+             - any stage MAJOR  → BLOCKER "stage shape — <file>: <one-line reason>"
+             - any stage MINOR  → WARNING "stage shape — <file>: <one-line reason>"
+             - all stages PASS  → no issue logged for this row
 3. SCORE — classify each failed item as BLOCKER or WARNING:
            BLOCKER: missing stages, ambiguous goals, uncovered requirements,
                     missing breaking-change flag, plan file empty/missing,

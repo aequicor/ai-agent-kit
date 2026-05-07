@@ -169,12 +169,48 @@ After receiving answers from PO:
               Input: requirements + corner case register + spec from step 1/0.5.
               In Mode A / pre-made package: requirements.md and spec.md already exist — do NOT rewrite them.
               In Mode B: requirements.md and spec.md were written in step 1b — do NOT rewrite them.
+
+              **Stage shape — binding constraint on writing-plans output.**
+              Stage files are *contracts* dispatched to `@CodeWriter` for TDD-first
+              implementation, NOT pre-cooked solutions. Every stage must consist of
+              these six sections (heading wording flexible):
+                1. Goal / Scope (one paragraph)
+                2. Owned ACs / CCs / TCs (id list referencing the canonical
+                   requirements / corner-cases / test-cases files — NO restated text)
+                3. Files to create / modify (paths only — no diffs, no embedded content)
+                4. Public signatures (one line each, **no method bodies**;
+                   skip the section if all signatures already live in spec)
+                5. Guidelines to follow (vault path list)
+                6. Definition of Done (build / tests for owned TCs / lint checklist)
+
+              ⚠️ FORBIDDEN content in any stage file:
+                - full method / function bodies (3+ lines inside `{ ... }`)
+                - full class bodies with field initializers + method bodies
+                - full test bodies (test name + assertion target only — TC id covers the rest)
+                - restated requirements / spec data models / corner-case lists already
+                  living in their canonical files
+
+              The shape rule exists because (a) `@CodeWriter` must follow TDD —
+              failing test first from the *contract*, not from a copy of the answer —
+              and (b) spec + test-cases + corner-cases are already the source of truth
+              for "what the code should look like". A stage that re-states them in code
+              form is a third copy that drifts as the canonical files evolve.
+
               Create files STRICTLY SEQUENTIALLY (one file per turn):
               a. write {{VAULT_PATH}}/concepts/[module]/plans/[feature]-plan.md → compress() → checkpoint
               b. For EACH stage file — separate turn:
-                 write {{VAULT_PATH}}/how-to/[module]/plans/[feature]-stage-01.md → compress() → checkpoint
-                 write {{VAULT_PATH}}/how-to/[module]/plans/[feature]-stage-02.md → compress() → checkpoint
-                 (etc. — NOT in parallel, even if context seems to allow it)
+                 1) write {{VAULT_PATH}}/how-to/[module]/plans/[feature]-stage-NN.md
+                 2) read `{{HOST_DIR}}/skills/stage-shape-check/SKILL.md` and run it on the
+                    just-written stage with `STAGE_FILE=<that path>`.
+                    Verdict handling:
+                      - PASS → continue.
+                      - MINOR → log the findings table in the checkpoint, continue.
+                      - MAJOR → rewrite the stage in the same turn (collapse full bodies
+                        to signatures, replace restated text with id references), re-run
+                        the skill. Max 2 rewrite attempts per stage; on 3rd failure STOP
+                        and escalate to PO with the findings table.
+                 3) compress() → checkpoint
+                 (NEVER create 2+ stage files in one turn, even if context seems to allow it)
               c. After each file: knowledge-my-app_write_guideline(file)
               ⚠️ FORBIDDEN: create 2+ stage files in one turn.
               ⚠️ Every Critical corner case from the register MUST have a corresponding test task.
@@ -434,6 +470,14 @@ Key rules:
 1. SEARCH  — knowledge-my-app_search_docs on the topic.
 2. PLAN    — superpowers:writing-plans (no business requirements sections).
              Create plan + stage files in {{VAULT_PATH}}/concepts/[module]/plans/ and {{VAULT_PATH}}/how-to/[module]/plans/.
+
+             **Stage shape rule applies in TECH too** — every stage file is a *contract*
+             (Goal, Owned ACs/TCs, Files, Public Signatures, Guidelines, DoD), NOT a
+             pre-cooked solution. After writing each stage, read
+             `{{HOST_DIR}}/skills/stage-shape-check/SKILL.md` and run it on the stage.
+             MAJOR verdict → rewrite in the same turn (max 2 attempts, then escalate).
+             MINOR → log in checkpoint, continue. PASS → continue.
+             See FEATURE step 5 for the full forbidden-content list.
 2a. PRE-MORTEM — read `{{HOST_DIR}}/skills/pre-mortem/SKILL.md`. Run the 8-lens pass
              on the TECH plan. Skip ONLY if task is trivially mechanical (rename, single-file
              config edit) — see skill's "When to use".
@@ -503,6 +547,7 @@ When calling `knowledge-my-app_search_docs`:
 - **DO NOT skip `@DoDGate` (step 7e)** — CLOSE is gated on PASS. PO override is `/kit-approve-with-dod-waiver`, not `/kit-approve`. A FAIL in the DoD checklist cannot be waived; it must be fixed.
 - **DO NOT skip pre-mortem (step 5b for FEATURE / 2a for TECH)** for non-trivial tasks. Five minutes of structured pessimism is the cheapest quality intervention you have.
 - **DO NOT delegate the EXECUTE loop to `superpowers:executing-plans`** — it's a helper, not a replacement. Ownership of steps 7.1–7.6 (and the new gates 7.2a, 7.3, 7b, 7c, 7e) stays in `@Main`; the helper does not dispatch any reviewer / executor / gate.
+- **DO NOT skip `stage-shape-check` after each stage write** (FEATURE step 5b / TECH step 2). A stage file with full method or test bodies defeats `@CodeWriter`'s TDD discipline (tests rationalize the existing answer instead of describing the contract first) and creates a third drifting copy of spec / test-cases / corner-cases. MAJOR verdict means rewrite, not log-and-continue.
 - **DO NOT write code or tests** — that's @CodeWriter.
 - **DO NOT fix bugs** — that's @BugFixer.
 - **DO NOT dispatch @CodeWriter without a stage file** — stage file is mandatory.

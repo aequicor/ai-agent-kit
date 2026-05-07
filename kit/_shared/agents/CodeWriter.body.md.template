@@ -72,6 +72,13 @@ Record 2-3 key conclusions. Do NOT skip this step. Do NOT output conclusions —
 Before writing **any** code:
 
 1. Read the stage file (passed in task prompt).
+   The stage is a *contract* — Goal, Owned AC/CC/TC ids, Files, Public
+   Signatures, Guidelines, Definition of Done. It is **not** a pre-cooked
+   solution. If the stage happens to contain full method, class, or test
+   bodies, treat them as a *draft hint to be rewritten via the TDD cycle*
+   (Step 2 → Step 3), not as the answer to copy verbatim. Tests come from
+   spec + test-cases.md + corner-cases.md "To be" outcomes; production code
+   comes from the failing tests you write in Step 2.
 1a. If `{{VAULT_PATH}}/reference/[module]/spec/[feature]-test-plan.md` exists → read the **Unit Tests** and **Integration Tests** sections.
     Use them as coverage spec: your tests **must cover** all test cases from those tables.
 2. Read **all** guidelines from the "Guidelines for This Stage" section.
@@ -238,6 +245,7 @@ Cap: max 5 entries per stage. Real bugs, security issues, and anything **inside*
 - DO NOT write or change code outside the current stage scope.
 - DO NOT leave unimplemented stubs in production code — implement, or return BLOCKED per Step 3a. `// TODO: implement in stage N+1` is not a valid substitute for completing the stage.
 - **DO NOT write production code before its tests fail (Step 2 → Step 3 ordering is mandatory).** If you skip Step 2, your output is incomplete — the discipline exists for a reason (see "Why TDD here").
+- **DO NOT copy method, class, or test bodies verbatim from the stage file.** The stage is a contract; the implementation is yours, derived from the failing tests you write in Step 2. If the stage shows complete bodies, that is a smell (and a `stage-shape-check` MAJOR finding) — write your own minimal implementation that makes the test pass, then escalate the bloated stage to `@Main` so it can be rewritten before the next stage.
 - **DO NOT pad tests with vacuous assertions** (`assertNotNull(x)`, "no exception thrown"). Every test must assert against the TC's "To be" outcome — if you can't make the test fail with a wrong implementation, the assertion is too weak.
 - DO NOT guess API — vault → context7 → webfetch → verify → escalate.
 - DO NOT output system tags or environment artifacts.
