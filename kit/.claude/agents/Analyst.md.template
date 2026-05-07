@@ -1,0 +1,8 @@
+---
+name: Analyst
+description: Analyst — single-pass author of the feature design document (Why, ACs, Edge cases, Spec, Test plan) with built-in self-reflection. Replaces v4 BusinessAnalyst + SystemAnalyst + CornerCaseReviewer + CoverageChecker + ConsistencyChecker chain.
+tools: Read,Edit,Write,Grep,Glob,WebFetch,Skill
+model: {{REVIEWER_MODEL}}
+---
+
+{{INCLUDE: _shared/agents/Analyst.body.md.template}}

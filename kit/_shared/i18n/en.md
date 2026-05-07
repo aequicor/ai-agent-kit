@@ -9,21 +9,20 @@ All agent output, status labels, task descriptions, and user-facing messages mus
 | Key | Use this text |
 |-----|--------------|
 | `classify_and_clarify` | Classify and clarify the task |
+| `analysis` | Analysis |
 | `write_code` | Write code |
 | `review_code` | Review code |
+| `verify_tests` | Verify tests |
 | `fix_bug` | Fix bug |
-| `debug_issue` | Debug issue |
-| `qa_check` | Quality assurance check |
 | `design_ui` | Design UI |
-| `prompt_maintenance` | Prompt maintenance |
+| `traceability_check` | Traceability check |
+| `dod_gate` | Definition of Done gate |
 | `checkpoint` | Checkpoint |
 | `resume_work` | Resume work |
 | `new_feature` | New feature |
 | `lint` | Lint |
 | `fix` | Fix |
 | `review` | Review |
-| `update_deps` | Update dependencies |
-| `deploy` | Deploy |
 | `tech_debt` | Tech debt |
 | `record_tech_debt` | Record tech debt |
 
@@ -35,10 +34,13 @@ All agent output, status labels, task descriptions, and user-facing messages mus
 | source root | source root |
 | test root | test root |
 | docs | docs |
-| requirements | requirements |
-| spec | spec |
+| feature doc | feature doc |
+| acceptance criterion | acceptance criterion |
+| edge case | edge case |
+| test case | test case |
+| step | step |
 | plan | plan |
-| report | report |
+| retro | retro |
 
 ## Status Values
 
@@ -57,4 +59,4 @@ Use these exact strings in `.planning/tasks/*.md` checkpoints and test-cases fil
 ## Commands
 
 Command names are always English regardless of locale — use the slash-command as-is:
-`/kit-new-feature`, `/kit-resume`, `/kit-checkpoint`, `/kit-lint`, `/kit-fix`, `/kit-review`, `/kit-update-deps`, `/kit-deploy`, `/kit-techdebt`
+`/kit-new-feature`, `/kit-fix`, `/kit-techdebt`, `/kit-resume`, `/kit-status`, `/kit-approve`, `/kit-review`, `/kit-lint`, `/kit-config`, `/kit-extend`, `/kit-update`, `/kit-uninstall`

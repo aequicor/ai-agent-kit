@@ -12,10 +12,10 @@ source: human
 updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 ---
 
-# Tech Debt: [short-title]
+# Tech Debt: <short-title>
 
-**ID:** TD-[module]-[NN]
-**Module:** [module-name]
+**ID:** TD-<module>-<slug>
+**Module:** <module-name>
 **Category:** warning | duplication | smell | complexity | deprecation | todo
 **Severity:** low | medium | high
 **Status:** open | in-progress | fixed | wont-fix
@@ -41,6 +41,7 @@ What the smell/duplication/warning is, in 2-4 sentences. Be specific — name fu
 ## Why not critical now
 
 One sentence on why this was deferred rather than fixed in place. Examples:
+
 - Out of scope for the current task — would expand the diff beyond review tolerance.
 - Compiler/linter warning that does not affect runtime behavior.
 - Duplicated code is short and the abstraction is not yet clear.
@@ -56,8 +57,8 @@ If the fix shape is already clear, sketch it in 2-5 bullets. Otherwise leave thi
 
 ## References
 
-- Related guideline: `[[{{VAULT_PATH}}/guidelines/<module>/<topic>]]`
-- Related TC (if applicable): TC-NN in `{{VAULT_PATH}}/reference/<module>/test-cases/<feature>-test-cases.md`
+- Related feature: `[[features/<module>/<feature>/feature]]`
+- Related TC (if applicable): TC-NN in `[[features/<module>/<feature>/test-cases]]`
 - Originating commit / PR: `<sha>` / `#<num>`
 
 ---
@@ -66,5 +67,5 @@ If the fix shape is already clear, sketch it in 2-5 bullets. Otherwise leave thi
 
 **Closed:** YYYY-MM-DD
 **Fix commit:** `<sha>`
-**Files changed:** see `[[{{VAULT_PATH}}/guidelines/<module>/reports/<slug>]]`
+**Files changed:** see `[[features/<module>/<feature>/retro]]`
 **Notes:** any deviation from the suggested fix.

@@ -1,4 +1,217 @@
 versions:
+  - version: "5.0.0"
+    released: "2026-05-07"
+    breaking: true
+    description: |
+      Major restructure — agent-pipeline simplification and single-doc-per-feature
+      vault layout. Driven by 2025–2026 multi-agent research consensus
+      (Cognition "Don't Build Multi-Agents", Anthropic "Building Effective
+      Agents", Princeton NLP, Berkeley MAST taxonomy): for tightly-coupled
+      tasks like coding, fewer agents with shared context outperform large
+      orchestrator-worker chains, and artifact sprawl directly correlates with
+      PO comprehension failure. v5 cuts agent count from 19 to 9, skills from
+      15 to 6, commands from 17 to 12, Definition-of-Done checks from 25 to 7,
+      per-feature artifacts from 7–10 files to 2–3.
+
+      ## Agent merges (-10 net)
+
+      - **@Analyst (new)** — single-pass design author. Replaces v4 chain
+        @BusinessAnalyst → @CornerCaseReviewer (BUSINESS) → @QA (REQUIREMENTS) →
+        @CoverageChecker → @SystemAnalyst → @CornerCaseReviewer (TECHNICAL) →
+        @ConsistencyChecker. Self-reflection loop replaces the 3× CCR phases.
+      - **@Reviewer (new)** — single read-only review. Replaces v4
+        @CodeReviewer + @SecurityReviewer + STUB-SCAN regex. One agent reads
+        the diff once and runs three internal passes (code/security/stub).
+      - **@TestKeeper (new)** — owns test-cases.md end-to-end. Replaces v4
+        @QA + @TestExecutor + @TestRunner. Modes: GENERATE / DRAFT / EXECUTE /
+        RECONCILE / RERUN / SCAN / APPEND.
+      - **@BugFixer** absorbs v4 @Debugger as `MODE=debug`. Same agent, two modes.
+      - **Removed**: @AutoApprover (replaced by `auto_approve` manifest flag),
+        @PromptEngineer (meta utility, not in core pipeline),
+        @CornerCaseReviewer (3 modes folded into @Analyst self-reflection
+        and @Reviewer Pass A), @CoverageChecker (folded into @TestKeeper coverage rule),
+        @ConsistencyChecker (folded into @Analyst Pass 2 reflection),
+        @Debugger (folded into @BugFixer MODE=debug).
+      - Kept: @Main, @CodeWriter, @BugFixer, @DoDGate, @Designer,
+        @TraceabilityChecker.
+
+      ## Skill cuts (-9 net)
+
+      Removed: requirements-pipeline (now @Analyst is unconditional),
+      stage-shape-check (now @Reviewer Pass A6), corner-case-refinement
+      (inlined in @Analyst), code-review-checklist (inlined in @Reviewer),
+      test-execution (inlined in @TestKeeper), session-handoff (just call
+      /kit-resume), session-replay, knowledge-graph (unused), mermaid-validate
+      (kit-diagram removed). Kept: bug-retro, definition-of-done, look-up,
+      pre-mortem (now optional, not mandatory), spec-to-code-trace, tech-debt-record.
+
+      ## Command cuts (-5 net)
+
+      Removed: kit-checkpoint (use /kit-status), kit-deploy (project-specific,
+      out of scope), kit-diagram (Mermaid output removed; agents may still
+      embed diagrams in feature.md How-it-works), kit-requirements-pipeline
+      (Analyst is automatic), kit-update-deps (rare, out of scope). Removed
+      from documentation: /kit-approve-with-dod-waiver (no waiver mechanism in
+      v5 — if a check fails, fix it). Kept: kit-new-feature, kit-fix,
+      kit-techdebt, kit-resume, kit-status, kit-approve, kit-review, kit-lint,
+      kit-config, kit-extend, kit-update, kit-uninstall.
+
+      ## Pipeline simplification
+
+      FEATURE pipeline reduced from **8 step groups with 5 nested loops** to
+      **6 sequential steps with 1 inner loop per step**:
+
+      ```
+      v4: 0a → 0.5 → 1 (req-pipeline) → 2 → 3 → 4 → 5 → 5a → 5b → 5c → 6 → 7 (5 loops) → 7a → 7b‖7c → 7d → 7e → 8
+      v5: 1 CLASSIFY → 2 ANALYSIS → 3 PLAN → 4 CONFIRM → 5 EXECUTE (CodeWriter→TestKeeper→Reviewer) → 6 CLOSE
+      ```
+
+      Pre-mortem skill is now optional, not mandatory (use case must justify it).
+      Walkthrough gate (step 7d) and the @AutoApprover dispatch are removed.
+
+      ## Definition of Done — 25 → 7 hard checks
+
+      v4 DoD had 8 groups × ~25 binary checks plus a waiver mechanism
+      (`/kit-approve-with-dod-waiver`) for UNVERIFIED rows. PO could not
+      reason about 25 checks; waivers invited "soft pass" culture.
+
+      v5 DoD has 7 hard checks (must all PASS) plus an info-only diagnostic
+      block. There is no waiver mechanism. Coverage thresholds and
+      WEAK_ASSERTION flags are info-only — they don't block CLOSE.
+
+      ## Vault layout — 7+ files per feature → 2–3
+
+      v4 used a Diátaxis-style layout with one file per concern:
+      `concepts/<m>/requirements/<f>.md`, `concepts/<m>/plans/<f>-corner-cases.md`,
+      `concepts/<m>/plans/<f>-plan.md`, `reference/<m>/spec/<f>.md`,
+      `reference/<m>/spec/<f>-test-plan.md`, `reference/<m>/spec/<f>-trace.md`,
+      `reference/<m>/spec/<f>-dod.md`, `reference/<m>/test-cases/<f>-test-cases.md`,
+      `how-to/<m>/plans/<f>-stage-NN.md` (×N).
+
+      v5 collapses all of that into:
+      ```
+      vault/features/<module>/<feature>/
+        feature.md       — Why / ACs / Edge Cases / How it works / Test plan / Implementation plan / DoD
+        test-cases.md    — live state
+        retro.md         — optional, only if bugs/lessons recorded
+      ```
+
+      The Implementation plan steps live as sections inside feature.md, not as
+      separate `stage-NN.md` files. The `concepts/`, `reference/`, `how-to/`,
+      `tutorials/` Diátaxis subtrees are gone. `guidelines/<module>/<topic>.md`,
+      `guidelines/libs/`, and `tech-debt/<module>/` remain.
+
+      ## New: manifest field `auto_approve`
+
+      Replaces the v4 `AUTO_APPROVE=true` magic-string convention and the
+      @AutoApprover agent. When `auto_approve: true` in the manifest, @Main
+      skips the CONFIRM step (auto-proceeds from PLAN to EXECUTE). PO can
+      still interrupt at any time. Other gates (DEPLOY, DESTROY,
+      SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit
+      /kit-approve. Default: false.
+
+      ## Terminology cleanup
+
+      - `Corner Case (CC)` → `Edge Case (EC)` in feature.md (more conventional).
+      - `stage` → `step` in implementation plans (steps live inline in
+        feature.md). The phrase "stage shape" is gone with the skill.
+      - `vault/concepts`, `vault/reference`, `vault/how-to` Diátaxis terms removed.
+      - Removed jargon: `BLOCKED` ceremony names, `AUTO_APPROVE` magic string,
+        `walkthrough gate`, `dod_waiver:`, `(deferred to @SecurityReviewer)`.
+
+      ## New: evaluation framework (evals/)
+
+      Per Anthropic's research-system guidance, no agent change should be made
+      blind. The new `evals/` directory contains 5 seed tasks (3 FEATURE, 2 BUG,
+      1 TECH), a metrics template, and instructions for recording per-version
+      runs in `runs/<version>/`. Use as a baseline before tuning further.
+
+      ## Migration
+
+      Existing installations on v4.x receive these changes via /kit-update.
+      The `requirements-pipeline` capability profile is kept as a **no-op**
+      stub (its YAML still validates; the v4 chain it activated is gone).
+      Manifests do not need to remove it from `stack.profiles[]`, but doing
+      so is harmless.
+
+      Vault content from v4 (`concepts/`, `reference/`, `how-to/`, `tutorials/`
+      subtrees) is **not** migrated automatically. /kit-update preserves user
+      content and only re-renders kit-managed files. POs who want a clean v5
+      vault layout should:
+
+      1. Run /kit-update.
+      2. Manually move per-feature artifacts: `concepts/<m>/requirements/<f>.md`
+         + `reference/<m>/spec/<f>.md` + `reference/<m>/test-cases/<f>-test-cases.md`
+         etc. into a single `features/<m>/<f>/feature.md` (the Analyst will do
+         this on first dispatch for new features; old features can be migrated
+         lazily).
+      3. Move `guidelines/<m>/reports/<bug-name>.md` files into the relevant
+         feature's `retro.md` if you want the retro history per-feature, or
+         leave them where they are (the kit only looks at `features/` for new
+         work).
+
+      Sources for the design rationale:
+      - Cognition — Don't Build Multi-Agents (cognition.ai)
+      - Anthropic — Building Effective Agents (anthropic.com/research)
+      - Anthropic — How we built our multi-agent research system (anthropic.com/engineering)
+      - Princeton NLP single-vs-multi-agent benchmarking
+      - Berkeley MAST 1600+ trace taxonomy of multi-agent failure modes (arXiv 2503.13657)
+      - Andrew Ng — Four design patterns for AI agent workflows
+      - Phil Schmid — Context Engineering Part 2
+
+      Backward-compatible: NO. Manifests gain one new optional field
+      (auto_approve, default false). Existing v4 manifests validate against v5
+      schema unchanged. Old vault content is not touched. Old tasks
+      (`.planning/tasks/<slug>.md`) referencing v4 paths still resolve to
+      readable files — their content is untouched.
+    files_changed:
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/Analyst.body.md.template
+      - kit/_shared/agents/Reviewer.body.md.template
+      - kit/_shared/agents/TestKeeper.body.md.template
+      - kit/_shared/agents/BugFixer.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/agents/DoDGate.body.md.template
+      - kit/_shared/agents/Designer.body.md.template
+      - kit/_shared/agents/TraceabilityChecker.body.md.template
+      - kit/.opencode/agents/Analyst.md.template
+      - kit/.opencode/agents/Reviewer.md.template
+      - kit/.opencode/agents/TestKeeper.md.template
+      - kit/.claude/agents/Analyst.md.template
+      - kit/.claude/agents/Reviewer.md.template
+      - kit/.claude/agents/TestKeeper.md.template
+      - kit/_shared/skills/definition-of-done/SKILL.md.template
+      - kit/_shared/skills/spec-to-code-trace/SKILL.md.template
+      - kit/_shared/skills/pre-mortem/SKILL.md.template
+      - kit/_shared/skills/bug-retro/SKILL.md.template
+      - kit/_shared/skills/tech-debt-record/SKILL.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_shared/PROJECT_RULES.body.md.template
+      - kit/_shared/FILE_STRUCTURE.md.template
+      - kit/_shared/i18n/en.md
+      - kit/_shared/i18n/ru.md
+      - kit/_shared/commands/kit-new-feature.md.template
+      - kit/_shared/commands/kit-fix.md.template
+      - kit/_shared/commands/kit-techdebt.md.template
+      - kit/_shared/commands/kit-config.md.template
+      - kit/_shared/commands/kit-resume.md.template
+      - kit/CLAUDE.md.template
+      - kit/AUTO_MEMORY.md.template
+      - kit/nested/MODULE.body.md.template
+      - kit/.vault/_INDEX.md.template
+      - kit/.vault/_templates/feature.md
+      - kit/.vault/_templates/test-cases.md
+      - kit/.vault/_templates/retro.md
+      - kit/.vault/_templates/tech-debt.md
+      - kit/manifest.schema.json
+      - kit/_index.txt
+      - profiles/capability/requirements-pipeline.yaml
+    manifest_changes:
+      added_fields:
+        - path: "auto_approve"
+          default: false
+          description: "When true, @Main skips CONFIRM in FEATURE/TECH (auto-proceeds from PLAN to EXECUTE). Replaces v4 AUTO_APPROVE=true magic string and @AutoApprover agent."
+
   - version: "4.8.0"
     released: "2026-05-07"
     breaking: false

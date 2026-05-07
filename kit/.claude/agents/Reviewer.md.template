@@ -1,0 +1,8 @@
+---
+name: Reviewer
+description: Reviewer — single read-only agent that performs code review, security smell pass, and stub/TODO scan in one dispatch. Replaces v4 CodeReviewer + SecurityReviewer + STUB-SCAN regex.
+tools: Read,Grep,Glob
+model: {{REVIEWER_MODEL}}
+---
+
+{{INCLUDE: _shared/agents/Reviewer.body.md.template}}

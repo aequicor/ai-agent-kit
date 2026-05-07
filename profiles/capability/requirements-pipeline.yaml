@@ -1,43 +1,21 @@
-# ai-agent-kit profile: Requirements Pipeline
-# Usage: add requirements-pipeline to stack.profiles in your manifest
-# Extends generic baseline with the AI-driven requirements pipeline:
-# BA → CornerCaseReviewer → QA(REQUIREMENTS) → CoverageChecker → SA → CornerCaseReviewer (tech) → ConsistencyChecker
+# ai-agent-kit profile: Requirements Pipeline (legacy / no-op in v5)
 #
-# Use this profile if your team wants to:
-# - Minimize manual BA/QA/SA effort on requirements
-# - Catch corner cases before spec is written
-# - Produce a consistent requirements package (business reqs + living test-cases + tech spec)
-#   ready for development with only PO sign-off required
+# In v4, this profile added a 5-agent chain (BusinessAnalyst, CornerCaseReviewer,
+# CoverageChecker, SystemAnalyst, ConsistencyChecker) plus a `requirements-pipeline`
+# skill that orchestrated them.
 #
-# Agents added by this profile (beyond the 10-agent baseline):
-#   @BusinessAnalyst       — drafts and updates business requirements
-#   @CornerCaseReviewer    — attacks requirements and tech spec for gaps
-#   @CoverageChecker       — verifies all requirements have test cases
-#   @SystemAnalyst         — generates technical spec from requirements + test cases
-#   @ConsistencyChecker    — verifies spec does not contradict requirements
+# v5 (2026-05-08) merged that whole chain into the single @Analyst agent which
+# always runs at FEATURE step 2 (ANALYSIS) regardless of whether this profile is
+# present. The profile is therefore a **no-op** in v5+.
 #
-# Note: ai-agent-kit merges the former @RequirementsQA into @QA — the QA agent runs in
-# Phase=REQUIREMENTS during this pipeline (creates the living <feature>-test-cases.md)
-# and Phase=IMPLEMENTATION during the FEATURE pipeline (appends impl-level TCs).
+# It is kept as a profile YAML so manifests written against v4 continue to
+# validate and `/kit-update` does not need to remove it. New installs do not need
+# to add it.
 #
-# The pipeline is orchestrated by @Main via the requirements-pipeline skill.
-# Entry point: /kit-requirements-pipeline or /kit-new-feature (auto-triggers the pipeline)
-#
-# Workflow:
-#   PO: /kit-requirements-pipeline "description of the feature"
-#   ... automated pipeline runs ...
-#   PO: /kit-approve  (or "reject: [what to redo]")
-#   PO: /kit-diagram  (optional — generates Mermaid UML diagrams from the approved spec)
-#   PO: /kit-new-feature "description" (hands artifacts to @Main for dev planning)
-#
-# Optional commands provided by this profile:
-#   /kit-diagram [feature] — @SystemAnalyst (DIAGRAM mode) reads the approved spec +
-#                        test cases and writes one <feature>-diagrams.md with
-#                        structural (class/component) and behavioral (sequence/
-#                        state) Mermaid diagrams. Read-only with respect to the
-#                        spec; outputs only the file path to keep the parent
-#                        context window clean.
+# Once you have run /kit-update to v5+ you may remove this entry from
+# stack.profiles[] in your manifest, but doing so is not required — the merge
+# is a no-op either way.
 
 _profile_name: requirements-pipeline
-_profile_description: "AI-driven requirements pipeline: BA → CCR → QA → Coverage → SA → CCR(tech) → Consistency"
+_profile_description: "Legacy v4 capability — no-op in v5+, kept for back-compat. Analyst replaces the v4 chain."
 _profile_axis: capability

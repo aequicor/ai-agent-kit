@@ -33,6 +33,11 @@
       "enum": ["en", "ru"],
       "default": "en"
     },
+    "auto_approve": {
+      "type": "boolean",
+      "description": "When true, @Main skips the CONFIRM step in FEATURE/TECH pipelines and proceeds straight from PLAN to EXECUTE. PO can still interrupt at any time. Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit PO approval — auto_approve does not affect them. Replaces the v4 AUTO_APPROVE=true magic string and @AutoApprover agent.",
+      "default": false
+    },
     "project": {
       "type": "object",
       "required": ["name"],

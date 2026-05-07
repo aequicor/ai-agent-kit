@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "4.8.0"
+kit_version: "5.0.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -15,6 +15,16 @@ kit_version: "4.8.0"
 # (OPENCODE_LANG for the opencode host, KIT_LANG for the claude-code host).
 # Supported: en (English), ru (Russian). Default: en
 language_code: en
+
+# ─────────────────────────────────────────────
+# AUTO-APPROVE (v5.0+)
+# ─────────────────────────────────────────────
+# When true, @Main skips the CONFIRM step (auto-proceeds from PLAN to EXECUTE)
+# in FEATURE and TECH pipelines. PO can interrupt at any time.
+# Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always
+# require explicit /kit-approve — auto_approve does not affect them.
+# Default: false. Replaces the v4 AUTO_APPROVE=true magic string.
+auto_approve: false
 
 # ─────────────────────────────────────────────
 # HOSTS (1..N — projects can run on OpenCode, Claude Code, or both)
@@ -37,8 +47,8 @@ project:
 # KNOWLEDGE VAULT
 # ─────────────────────────────────────────────
 # Path (relative to project root) where KnowledgeOS stores all agent-generated docs.
-# Default matches KnowledgeOS out-of-the-box: vault/
-# Legacy ai-agent-kit installs used .vault/ — change here to keep compatibility.
+# Default: vault/. v5 uses a flat layout: features/<module>/<feature>/feature.md +
+# test-cases.md per feature, plus shared guidelines/ and tech-debt/ subtrees.
 vault_path: vault
 
 # ─────────────────────────────────────────────
@@ -49,10 +59,8 @@ vault_path: vault
 #   framework   (0..N):       compose-multiplatform | paper-plugin
 #   host        (1..N):       opencode | claude-code     ← matches the `hosts:` list above
 #   provider    (1 if opencode in hosts, else 0): routerai | ollama-cloud
-#   capability  (0..N):       security-baseline (always-on) | solid | clean-architecture | requirements-pipeline | quality-gates
-#
-# Profiles in different axes own disjoint fields, so cross-axis merge is conflict-free.
-# Within-axis merge concatenates lists (forbidden_patterns).
+#   capability  (0..N):       security-baseline (always-on) | solid | clean-architecture
+#                              | requirements-pipeline (no-op in v5+) | quality-gates
 stack:
   language: kotlin
   profiles:
@@ -62,15 +70,12 @@ stack:
     - routerai                # provider (only because opencode is a host)
     - security-baseline       # capability (auto-added if missing)
     - solid                   # capability (SOLID + class-level OO design)
-    - clean-architecture      # capability (system-level layering / ports & adapters / boundary DTOs; v4.7+)
-    - requirements-pipeline   # capability
-    - quality-gates           # capability (opt-in test-quality + traceability forbidden patterns; v4.5+)
+    - clean-architecture      # capability (system-level layering / ports & adapters / boundary DTOs)
+    - quality-gates           # capability (opt-in test-quality + traceability forbidden patterns)
+    # - requirements-pipeline # capability (legacy, no-op in v5+ — Analyst is always on)
 
   # external_profiles is populated automatically by /kit-extend when you add a
-  # profile fetched from a URL outside this kit's repo. Map: <profile-name> → <source URL>.
-  # /kit-update reads this map so it can re-validate external profiles without
-  # 404-ing on RAW_BASE/profiles/<axis>/<name>.yaml. Leave empty / omit if all
-  # profiles come from this repo.
+  # profile fetched from a URL outside this kit's repo.
   # external_profiles:
   #   my-team-style: https://github.com/my-org/my-kit-extras/blob/master/profiles/capability/my-team-style.yaml
 
@@ -119,8 +124,8 @@ models:
 # CLAUDE_CODE (required iff claude-code ∈ hosts; omit otherwise)
 # ─────────────────────────────────────────────
 # Models accept the Claude Code CLI aliases (opus, sonnet, haiku) which resolve
-# to the latest model in each tier, or full IDs (claude-opus-4-7,
-# claude-sonnet-4-6, claude-haiku-4-5).
+# to the latest model in each tier, or full IDs (claude-opus-4-7, claude-sonnet-4-6,
+# claude-haiku-4-5).
 # claude_code:
 #   models:
 #     default: sonnet      # orchestrator (main session role)

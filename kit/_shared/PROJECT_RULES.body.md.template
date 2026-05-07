@@ -1,3 +1,4 @@
+
 ---
 
 ## Project Overview
@@ -46,32 +47,37 @@
 ### Planning Files
 
 - `.planning/CURRENT.md` — local session pointer (gitignored). Holds `active_task: <slug>`. **Read before starting work.**
-- `.planning/tasks/<slug>.md` — full state per task (committed, one file per task). @Main writes checkpoints here. **Read the file pointed to by `active_task` for full context.**
+- `.planning/tasks/<slug>.md` — full state per task (committed, one file per task). `@Main` writes checkpoints here. **Read the file pointed to by `active_task` for full context.**
 - `.planning/tasks/done/` — archived task files after CLOSE.
 - `.planning/DECISIONS.md` — architectural decision log (ADR). Check before proposing structural changes. **Append-only — never delete entries.**
 
 ### Knowledge Vault ({{VAULT_PATH}}/)
 
-Documentation lives in `{{VAULT_PATH}}/` indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
-Structure follows [Diátaxis](https://diataxis.fr/) genre layout:
+v5 uses a flat layout — one folder per feature with two or three files. No Diátaxis subtrees.
 
-| Genre | Question | Module Content |
-|-------|----------|---------------|
-| `concepts/<module>/` | **Why?** How is it structured? | requirements/, plans/ |
-| `reference/<module>/` | **What exists?** | spec/ (incl. test plans) |
-| `how-to/<module>/` | **How to do X?** | Implementation stage files |
-| `tutorials/<module>/` | **How to learn?** | Getting started, module docs |
-| `guidelines/<module>/` | **What rules to follow?** | Conventions, patterns, reports/ |
-| `guidelines/libs/` | **How to use library?** | External API cache per library+version |
+```
+{{VAULT_PATH}}/features/<module>/<feature>/
+├── feature.md       — single design doc (Why / ACs / Edge cases / How it works / Test plan / Implementation plan)
+├── test-cases.md    — live state (TC table + Defects log)
+└── retro.md         — optional, only created if a bug-fix retro is recorded for this feature
+```
 
-Each module's docs follow: `{{VAULT_PATH}}/<genre>/<module>/{subdir}/`
+Plus shared subtrees:
+
+```
+{{VAULT_PATH}}/guidelines/<module>/<topic>.md     — coding patterns, optional
+{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md — cached external API docs
+{{VAULT_PATH}}/tech-debt/<module>/<slug>.md       — deferred items (drained by /kit-techdebt)
+{{VAULT_PATH}}/tech-debt/<module>/done/           — archived
+```
 
 ### External Libraries
 
 Before using any external library API:
+
 1. Search `{{VAULT_PATH}}/guidelines/libs/` for cached documentation via KnowledgeOS `search_docs`.
-2. If not found — look up the library from its canonical, authoritative source via `context7` or `webfetch`.
-3. After resolving — write guideline to `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md` via `write_guideline`.
+2. If not found — look up the library from its canonical source via `context7` or `webfetch`.
+3. After resolving — write a guideline to `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md` via `write_guideline`.
 4. **Never invent** method names, builder DSL methods, or annotation parameters.
 5. If no documentation is available, state that clearly — do not guess.
 
@@ -80,10 +86,11 @@ Before using any external library API:
 ## Boundaries
 
 Do NOT modify without explicit instruction:
-- `{{HOST_DIR}}/` — AI agent configuration (use `@PromptEngineer` or edit manually)
-- `.planning/DECISIONS.md` — append-only
-- `{{HOST_CONFIG_FILE}}` — runtime configuration
-- Any credential file: `.env*`, `~/.ssh/`, `~/.aws/`
+
+- `{{HOST_DIR}}/` — AI agent configuration (edit manually if needed; no `@PromptEngineer` agent exists in v5).
+- `.planning/DECISIONS.md` — append-only.
+- `{{HOST_CONFIG_FILE}}` — runtime configuration.
+- Any credential file: `.env*`, `~/.ssh/`, `~/.aws/`.
 
 ---
 
@@ -99,17 +106,16 @@ Full rules + pre-flight checklist: `{{HOST_DIR}}/_shared.md` → "Tool Use Disci
 
 ---
 
-## Corner Cases
+## Edge cases
 
-- Corner cases MUST be identified during planning, not discovered during implementation.
-- Every feature has a corner case register at `{{VAULT_PATH}}/concepts/<module>/plans/<feature>-corner-cases.md`. Read it before implementing.
-- Critical corner cases (data loss, security, system crash) require a test task in the implementation plan.
-- Use the `corner-case-refinement` skill to systematically scan: input boundaries, state lifecycles, concurrency, error paths, scale limits, domain invariants.
+- Edge cases (called "EC-N" in feature.md) MUST be identified during analysis, not discovered during implementation.
+- Every feature has them as a section in `{{VAULT_PATH}}/features/<module>/<feature>/feature.md` § "Edge Cases". Read it before implementing.
+- Critical edge cases (data loss, security, system crash) require a passing TC in the test plan.
 
 ## Testing
 
-- Write a failing test before implementing when feasible (TDD preferred).
-- Every Critical corner case from the corner case register MUST have a test.
+- Write a failing test before implementing (TDD is the default).
+- Every Critical edge case from feature.md MUST have a TC.
 - All existing tests must continue to pass after your change.
 - Network calls in tests → use mocks or test doubles, **never real endpoints**.
 - SQL only via parameterized queries — never concatenate user input into queries.
@@ -120,18 +126,19 @@ Full rules + pre-flight checklist: `{{HOST_DIR}}/_shared.md` → "Tool Use Disci
 
 - **Never** write API keys, tokens, passwords, or secrets into code or commit messages.
 - **Never** read credential files (`~/.ssh/`, `~/.aws/`, `.env*`) unless the user explicitly requests it.
-- Flag any code handling auth, crypto, payments, or PII for review before commit.
+- Flag any code handling auth, crypto, payments, or PII for `@Reviewer` (`TOUCHES_SECURITY_SURFACE=true`) before commit.
 - SQL: parameterized queries only. No string concatenation with user input. Ever.
 
 ---
 
 ## Commit Guidelines
 
-One logical change per commit. Format: `<type>: <short description>`
+One logical change per commit. Format: `<type>: <short description>`.
 
-**Types:** `feat` · `fix` · `refactor` · `test` · `docs` · `chore`
+**Types:** `feat` · `fix` · `refactor` · `test` · `docs` · `chore`.
 
 **Examples:**
+
 - `feat: add JWT refresh token endpoint`
 - `fix: null pointer in user login flow`
 - `refactor: extract payment validation to service`
@@ -143,10 +150,12 @@ Do not commit `TODO` or `FIXME` without a corresponding entry in `.planning/DECI
 
 ## Definition of Done
 
-A task is **complete** only when ALL of the following are true:
+A task is **complete** only when ALL of the following are true (the canonical 7 checks of v5; full list in `{{HOST_DIR}}/skills/definition-of-done/SKILL.md`):
 
-- [ ] Code compiles: `{{COMPILE_COMMAND}}`
-- [ ] All tests pass (including new tests for any changed behaviour)
-- [ ] Lint passes: `{{LINT_COMMAND}}`
-- [ ] No unexplained `TODO` or `FIXME` remains
-- [ ] Changes committed to git with a descriptive message
+- [ ] Every AC has at least one TC with Status PASS in `test-cases.md`.
+- [ ] Every Critical EC has at least one TC with Status PASS.
+- [ ] No TC has Status PEND or FAIL.
+- [ ] Last `@TestKeeper RECONCILE` verdict was `ALL_GREEN`.
+- [ ] Last `@Reviewer` verdict was `CLEAN` (no open CRITICAL or HIGH).
+- [ ] Build PASS + lint clean from the latest run.
+- [ ] Every step in `feature.md` § Implementation plan is marked done.

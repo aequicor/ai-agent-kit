@@ -31,7 +31,7 @@ These are **never** tech debt — they require immediate action:
 | Build / test break | Fix in current task — non-negotiable. |
 | Issue **inside the scope** of the current task | Fix in current task — that is what scope means. |
 | Vague feeling ("this could be cleaner") with no concrete file:line | Drop. Vague entries pollute the backlog. |
-| A finding from `@CodeReviewer` already classified CRITICAL/HIGH | Goes through review-fix loop, not tech-debt. |
+| A finding from `@Reviewer` already classified CRITICAL/HIGH | Goes through review-fix loop, not tech-debt. |
 | Duplicate of an existing open tech-debt entry | Append a new file reference to the existing entry, do not create a new one. |
 
 If unsure between "tech debt" and "fix now" — ask yourself: *would shipping this leave the system worse than yesterday?* If yes, fix it. If no, record it.
