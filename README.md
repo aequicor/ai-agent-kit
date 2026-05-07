@@ -1,4 +1,4 @@
-# AI-agent kit `v4.6.2`
+# AI-agent kit `v4.7.0`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete agent team into your project — Main, CodeWriter (TDD-first), TestExecutor, CodeReviewer, SecurityReviewer, TraceabilityChecker, DoDGate, BugFixer, Debugger, QA, TestRunner, Designer, plus a full requirements pipeline (BusinessAnalyst → CornerCaseReviewer → SystemAnalyst → CoverageChecker → ConsistencyChecker) and a Definition-of-Done quality gate.
 
@@ -130,14 +130,14 @@ Profiles are organised along five **orthogonal axes**. Each profile is restricte
 | `framework` | 0..N | `ui`, `code_quality.forbidden_patterns` | `compose-multiplatform`, `paper-plugin` |
 | `host` | 1..N | which template tree is rendered, host config file, agent frontmatter format, instruction file | `opencode`, `claude-code` |
 | `provider` | exactly 1 IF `opencode` ∈ hosts, else 0 | `provider`, `models` (used only by OpenCode rendering) | `routerai` (default), `ollama-cloud` |
-| `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agents via skills | `security-baseline`, `solid`, `requirements-pipeline`, `quality-gates` |
+| `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agents via skills | `security-baseline`, `solid`, `clean-architecture`, `requirements-pipeline`, `quality-gates` |
 
 **Common combos:**
 
 ```yaml
-# KMP app on OpenCode + RouterAI with the requirements pipeline + quality gates:
+# KMP app on OpenCode + RouterAI with the requirements pipeline + quality gates + Clean Architecture:
 stack:
-  profiles: [kotlin-gradle, compose-multiplatform, opencode, routerai, security-baseline, requirements-pipeline, quality-gates]
+  profiles: [kotlin-gradle, compose-multiplatform, opencode, routerai, security-baseline, solid, clean-architecture, requirements-pipeline, quality-gates]
 
 # Same project on Claude Code (Anthropic native — no provider profile):
 stack:
@@ -288,7 +288,8 @@ ai-agent-kit/
 │   │   └── ollama-cloud.yaml
 │   └── capability/
 │       ├── security-baseline.yaml         #   auto-added on every install
-│       ├── solid.yaml
+│       ├── solid.yaml                     #   class-level OO (SOLID + DRY/YAGNI/KISS)
+│       ├── clean-architecture.yaml        #   v4.7+ system-level layering / ports & adapters / boundary DTOs
 │       ├── requirements-pipeline.yaml
 │       └── quality-gates.yaml             #   v4.5+ test-quality + traceability forbidden patterns
 └── kit/                                   # everything that gets rendered into your project

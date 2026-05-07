@@ -1,0 +1,79 @@
+# ai-agent-kit profile: Clean Architecture (capability axis)
+# Usage: add `clean-architecture` to stack.profiles in your manifest.
+# Language-agnostic capability profile — combine with any language/framework profile.
+#
+# Enforces Robert C. Martin's Clean Architecture rules at a deeper level than
+# the `solid` profile (which only includes light layer-boundary checks):
+#
+#   - The Dependency Rule (source code dependencies point inward)
+#   - Entities (Enterprise Business Rules) — pure, framework-free
+#   - Use Cases / Interactors (Application Business Rules) — single business operation
+#   - Interface Adapters & Ports — abstractions live with the consumer, not the implementer
+#   - Frameworks & Drivers — outermost ring; everything is a detail
+#   - Boundary crossing — DTOs, not entities, cross use-case boundaries
+#   - Composition root — DI/wiring at the edge, not in inner layers
+#   - Screaming architecture — package structure reflects the domain
+#   - Testability — domain & use cases run without infrastructure
+#
+# Pairs well with the `solid` profile. The two are orthogonal: `solid` enforces
+# class-level OO design, this profile enforces system-level layering. Using
+# both is the recommended baseline for non-trivial projects. There is a small
+# overlap on layer-boundary patterns; setup.md merges forbidden_patterns by
+# concat + dedupe, so duplicates are harmless.
+
+_profile_name: clean-architecture
+_profile_description: "Clean Architecture rules — dependency rule, layering, ports/adapters, boundary DTOs (language-agnostic capability profile)"
+_profile_axis: capability
+
+code_quality:
+  forbidden_patterns:
+    # ── The Dependency Rule (inward-only) ────────────────────────────────────
+    - "Inner-layer module importing from an outer-layer module (domain → infrastructure, use-case → controller, entity → web/HTTP) — violates Clean Architecture's dependency rule: source code dependencies must point only inward"
+    - "Domain or use-case package referencing framework types by name (Spring, Ktor, Micronaut, Compose, React, Express, Django, Rails, Flask) — inner layers must remain framework-agnostic"
+    - "Use-case (interactor) importing a concrete repository implementation, HTTP client, ORM session, or filesystem API — depend on the port interface declared inside the use-case layer instead"
+    - "Cross-cutting reference from a domain class to logger/metrics/tracing infrastructure — inject a domain-side abstraction instead of importing the framework client"
+
+    # ── Entities (Enterprise Business Rules) ─────────────────────────────────
+    - "Domain entity annotated with ORM, serialization, or DI framework annotations (@Entity, @Table, @Column, @JsonProperty, @JsonIgnore, @Inject, @Component, @Autowired) — entities must not depend on persistence or framework concerns"
+    - "Domain entity extending a framework base class (BaseEntity from JPA/Hibernate/Room, AggregateRoot from a framework, ActiveRecord) — favor composition over framework inheritance to keep entities pure"
+    - "Anemic entity — data class with only getters/setters and no business behavior, with all logic offloaded to a 'Service' or 'Manager' class — move invariants and behavior into the entity"
+    - "Domain entity with public mutators that allow callers to break invariants directly (entity.setBalance(-100) is valid syntax) — encapsulate state changes through behavior methods that enforce rules"
+
+    # ── Use Cases / Interactors (Application Business Rules) ─────────────────
+    - "Single use-case / interactor class exposing more than one public business operation (executeA, executeB, executeC) — split into separate use-case classes, one per business operation"
+    - "Use-case method invoking another use-case directly to compose behavior — orchestration of multiple use cases belongs in a higher-level use case or in the entry-point/controller, not as use-case-to-use-case calls"
+    - "Use-case orchestrating cross-cutting concerns inline (transaction begin/commit, retry loops, cache reads, audit logging) — move cross-cutting behavior to decorators, middleware, or the composition root"
+    - "Use-case returning a domain entity directly to the controller / presenter — translate to a boundary DTO (output port) so the entity does not leak across the boundary"
+    - "Use-case accepting a framework request type as its input parameter (HttpRequest, ServletRequest, ResponseEntity, NextRequest) — define a use-case-specific input data structure and let the controller adapt"
+
+    # ── Ports & Adapters (Hexagonal alignment) ───────────────────────────────
+    - "Repository / gateway interface declared in the infrastructure or persistence layer — ports belong with the use case (or domain) that consumes them; the implementation lives in infrastructure"
+    - "Use-case importing a concrete adapter (HttpClientImpl, JpaUserRepository, S3FileStore) instead of its port interface — depend on abstractions defined in the inner layer"
+    - "Port interface signature exposing framework-specific types (ResultSet, ResponseEntity, Flux<HttpResponse>, java.sql.Connection, OkHttp Response) — keep port signatures expressed in domain types so the inner layer has no compile-time link to outer technology"
+    - "Two adapters implementing the same port that differ only in serialization framework (Jackson vs Moshi vs Gson) — collapse via a single abstraction instead of duplicating ports"
+
+    # ── Boundary Crossing (DTOs, not entities) ───────────────────────────────
+    - "Domain entity passed across the use-case → presentation boundary (controller serializes a domain entity to JSON / a view-model directly) — convert to a boundary DTO at the use-case output port"
+    - "Persistence model used as the domain entity (JPA @Entity, Room @Entity, ActiveRecord row) referenced from use-cases or domain logic — keep persistence representations in infrastructure and map to/from a separate domain entity"
+    - "Web request/response DTO (HttpRequest body, OpenAPI-generated model) leaking into a use-case as input/output type — define a use-case-specific request/response data structure"
+    - "Single class playing both the domain entity role and the API/JSON DTO role (annotated with both ORM and serialization metadata) — split responsibilities across layers"
+
+    # ── Composition Root / DI Wiring ─────────────────────────────────────────
+    - "Manual `new ConcreteRepository(...)` (or equivalent constructor call) inside a use-case, controller, or domain class — move construction to the composition root and inject the dependency"
+    - "Service-locator pattern (Container.resolve<X>(), ServiceLocator.get(), ApplicationContext.getBean()) called inside a use-case or domain class — accept the dependency as a constructor parameter instead"
+    - "DI container annotation scanning the domain/use-case package and binding implementations there — wiring belongs in the composition root (main / startup), not inside business code"
+
+    # ── Screaming Architecture (package structure reflects the domain) ───────
+    - "Top-level package named purely after technical concerns (`controllers/`, `services/`, `repositories/`, `models/`, `dao/`) instead of business capabilities (`billing/`, `onboarding/`, `inventory/`, `checkout/`) — the architecture should scream its purpose, not its framework"
+    - "Single shared `service/` or `util/` package collecting unrelated logic from multiple bounded contexts — split by feature / bounded context so each domain owns its code"
+    - "Use-case file named after a CRUD verb on the storage shape (`UpdateUserRowUseCase`, `InsertOrderTableUseCase`) instead of the business operation (`PromoteUserToAdmin`, `PlaceOrder`) — names should describe behavior, not data manipulation"
+
+    # ── Testability through Boundaries ───────────────────────────────────────
+    - "Use-case unit test that requires a real database, real HTTP server, real message broker, or real filesystem — use-cases must be exercisable through their ports with in-memory / fake adapters"
+    - "Domain entity test that boots a framework runtime (Spring context, Ktor server, Compose runtime, Rails environment) — entities must be plain types testable without any framework"
+    - "Use-case test that mocks the use-case under test (replacing its own behavior) instead of substituting its dependencies through the ports — tests the mock, not the use case"
+
+    # ── Layer-boundary specifics (deeper than the `solid` profile) ───────────
+    - "Outer-ring concept (HTTP status code, ORM session, UI event, Redux action, Compose remember{}) referenced by name in the domain or use-case layer — outer concerns must stay outside the boundary"
+    - "Domain enum / value object including a value that only makes sense in the outer layer (e.g. `OrderStatus.HTTP_503_PENDING`) — describe domain states in domain terms"
+    - "Use-case logging at INFO/DEBUG level using a framework-specific logger (SLF4J, log4j, console) imported directly — log through a port abstraction so the use case stays infrastructure-free"

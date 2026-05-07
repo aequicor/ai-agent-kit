@@ -8,7 +8,7 @@ Each subdirectory is an **axis**. A profile is a YAML file under exactly one axi
 | [`framework/`](framework/) | 0..N | `ui`, `code_quality.forbidden_patterns` (list-add) | `compose-multiplatform`, `paper-plugin` |
 | [`host/`](host/) | 1..N | template tree to render, host config file, agent frontmatter format, instruction file | `opencode` (default), `claude-code` |
 | [`provider/`](provider/) | exactly 1 IF `opencode` ∈ hosts, else 0 | `provider`, `models` (only used by OpenCode rendering) | `routerai` (default), `ollama-cloud` |
-| [`capability/`](capability/) | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agent skills | `security-baseline`, `solid`, `requirements-pipeline` |
+| [`capability/`](capability/) | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire agent skills | `security-baseline`, `solid`, `clean-architecture`, `quality-gates`, `requirements-pipeline` |
 
 The merge algorithm in [`docs/prompts/setup.md`](../docs/prompts/setup.md) raises an error if two profiles ever try to set the same scalar — that can only happen if a profile populates a field outside its axis, which [`kit/profile.schema.json`](../kit/profile.schema.json) forbids.
 

@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "4.6.2"
+kit_version: "4.7.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -49,7 +49,7 @@ vault_path: vault
 #   framework   (0..N):       compose-multiplatform | paper-plugin
 #   host        (1..N):       opencode | claude-code     ← matches the `hosts:` list above
 #   provider    (1 if opencode in hosts, else 0): routerai | ollama-cloud
-#   capability  (0..N):       security-baseline (always-on) | solid | requirements-pipeline | quality-gates
+#   capability  (0..N):       security-baseline (always-on) | solid | clean-architecture | requirements-pipeline | quality-gates
 #
 # Profiles in different axes own disjoint fields, so cross-axis merge is conflict-free.
 # Within-axis merge concatenates lists (forbidden_patterns).
@@ -61,7 +61,8 @@ stack:
     - opencode                # host
     - routerai                # provider (only because opencode is a host)
     - security-baseline       # capability (auto-added if missing)
-    - solid                   # capability
+    - solid                   # capability (SOLID + class-level OO design)
+    - clean-architecture      # capability (system-level layering / ports & adapters / boundary DTOs; v4.7+)
     - requirements-pipeline   # capability
     - quality-gates           # capability (opt-in test-quality + traceability forbidden patterns; v4.5+)
 

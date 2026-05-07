@@ -1,8 +1,8 @@
-# ai-agent-kit profile: SOLID & Clean Architecture
+# ai-agent-kit profile: SOLID (capability axis)
 # Usage: add solid to stack.profiles in your manifest
 # Language-agnostic capability profile — combine with any stack profile.
 #
-# Enforces SOLID principles and modern architectural rules:
+# Enforces SOLID principles and adjacent class-level OO design rules:
 #   S — Single Responsibility Principle
 #   O — Open/Closed Principle
 #   L — Liskov Substitution Principle
@@ -10,7 +10,10 @@
 #   D — Dependency Inversion Principle
 #
 # Also covers:
-#   - Clean Architecture layer boundaries (domain ↔ application ↔ infrastructure ↔ presentation)
+#   - Light Clean Architecture layer boundaries (domain ↔ application ↔ infrastructure ↔ presentation).
+#     For deeper Clean Architecture enforcement (dependency rule, ports/adapters,
+#     boundary DTOs, screaming architecture, testability) add the
+#     `clean-architecture` capability profile alongside this one.
 #   - DRY / YAGNI / KISS
 #   - Immutability and side-effect control
 #   - Law of Demeter / tell-don't-ask
@@ -19,7 +22,7 @@
 # Designed to layer on top of any language profile (kotlin-gradle, make-generic, ...).
 
 _profile_name: solid
-_profile_description: "SOLID principles and clean architecture rules — language-agnostic capability profile"
+_profile_description: "SOLID principles + class-level OO design rules — language-agnostic capability profile (pair with `clean-architecture` for deeper layering enforcement)"
 _profile_axis: capability
 
 code_quality:

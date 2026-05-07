@@ -1,4 +1,51 @@
 versions:
+  - version: "4.7.0"
+    released: "2026-05-07"
+    breaking: false
+    description: |
+      New `clean-architecture` capability profile — system-level layering
+      enforcement that complements the existing class-level `solid` profile.
+
+      The `solid` profile previously bundled four light Clean-Architecture
+      layer-boundary patterns under a "SOLID & Clean Architecture" header,
+      but those patterns covered only the most obvious mistakes (presentation
+      with business rules, framework-annotated entities, infrastructure with
+      decisions, wrong-direction imports). Real CA enforcement needs deeper
+      checks for the dependency rule, ports-and-adapters placement, boundary
+      DTOs, composition-root wiring, screaming architecture, and testability
+      through ports.
+
+      This release adds a dedicated `clean-architecture` profile with ~30
+      forbidden patterns covering:
+
+        - The Dependency Rule (inward-only imports, framework-free inner layers)
+        - Entities (no ORM/serialization/DI annotations, no anemic domains)
+        - Use Cases / Interactors (single business operation, no cross-cutting
+          inline, no entity leakage to presenters)
+        - Ports & Adapters (ports declared with the consumer, not the
+          implementer; signatures expressed in domain types)
+        - Boundary crossing (DTOs not entities; persistence-model isolation)
+        - Composition Root (DI/wiring at the edge, not in inner layers)
+        - Screaming Architecture (package structure reflects the domain)
+        - Testability (use-cases run without infrastructure; entities run
+          without a framework runtime)
+
+      The `solid` profile keeps its existing patterns unchanged (no behavior
+      regression for projects already on it) — its header just clarifies
+      that CA depth lives in the new profile. There is a small overlap on
+      layer-boundary patterns; setup.md merges `forbidden_patterns` by
+      concat + dedupe, so duplicates between the two profiles are harmless.
+
+      No schema changes, no new manifest fields, no `_index.txt` change
+      (profiles live outside `kit/`). Backward-compatible: existing
+      manifests are unaffected. Opt in by adding `clean-architecture` to
+      `stack.profiles[]` (or via `/kit-extend` / `/kit-config`).
+    files_changed:
+      - profiles/capability/clean-architecture.yaml
+      - profiles/capability/solid.yaml
+    manifest_changes:
+      added_fields: []
+
   - version: "4.6.2"
     released: "2026-05-06"
     breaking: false
