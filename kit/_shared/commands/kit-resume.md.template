@@ -25,8 +25,8 @@ Argument: $TASK_SLUG (optional)
 4. Read `.planning/DECISIONS.md`.
 5. Run `git status` and `git log --oneline -10`.
 6. If the task file references a feature folder (`{{VAULT_PATH}}/features/<module>/<feature>/`):
-   - Read `feature.md` and `test-cases.md`.
-   - List incomplete steps in `feature.md` § Implementation plan (lines without `[x]`).
+   - Read `spec.md` (frozen contract), `plan.md` (mutable plan + DoD + diff stats), and `test-cases.md`.
+   - List incomplete steps in `plan.md` § Implementation plan (lines without `[x]`).
 
 ## Step 3 — Reconcile
 
@@ -44,7 +44,8 @@ Argument: $TASK_SLUG (optional)
 - Active task: <active_task slug>
 - Last done: <DONE line from most recent task entry>
 - Next step: <NEXT line from most recent task entry>
-- Feature doc: <path or "none">
+- Feature spec: <path to spec.md or "none">
+- Feature plan: <path to plan.md or "none">
 - Pending steps: <list or "none">
 - Test-cases: <count of PEND, FAIL, total>
 - Repo state: <clean | dirty: N files | branch: X>

@@ -1,4 +1,452 @@
 versions:
+  - version: "6.1.0"
+    released: "2026-05-07"
+    breaking: false
+    description: |
+      Workflow-guarantees layer on top of v6.0. Adds five capabilities, all
+      backward-compatible (opt-out via manifest flags; existing v6.0 tasks
+      keep working through the upgrade):
+
+      ## P12 — Per-step commit (step 5.4b)
+
+      After every @Reviewer CLEAN, @Main runs `git add -A && git commit -m
+      "step <N>: <goal>"` and records the sha in `.planning/tasks/<slug>.md.step_commits[]`.
+      This makes /kit-step-resume and /kit-revert-step possible — both anchor
+      to known-green per-step commits — and feeds plan.md § Diff-review §
+      "Per-step diff" sub-table at 5.10. New manifest flag
+      `auto_commit_per_step: true` (default) controls this. Setting it false
+      degrades /kit-step-resume to /kit-resume semantics for projects with
+      external commit policies.
+
+      ## P13 — Runnable-slice gate at 3a
+
+      Each plan step must declare a `Runnable: <one line>` field describing
+      what PO will see in a local dev run after the step lands. @Main BLOCKs
+      PLAN at 3a SLICE-CAP CHECK if any step is missing this field.
+      `Runnable: internal — <reason>` is allowed only with new manifest flag
+      `allow_internal_steps: true` (default false enforces vertical slicing).
+
+      ## P14 — Runbook report at @CodeWriter Step 8
+
+      @CodeWriter's Step 8 output now has FIVE mandatory sections (was: one
+      Changed Files table):
+        - Changed Files (columns: File / Action / Lines — `Description` column
+          dropped; redundant with the new `Decisions I made` section).
+        - How to verify (PO actionable steps in a local dev run).
+        - Regression (which prior steps could be affected).
+        - Known limitations (intentionally NOT done in this step).
+        - Decisions I made (non-obvious choices for review/audit).
+
+      Empty content = `(none)`. @Main BLOCKs 5.6 CHECKPOINT if any section is
+      missing entirely. New @Reviewer Pass E ("Runbook quality") audits the
+      runbook for completeness, vagueness, and stack-mismatch (verify steps
+      referencing commands not in this project's stack).
+
+      ## P15 — Clean-session-per-step automation
+
+      New command `/kit-step-resume` (focused per-step bundle, narrower than
+      /kit-resume; reads only the target step's slice + previous step's
+      runbook + REPO_MAP).
+      New command `/kit-map` generates `.planning/REPO_MAP.md` (modules /
+      entry points / public APIs / file counts / lib deps / cross-module
+      imports). Auto-suggested by /kit-update; refreshed on demand via
+      `/kit-map --refresh`.
+      New @Main step 5.6 CHECKPOINT 3-way fork: after machine-checks pass,
+      PO chooses /kit-approve | /kit-defect <description> | /kit-revert-step.
+      New commands `/kit-defect` (re-open step with PO-found defect, adds
+      failing TC) and `/kit-revert-step` (destructive; git reset --hard to
+      previous step's commit).
+      Claude Code SessionStart hook (`session-start-context.mjs`) extended
+      to detect pending step and emit dual-channel output: silent
+      `additionalContext` JSON + visible stderr reminder. OpenCode equivalent:
+      new plugin `.opencode/plugins/session-bootstrap.ts` on `session.created`
+      and `session.compacted` events writes `.planning/.session-bootstrap.md`,
+      which agents read at task start per updated _shared.md instruction.
+      New manifest field `session_isolation: {mode, prompt_style}` controls
+      when /clear is suggested and through which channel.
+
+      ## P16 — Sleep mode (autonomous run)
+
+      New command `/kit-sleep "<description>"` (also `/kit-new-feature --sleep
+      "<description>"` — equivalent). Sets `.planning/CURRENT.md.mode: sleep`.
+      Autonomous run: all CONFIRM/diff-review/replan gates auto-approve,
+      retry budgets doubled (CodeWriter 6, Reviewer 6, DoDGate 5, replan 4),
+      session_isolation forced to overflow_only, /kit-defect and
+      /kit-revert-step disabled.
+
+      Self-validation loop on failure: extended retry per failure mode, then
+      auto-invocation of replan-on-discovery for structural failures.
+
+      BLOCKED-shutdown procedure on unrecoverable failure:
+        - Append to `.planning/MORNING_REPORT.md` with reason / last error /
+          last green sha / agent's hypothesis for fix.
+        - Optional `git reset --hard` to last green step (only if safe — no
+          uncommitted PO changes outside the step's scope).
+        - Set `.planning/CURRENT.md.status: SLEEP_BLOCKED, awaiting_po: true`.
+        - Halt — do NOT proceed to next step.
+
+      MORNING_REPORT.md (new template, gitignored): TL;DR + per-step rows +
+      per-step runbooks + replan log + open questions/blocks + total diff +
+      Suggested next action. PO reads on wake-up.
+
+      Safety constraints sleep mode does NOT bypass: DEPLOY / DESTROY /
+      SECRET_ROTATE / MIGRATION / EXTERNAL_API gates remain mandatory PO
+      approval (hitting any → BLOCKED-shutdown). Pre-commit hook stays live.
+      `--no-verify` forbidden under all conditions (kit/.claude/hooks/
+      pre-tool-bash-guard.mjs hard-denies it). spec.md FROZEN-after-CONFIRM
+      rule stays. Slice caps stay binding. /kit-revert is NOT auto-invoked.
+
+      ## Reporting trim (housekeeping for the new layer)
+
+      - `plan.md § Step-level diff stats` REMOVED. Single source of truth for
+        per-step diff history is now `.planning/tasks/<slug>.md.step_commits[]`,
+        which @Main appends at 5.4b. plan.md § Diff-review (5.10) renders the
+        per-step breakdown by reading step_commits.
+      - Verbose Timeline in task file collapsed to a single `Last-checkpoint:`
+        line. step_commits[] is the historical record.
+      - `Description` column in @CodeWriter Changed Files dropped (its content
+        moved to "Decisions I made" runbook section).
+      - kit/.claude/hooks/pre-tool-bash-guard.mjs gained sleep-mode awareness
+        (auto-allow pre-commit sync ask in sleep) and v6.1 hard denies for
+        --no-verify and --amend.
+
+      ## Migration
+
+      v6.0 → v6.1 is fully backward-compatible:
+        - `step_commits[]` starts empty for legacy tasks; /kit-step-resume
+          falls back to /kit-resume semantics when empty.
+        - `current_step_idx` defaults to 0 on legacy task files (auto-added
+          by /kit-update with this default).
+        - `Runnable:` field is required for NEW plans (3a check); existing
+          incomplete plans will hit the gate at the next CONFIRM cycle —
+          @Main asks PO to add the field then.
+        - `auto_commit_per_step: true` is the new default; teams with
+          external commit policy can set it false after upgrade with no
+          other changes.
+        - `allow_internal_steps: false` is the new default; backend-only
+          projects should flip it true.
+        - `session_isolation: {mode: per_step, prompt_style: both}` default;
+          override via /kit-config if you want different cadence.
+        - Three new gitignore lines added to target `.gitignore` by
+          `/kit-update` PHASE 3.8 (REPO_MAP.md, .session-bootstrap.md,
+          MORNING_REPORT.md). All are local artifacts; never commit.
+    files_changed:
+      - kit/manifest.schema.json
+      - kit/.planning/tasks/TASK.md.template
+      - kit/.planning/CURRENT.md.template
+      - kit/.planning/MORNING_REPORT.md.template
+      - kit/.vault/_templates/plan.md
+      - kit/_shared/_shared.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/agents/Reviewer.body.md.template
+      - kit/_shared/commands/kit-new-feature.md.template
+      - kit/_shared/commands/kit-update.md.template
+      - kit/_shared/commands/kit-step-resume.md.template
+      - kit/_shared/commands/kit-map.md.template
+      - kit/_shared/commands/kit-sleep.md.template
+      - kit/_shared/commands/kit-defect.md.template
+      - kit/_shared/commands/kit-revert-step.md.template
+      - kit/.claude/hooks/session-start-context.mjs
+      - kit/.claude/hooks/pre-tool-bash-guard.mjs
+      - kit/.opencode/plugins/session-bootstrap.ts
+      - kit/_index.txt
+    manifest_changes:
+      added_fields:
+        - path: "session_isolation"
+          default: { mode: per_step, prompt_style: both }
+          description: "v6.1+ per-step clean-session automation: when to nudge PO toward /clear (per_step | per_milestone | overflow_only) and through which channel (silent additionalContext | stderr reminder | both)."
+        - path: "auto_commit_per_step"
+          default: true
+          description: "v6.1+ commit after every @Reviewer CLEAN at step 5.4b. Required for /kit-step-resume per-step anchors. Set false only if external commit policy conflicts."
+        - path: "allow_internal_steps"
+          default: false
+          description: "v6.1+ controls runnable-slice gate at 3a. False (default) requires every plan step to declare a user-visible Runnable: line. True allows `Runnable: internal — <reason>` for pure-backend modules."
+
+  - version: "6.0.0"
+    released: "2026-05-07"
+    breaking: true
+    description: |
+      Structural release that closes three v5 gaps surfaced by the self-audit:
+      scope drift, missing diff-review step, spec rot during replan. Eleven
+      proposals (P1–P11) land together because P9 is breaking and the others
+      compose cleanly with it.
+
+      ## Breaking change — P9: spec/plan split
+
+      The single `feature.md` per feature is replaced by two files:
+
+        - `spec.md` — Why / ACs / Edge Cases / How it works / Test plan / UI
+                       section. **FROZEN at @Main's CONFIRM step** — read-only
+                       for the rest of the FEATURE pipeline. Replan-on-discovery
+                       cannot touch it. AC/EC amendments require a fresh
+                       @Analyst DRAFT cycle through PO.
+        - `plan.md` — Slice budget / Implementation plan / Replan log /
+                       Step-level diff stats / Diff-review / Definition of Done.
+                       **Mutable across EXECUTE.** All EXECUTE-phase artifacts
+                       live here.
+
+      This stops the v5 failure mode where replans / DoD verdicts / diff stats
+      accumulated inside the same file as the spec, and after 2–3 replan rounds
+      the spec became unreadable. The split is along the **frozen-vs-mutable
+      boundary**, not the document-genre boundary.
+
+      Vault layout:
+        v5: vault/features/<module>/<feature>/{feature.md, test-cases.md, retro.md?}
+        v6: vault/features/<module>/<feature>/{spec.md, plan.md, test-cases.md, retro.md?}
+
+      Every agent and skill that referenced feature.md was updated:
+        - @Analyst writes both files (full spec.md + plan.md skeleton).
+        - @CodeWriter, @Reviewer, @TestKeeper, @TraceabilityChecker, @BugFixer,
+          @Designer read spec.md (frozen) and the relevant slice of plan.md.
+        - @DoDGate reads spec.md + plan.md + test-cases.md; writes verdict to
+          plan.md § Definition of Done; never touches spec.md.
+        - replan-on-discovery skill amends only plan.md § Implementation plan.
+        - definition-of-done, spec-to-code-trace, eval-collector, bug-retro,
+          pre-mortem skills updated for the split.
+        - kit-new-feature, kit-resume, kit-techdebt commands updated.
+        - vault templates: feature.md template removed; spec.md and plan.md
+          templates added.
+
+      ## Non-breaking additions
+
+      ### P1 — Hard slice caps
+
+      New manifest field `slice_caps: {max_steps, max_files_per_step,
+      max_lines_per_step}` (defaults 6 / 5 / 400). Enforced at @Main step 3a
+      (after PLAN, before CONFIRM) and at every @CodeWriter step. Overflow →
+      @Main asks PO to split (no auto-trim); @CodeWriter returns BLOCKED with
+      reason=OVERFLOW. Slice caps are user-set; raising them is a manifest
+      edit, not an in-flight decision @Main makes.
+
+      ### P2 — Mandatory diff-review gate (step 5.10)
+
+      Between EXECUTE and CLOSE, @Main runs `git diff --stat` over the EXECUTE
+      range, fills plan.md § Diff-review, and waits for PO unless
+      `auto_approve.diff_review: true`. The diff_review key is intentionally
+      separated from feature/tech/bug auto-approves: setting `auto_approve:
+      true` does NOT bypass diff-review. This is the one PO-eye step v6 adds
+      and the one v5 lacked (PO never had to read the diff).
+
+      Three resolution commands at the gate: /kit-approve, /kit-revert <file>,
+      /kit-rework <reason>.
+
+      ### P3 — Bypass-channel forbids in security-baseline
+
+      Six new patterns in `profiles/capability/security-baseline.yaml`:
+      @SuppressWarnings, @ts-ignore, # noqa, eslint-disable (file-level),
+      --no-verify, @SuppressLint / ktlint-disable / detekt:suppress — all
+      without a paired issue id or DECISIONS.md reference are CRITICAL findings
+      via @Reviewer Pass A7. The same pattern set is mirrored in the
+      `ci-github` workflow's bypass-scan job.
+
+      ### P4 — @Reviewer Pass D (scope drift)
+
+      For each file in CHANGED_FILES not in step.Files declaration:
+      MEDIUM in same module, HIGH cross-module. Closes the "AI quietly improved
+      a neighbouring file" channel — by far the most common AI-induced techdebt
+      and the cheapest to prevent.
+
+      ### P5 — Section-sliced dispatch
+
+      @Main builds a per-step STEP_CONTEXT bundle containing only the AC/EC/TC
+      rows + How-it-works subsections this step references — not the whole
+      spec.md. Subagents (CodeWriter, Reviewer, TestKeeper) read STEP_CONTEXT
+      first; they only open SPEC_DOC at full length when STEP_CONTEXT is
+      insufficient. Eliminates 3-5× re-reading of a growing spec.md across
+      step iterations.
+
+      ### P6 — Step-level diff-stat checkpoints
+
+      Every step records files / +lines / -lines / overflow / out-of-scope in
+      plan.md § Step-level diff stats AND .planning/tasks/<slug>.md. Telemetry
+      for tuning slice_caps; surfaces drift before it accumulates.
+
+      ### P7 — Adversarial second pass for Critical-EC steps
+
+      When step.Owned contains any Critical EC, @Reviewer runs a second read
+      with the orientation "what is *missing*?" instead of "what is wrong?".
+      One agent, two prompt orientations — defence against AI-reviewer
+      convergence on the same blind spots as the author. Skipped for
+      non-Critical-EC steps to keep cost proportional.
+
+      ### P8 — Configurable test_strategy
+
+      New manifest field: `test_strategy: tdd_first | test_after | mixed`
+      (default tdd_first — same as v5). test_after writes production code
+      first then tests against actual behaviour; mixed picks per sub-task
+      (TDD for AC-bound, test_after for [exploratory]). Object form supports
+      `allow_per_step_override` so plan.md steps can declare a per-step
+      strategy.
+
+      ### P10 — Real CI workflow
+
+      New capability profile `ci-github` + manifest field `ci_host: github`.
+      Renders kit/.github/workflows/kit-gates.yml mirroring in-session
+      lint/compile/test gates AS REAL CI on every push and PR, plus a
+      bypass-marker scan job that fails CI on unjustified
+      @SuppressWarnings/@ts-ignore/--no-verify/etc. Without this profile,
+      gates exist only during agent sessions — a PR merged via the GitHub
+      web UI bypasses them.
+
+      ### P11 — Unchanged-call-sites quick check (5.4a)
+
+      After @Reviewer CLEAN, @Main does a serena/grep pass over the project
+      (excluding step.Files) for call sites of the step's changed public
+      symbols. Out-of-step call sites are appended to plan.md § Step-level
+      diff stats as info (never blocks). Catches "forgot to update the
+      migration / docs / sibling module".
+
+      ## Pipeline shape (v5 → v6)
+
+      v5 FEATURE: CLASSIFY → ANALYSIS → PLAN → CONFIRM → EXECUTE (5.1–5.9) → CLOSE
+      v6 FEATURE: CLASSIFY → ANALYSIS → PLAN (3a slice-cap check) → CONFIRM
+                  → EXECUTE (5.1 with EXTRACT → 5.2–5.4 → 5.4a unchanged-call-sites
+                             → 5.5 → 5.6 with diff-stat → 5.7–5.9
+                             → 5.10 mandatory diff-review) → CLOSE
+
+      Same number of bookkeeping steps; new safety nets at 3a, 5.4a, 5.10.
+
+      ## Files affected
+
+      Schema:
+        - kit/manifest.schema.json (slice_caps, test_strategy, ci_host,
+                                    auto_approve.diff_review, ci-github gate)
+
+      Profiles:
+        - profiles/capability/security-baseline.yaml (P3 bypass forbids)
+        - profiles/capability/ci-github.yaml (NEW — P10)
+
+      Templates:
+        - kit/.vault/_templates/spec.md (NEW — P9 frozen portion)
+        - kit/.vault/_templates/plan.md (NEW — P9 mutable portion)
+        - kit/.vault/_templates/feature.md (REMOVED — replaced by the two above)
+        - kit/.github/workflows/kit-gates.yml.template (NEW — P10)
+
+      Agents (all updated for P9 paths; specific Ps noted):
+        - kit/_shared/agents/Main.body.md.template (P1, P2, P5, P6, P9, P11)
+        - kit/_shared/agents/Analyst.body.md.template (P9 — writes both files)
+        - kit/_shared/agents/CodeWriter.body.md.template (P1 OVERFLOW, P8, P9)
+        - kit/_shared/agents/Reviewer.body.md.template (P3, P4, P7, P9)
+        - kit/_shared/agents/TestKeeper.body.md.template (P9)
+        - kit/_shared/agents/BugFixer.body.md.template (P9)
+        - kit/_shared/agents/TraceabilityChecker.body.md.template (P9)
+        - kit/_shared/agents/DoDGate.body.md.template (P9 — verdict to plan.md)
+        - kit/_shared/agents/Designer.body.md.template (P9)
+
+      Skills:
+        - kit/_shared/skills/definition-of-done/SKILL.md.template (P9)
+        - kit/_shared/skills/replan-on-discovery/SKILL.md.template (P9 — plan.md only)
+        - kit/_shared/skills/eval-collector/SKILL.md.template (P9)
+        - kit/_shared/skills/spec-to-code-trace/SKILL.md.template (P9)
+        - kit/_shared/skills/bug-retro/SKILL.md.template (P9)
+        - kit/_shared/skills/pre-mortem/SKILL.md.template (P9 — appends to plan.md)
+
+      Shared / commands / hooks:
+        - kit/_shared/_shared.md.template (P9, file-access matrix)
+        - kit/_shared/FILE_STRUCTURE.md.template (P9)
+        - kit/_shared/PROJECT_RULES.body.md.template (P9, P8 note)
+        - kit/_shared/commands/kit-new-feature.md.template (P9, P1 mention)
+        - kit/_shared/commands/kit-resume.md.template (P9 — resume context)
+        - kit/_shared/commands/kit-techdebt.md.template (P9 — synth spec+plan)
+        - kit/.claude/hooks/pre-tool-bash-guard.mjs (P9 — accepts spec.md/plan.md)
+        - kit/.claude/hooks/README.md (P9 doc)
+        - kit/nested/MODULE.body.md.template (P9)
+        - kit/.vault/_INDEX.md.template (P9)
+        - kit/AUTO_MEMORY.md.template (P9 example path)
+
+      Index / examples:
+        - kit/_index.txt (refresh — feature.md removed; spec.md, plan.md,
+          ci-github workflow added)
+        - manifest.example.yaml (kit_version, slice_caps, test_strategy,
+          ci_host, ci-github profile entry)
+
+      ## Migration from v5.x
+
+      `/kit-update` from v5.x to v6.0.0:
+
+      1. Adds the new manifest fields with documented defaults
+         (slice_caps, test_strategy=tdd_first, ci_host=none).
+      2. Adds the `auto_approve.diff_review: false` key if `auto_approve` is
+         in object form; if it is the boolean form, it stays as-is and
+         diff_review defaults to false (NOT inherited from boolean).
+      3. For each existing `vault/features/<module>/<feature>/feature.md`:
+         splits into `spec.md` (Why, ACs, ECs, How it works, Test plan, UI
+         sections) + `plan.md` (Implementation plan, DoD, plus the new empty
+         Slice budget / Replan log / Step-level diff stats / Diff-review
+         sections from the v6 plan.md skeleton). Existing REPLAN-N markers in
+         the old § Implementation plan are preserved into plan.md. The original
+         feature.md is removed (preserved by git history).
+      4. Re-renders all kit-managed agent / skill / command / template files.
+      5. Bumps kit_version to 6.0.0.
+
+      Existing tasks mid-flight: PO should let them complete on v5.x semantics
+      (re-render kit files only; do not split feature.md mid-flight). Run
+      /kit-update only between tasks.
+
+      ## What is NOT changing
+
+      - Agent set (still 9: Analyst, CodeWriter, TestKeeper, Reviewer,
+        TraceabilityChecker, DoDGate, BugFixer, Designer, plus @Main as
+        orchestrator).
+      - Definition of Done check count (still 7).
+      - Pipeline phase count (FEATURE still has 6 phases: CLASSIFY → ANALYSIS
+        → PLAN → CONFIRM → EXECUTE → CLOSE; EXECUTE adds two intra-phase
+        steps 5.4a and 5.10 but the phase numbering is unchanged).
+      - test-cases.md format and lifecycle (unchanged from v5).
+      - tech-debt format and /kit-techdebt pipeline (unchanged from v5,
+        except synth artifact split into spec.md+plan.md).
+      - Multi-host architecture (opencode + claude-code, render-per-host).
+    files_changed:
+      - kit/manifest.schema.json
+      - profiles/capability/security-baseline.yaml
+      - profiles/capability/ci-github.yaml
+      - kit/.vault/_templates/spec.md
+      - kit/.vault/_templates/plan.md
+      - kit/.github/workflows/kit-gates.yml.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/Analyst.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/agents/Reviewer.body.md.template
+      - kit/_shared/agents/TestKeeper.body.md.template
+      - kit/_shared/agents/BugFixer.body.md.template
+      - kit/_shared/agents/TraceabilityChecker.body.md.template
+      - kit/_shared/agents/DoDGate.body.md.template
+      - kit/_shared/agents/Designer.body.md.template
+      - kit/_shared/skills/definition-of-done/SKILL.md.template
+      - kit/_shared/skills/replan-on-discovery/SKILL.md.template
+      - kit/_shared/skills/eval-collector/SKILL.md.template
+      - kit/_shared/skills/spec-to-code-trace/SKILL.md.template
+      - kit/_shared/skills/bug-retro/SKILL.md.template
+      - kit/_shared/skills/pre-mortem/SKILL.md.template
+      - kit/_shared/_shared.md.template
+      - kit/_shared/FILE_STRUCTURE.md.template
+      - kit/_shared/PROJECT_RULES.body.md.template
+      - kit/_shared/commands/kit-new-feature.md.template
+      - kit/_shared/commands/kit-resume.md.template
+      - kit/_shared/commands/kit-techdebt.md.template
+      - kit/.claude/hooks/pre-tool-bash-guard.mjs
+      - kit/.claude/hooks/README.md
+      - kit/nested/MODULE.body.md.template
+      - kit/.vault/_INDEX.md.template
+      - kit/AUTO_MEMORY.md.template
+      - kit/_index.txt
+    manifest_changes:
+      added_fields:
+        - path: "slice_caps"
+          default: {max_steps: 6, max_files_per_step: 5, max_lines_per_step: 400}
+          description: "P1 — hard caps on plan size and per-step changeset"
+        - path: "test_strategy"
+          default: "tdd_first"
+          description: "P8 — tdd_first | test_after | mixed (or object with default + allow_per_step_override)"
+        - path: "ci_host"
+          default: "none"
+          description: "P10 — set to 'github' if ci-github capability profile is selected"
+        - path: "auto_approve.diff_review"
+          default: false
+          description: "P2 — auto-approve the mandatory diff-review gate at step 5.10. Default false even when other classes are auto-approved. Setting true bypasses the only PO-eye gate v6 adds — do not enable lightly."
+      profile_transforms: []
+
   - version: "5.2.0"
     released: "2026-05-07"
     breaking: false

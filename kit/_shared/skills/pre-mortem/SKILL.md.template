@@ -35,10 +35,10 @@ Skip when:
 ```
 Feature / Task: [feature-name or task slug]
 Module(s):      [list]
-Feature doc:    {{VAULT_PATH}}/features/<module>/<feature>/feature.md
+Feature doc:    {{VAULT_PATH}}/features/<module>/<feature>/plan.md
 ```
 
-The Risks block is appended to the same `feature.md` (a new section); not a separate file.
+The Risks block is appended to the same `plan.md` (a new section); not a separate file.
 
 ## Steps
 
@@ -52,7 +52,7 @@ The job for the next four minutes is to **list plausible causes**, not to defend
 
 ### Step 2 — Run the 8 risk lenses
 
-For each lens, write at most **two** concrete failure scenarios specific to this feature. If a lens has no plausible failure, write `n/a` and a one-clause reason. **Do not repeat scenarios already in feature.md § Edge Cases** — that is a separate document; this is about what the *plan and execution* might miss.
+For each lens, write at most **two** concrete failure scenarios specific to this feature. If a lens has no plausible failure, write `n/a` and a one-clause reason. **Do not repeat scenarios already in plan.md § Edge Cases** — that is a separate document; this is about what the *plan and execution* might miss.
 
 | # | Lens | Question to ask |
 |---|------|-----------------|
@@ -81,16 +81,16 @@ A risk in the ACT NOW bucket means the plan must already include a mitigation �
 
 For each ACT NOW risk, do exactly one of:
 
-- **Add a plan step** — append a step to `feature.md § Implementation plan`. Cite the risk-id (R-N) in the step description.
+- **Add a plan step** — append a step to `plan.md § Implementation plan`. Cite the risk-id (R-N) in the step description.
 - **Add a regression / boundary TC** — dispatch `@TestKeeper MODE=DRAFT` (or, after CONFIRM, `MODE=APPEND`) with the new scenario. Cite the risk-id in the TC Description prefix `[premortem-R3]`.
 - **Add an observability hook** — note the metric / log line in the relevant step under "Observability".
 - **Defer with explicit acceptance** — record `risk_accepted:` line in the active task file with rationale. PO must agree at CONFIRM.
 
 For non-ACT-NOW risks: record in the Risks table but do not mandate action.
 
-### Step 5 — Append the Risks block to feature.md
+### Step 5 — Append the Risks block to plan.md
 
-Append (do not overwrite) a `## Pre-mortem risks` section to `feature.md`:
+Append (do not overwrite) a `## Pre-mortem risks` section to `plan.md`:
 
 ```markdown
 ## Pre-mortem risks
@@ -102,14 +102,14 @@ Append (do not overwrite) a `## Pre-mortem risks` section to `feature.md`:
 | R3 | Observability | Order-creation timeout silently 504s | M | M | Step 3 — emit `order.create.timeout` counter |
 ```
 
-Then `knowledge-my-app_update_doc` on `feature.md`.
+Then `knowledge-my-app_update_doc` on `plan.md`.
 
 ### Step 6 — Surface to PO at CONFIRM
 
 The CONFIRM step shows PO the plan summary. Pre-mortem adds **one line**:
 
 ```
-Pre-mortem: N risks, K acted-on, M deferred (see feature.md § Pre-mortem risks).
+Pre-mortem: N risks, K acted-on, M deferred (see plan.md § Pre-mortem risks).
 ```
 
 PO can then answer for each `risk_accepted:` line.
@@ -120,7 +120,7 @@ PO can then answer for each `risk_accepted:` line.
 - **Domain-specific, not template-filling.** A pre-mortem listing "scaling issues" for every feature has not done the work.
 - **Maximum 2 scenarios per lens.** If you have 5 ideas, the top 2 are usually right; the rest are noise.
 - **No self-evident scenarios.** "What if there is a bug?" is not a risk — it is the default.
-- **Distinct from edge cases.** Edge cases are domain invariants in `feature.md § Edge Cases`. Pre-mortem is at the plan/execution level — what the plan / rollout might miss.
+- **Distinct from edge cases.** Edge cases are domain invariants in `plan.md § Edge Cases`. Pre-mortem is at the plan/execution level — what the plan / rollout might miss.
 
 ## Anti-patterns
 
@@ -133,4 +133,4 @@ PO can then answer for each `risk_accepted:` line.
 ## Notes
 
 - This skill is documentation + procedure. It does not write code, run tests, or modify the spec.
-- The skill output is **the Risks table appended to feature.md** — that is the artifact `@DoDGate` ignores (info-only) but PO reads at CONFIRM.
+- The skill output is **the Risks table appended to plan.md** — that is the artifact `@DoDGate` ignores (info-only) but PO reads at CONFIRM.

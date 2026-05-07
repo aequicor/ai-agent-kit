@@ -38,6 +38,6 @@
 
 Docs path: `{{MODULE_DOCS_PATH}}features/`
 
-- One folder per feature: `<feature>/feature.md`, `<feature>/test-cases.md`, optional `<feature>/retro.md`.
+- One folder per feature: `<feature>/spec.md` (FROZEN), `<feature>/plan.md` (mutable), `<feature>/test-cases.md`, optional `<feature>/retro.md`.
 - Coding patterns / conventions for this module: `{{MODULE_DOCS_PATH}}guidelines/<topic>.md` (optional).
 - Tech-debt entries: `{{MODULE_DOCS_PATH}}../tech-debt/{{MODULE_NAME}}/`.

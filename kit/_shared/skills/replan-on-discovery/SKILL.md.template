@@ -7,6 +7,10 @@ description: Bounded adaptive replanning. When an EXECUTE-phase agent (@CodeWrit
 
 Optional v5.2+ skill. Replaces immediate escalation with a **bounded** plan amendment when a structural gap is discovered mid-EXECUTE.
 
+## v6 note — writes only to plan.md
+
+In v5.2 this skill amended the v5 monolithic `feature.md § Implementation plan`. v6 splits feature.md into `spec.md` (FROZEN at CONFIRM) and `plan.md` (mutable). Replan amends only `plan.md § Implementation plan`. If the structural discovery actually requires changing AC / EC / How-it-works (i.e. the spec is wrong), that is NOT a replan trigger — escalate to PO with proposal "spec amendment via @Analyst", which is a fresh DRAFT cycle.
+
 ## Why this exists (and why it is bounded)
 
 In v5.0–v5.1, when `@CodeWriter` hits the 3-cycle review-fix cap, `@Main` escalates to PO. This is correct for fix-in-place issues (the model genuinely cannot solve the problem and PO judgment is needed). But it is the wrong response when the discovery is **structural**:
@@ -47,11 +51,11 @@ The hard cap (max 2 replan events per feature, ≤ 3 new steps each) is the **no
 
 ### Pattern B — TestKeeper RECONCILE finds Critical EC uncovered
 
-After all planned steps, `@TestKeeper MODE=RECONCILE` reports an EC of severity Critical or High that has no PASS TC AND no `[deferred]` note. The EC was added to `feature.md` after the plan was confirmed (PO edit, or `@Analyst` reflection) but no plan step covers it. Adding a TC alone is insufficient — implementation work is needed.
+After all planned steps, `@TestKeeper MODE=RECONCILE` reports an EC of severity Critical or High that has no PASS TC AND no `[deferred]` note. The EC was added to `spec.md` after the plan was confirmed (PO edit, or `@Analyst` reflection during a fresh DRAFT cycle) but no plan step covers it. Adding a TC alone is insufficient — implementation work is needed; replan adds the missing step to plan.md without touching spec.md.
 
 ### Pattern C — TraceabilityChecker reports ENDPOINT_ORPHAN on a Critical surface
 
-`@TraceabilityChecker` finds a spec endpoint with no handler. The spec genuinely needs the endpoint (per `feature.md § How it works`), but no plan step builds it. This is plan-incomplete, not code-broken.
+`@TraceabilityChecker` finds a spec endpoint with no handler. The spec genuinely needs the endpoint (per `spec.md § How it works`), but no plan step builds it. This is plan-incomplete, not code-broken.
 
 ### Pattern D — CodeWriter returns BLOCKED on missing dependency
 
@@ -62,7 +66,7 @@ After all planned steps, `@TestKeeper MODE=RECONCILE` reports an EC of severity 
 ```
 0. THINK — confirm this is structural, not fix-in-place.
    - Read the trigger verdict in full.
-   - Read feature.md § Implementation plan + § Acceptance Criteria + § Edge Cases.
+   - Read plan.md § Implementation plan + § Acceptance Criteria + § Edge Cases.
    - Identify: which AC / EC / endpoint is the gap? Is there an existing step
      that should have covered it but didn't?
    - If unclear → escalate (do not invoke this skill).
@@ -80,7 +84,7 @@ After all planned steps, `@TestKeeper MODE=RECONCILE` reports an EC of severity 
    - If count >= 2 → STOP, return ESCALATE verdict.
    - If proposed delta > 3 new lines/steps → STOP, return ESCALATE verdict.
 
-3. WRITE the amendment to feature.md § Implementation plan.
+3. WRITE the amendment to plan.md § Implementation plan.
    Use a structured marker so future readers (and DoDGate) can audit:
 
    <!-- REPLAN-N (YYYY-MM-DD): <one-line trigger summary>
@@ -110,7 +114,7 @@ After all planned steps, `@TestKeeper MODE=RECONCILE` reports an EC of severity 
    Trigger:    <one-line>
    Pattern:    <A|B|C|D>
    New steps:  <count> (cumulative replan count: <N>/2)
-   Plan delta: see feature.md § Implementation plan (REPLAN-<N> marker)
+   Plan delta: see plan.md § Implementation plan (REPLAN-<N> marker)
 
    /kit-approve to proceed, or describe the change you want instead.
 
@@ -122,9 +126,9 @@ After all planned steps, `@TestKeeper MODE=RECONCILE` reports an EC of severity 
 
 ## Hard rules
 
-1. **Max 2 replan events per feature.** Counted by REPLAN-N markers in `feature.md` and replan entries in the task file. The two are reconciled: if either says ≥2, cap is exhausted.
+1. **Max 2 replan events per feature.** Counted by REPLAN-N markers in `plan.md § Implementation plan` and replan entries in the task file. The two are reconciled: if either says ≥2, cap is exhausted.
 2. **Max 3 new steps per replan event.** No open-ended additions. If the discovery requires more — that is a sign the original plan was wrong at a level this skill cannot recover; escalate to PO who may decide to split into a new feature.
-3. **No silent replan.** Every replan event MUST produce both a `REPLAN-<N>` HTML-comment in `feature.md` AND a task-file checkpoint entry. If you cannot write either (file lock, write error) — abort, do not continue.
+3. **No silent replan.** Every replan event MUST produce both a `REPLAN-<N>` HTML-comment in `plan.md § Implementation plan` AND a task-file checkpoint entry. If you cannot write either (file lock, write error) — abort, do not continue.
 4. **Replan does NOT modify `§ Acceptance Criteria` or `§ Edge Cases`.** Those are `@Analyst`'s domain. If the discovery implies an AC/EC change, escalate so PO + `@Analyst` handle it. Replan only amends `§ Implementation plan`.
 5. **Replan does NOT bypass `@DoDGate`.** New steps go through the same EXECUTE loop (CodeWriter → TestKeeper → Reviewer → fix loop). DoDGate sees them like any other step.
 6. **Replan within a single turn.** Skill invocation, edit, and notification all happen in one `@Main` turn. No loop over replan invocations within a single trigger.

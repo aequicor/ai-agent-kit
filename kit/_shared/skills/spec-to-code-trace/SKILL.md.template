@@ -26,10 +26,10 @@ This is the **single source of truth** for the trace conventions. Do not redefin
 
 | Family | Format | Example | Source document |
 |--------|--------|---------|-----------------|
-| Acceptance Criterion | `AC-N` | `AC-7` | `feature.md` § Acceptance Criteria |
-| Edge Case | `EC-N` | `EC-2` | `feature.md` § Edge Cases (severity recorded inline in the table) |
+| Acceptance Criterion | `AC-N` | `AC-7` | `spec.md` § Acceptance Criteria |
+| Edge Case | `EC-N` | `EC-2` | `spec.md` § Edge Cases (severity recorded inline in the table) |
 | Test Case | `TC-N` | `TC-04` | `test-cases.md` |
-| Spec endpoint | `<METHOD> <path>` | `POST /orders` | `feature.md` § How it works |
+| Spec endpoint | `<METHOD> <path>` | `POST /orders` | `spec.md` § How it works |
 
 IDs are stable across the lifetime of a feature. Renumbering is forbidden — only **append** new IDs.
 
@@ -126,8 +126,8 @@ A test with **only** these signals is `WEAK_ASSERTION`:
 
 For every TC with a Verifies cell containing an id:
 
-- `AC-N` → AC-N must exist in `feature.md` § Acceptance Criteria.
-- `EC-N` → EC-N must exist in `feature.md` § Edge Cases.
+- `AC-N` → AC-N must exist in `spec.md` § Acceptance Criteria.
+- `EC-N` → EC-N must exist in `spec.md` § Edge Cases.
 
 Mismatches are `TC_ORPHAN` — the TC references a non-existent item. Reported, blocks DoD.
 
@@ -143,7 +143,7 @@ Items with no TC are reverse orphans. Reported as `AC_UNCOVERED` / `EC_UNCOVERED
 
 These rules are not optional for writers:
 
-- `@TestKeeper MODE=GENERATE` populates the `Verifies` cell on every row, mirroring `feature.md § Test plan`.
+- `@TestKeeper MODE=GENERATE` populates the `Verifies` cell on every row, mirroring `spec.md § Test plan`.
 - `@TestKeeper MODE=RECONCILE` fills the `Test impl` cell after `@CodeWriter` finishes a step.
 - `@CodeWriter` writes test files at predictable paths so `@TestKeeper RECONCILE` can locate them. Convention:
   - `<src-path>` ends in `.kt` → corresponding test in `src/test/.../<Name>Test.kt` (mirrored).

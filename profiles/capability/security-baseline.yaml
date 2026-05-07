@@ -17,3 +17,11 @@ code_quality:
     - "TODO/FIXME in production code without a tracking entry (issue or DECISIONS.md)"
     - "Disabled/commented-out tests without an explanation"
     - "Catching Throwable/Exception generically and swallowing it"
+    # ── v6.0+ bypass-channel forbids (P3). Tooling silencers must always carry an issue id or
+    # a DECISIONS.md reference — anonymous suppressions hide AI drift from CI/review.
+    - "@SuppressWarnings or @Suppress without an issue id or DECISIONS.md reference in the same comment"
+    - "// @ts-ignore or // @ts-expect-error without an issue id reference (use the rule-specific form when possible)"
+    - "# noqa or # type: ignore without a rule code AND a one-line reason"
+    - "// eslint-disable (file-level) — use the line-level form with a rule name and a reason"
+    - "git commit --no-verify in scripts, hooks, or Makefile targets"
+    - "// @SuppressLint, // ktlint-disable, // detekt:suppress without an issue id reference"

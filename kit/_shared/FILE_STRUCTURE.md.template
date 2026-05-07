@@ -2,7 +2,7 @@
 
 > Central path reference. Before creating any new file — check this table.
 > All agents read this file instead of guessing paths.
-> ai-agent-kit v5.
+> ai-agent-kit v6 — spec.md (FROZEN at CONFIRM) + plan.md (mutable).
 
 ---
 
@@ -20,20 +20,26 @@
 ## Knowledge Vault ({{VAULT_PATH}}/)
 
 > Indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
-> v5 uses a flat layout — one folder per feature with two or three files. v4's Diátaxis subtrees are gone.
+> v6 splits the v5 single feature.md into spec.md (FROZEN at CONFIRM) and plan.md (mutable). v4's Diátaxis subtrees remain gone.
 
 ### Per-feature structure
 
 ```
 {{VAULT_PATH}}/
   _INDEX.md                     ← vault map — entry point for agents
-  _templates/feature.md         ← canonical feature doc skeleton
+  _templates/spec.md            ← canonical spec.md skeleton (frozen-at-CONFIRM portion)
+  _templates/plan.md            ← canonical plan.md skeleton (mutable-during-EXECUTE portion)
 
   features/<module>/<feature>/
-    feature.md                  ← single design doc — Why / ACs / Edge cases / How it works /
-                                  Test plan / Implementation plan / Definition of Done
-                                  (@Analyst writes core; @Designer appends UI section;
-                                   @Main updates Implementation plan checkboxes; @DoDGate fills DoD)
+    spec.md                     ← FROZEN at CONFIRM — Why / ACs / Edge cases / How it works /
+                                  Test plan / UI section
+                                  (@Analyst writes core; @Designer appends UI section
+                                   BEFORE CONFIRM; nothing edits this after CONFIRM)
+    plan.md                     ← MUTABLE — Slice budget / Implementation plan / Replan log /
+                                  Step-level diff stats / Diff-review / Definition of Done
+                                  (@Analyst writes skeleton; @Main fills steps + diff stats +
+                                   diff-review; @DoDGate fills DoD verdict; replan-on-discovery
+                                   skill appends REPLAN-N markers)
     test-cases.md               ← live state — TC table + Defects log (@TestKeeper)
     retro.md                    ← optional — accumulates bug-fix retros (@BugFixer, bug-retro skill)
 
@@ -52,8 +58,10 @@
 
 | Path | Owner | Purpose |
 |------|-------|---------|
-| `{{VAULT_PATH}}/_templates/feature.md` | (template) | Canonical feature.md skeleton — copy and fill |
-| `{{VAULT_PATH}}/features/<module>/<feature>/feature.md` | @Analyst, @Designer, @Main, @DoDGate | The single feature design doc |
+| `{{VAULT_PATH}}/_templates/spec.md` | (template) | Canonical spec.md skeleton — frozen portion |
+| `{{VAULT_PATH}}/_templates/plan.md` | (template) | Canonical plan.md skeleton — mutable portion |
+| `{{VAULT_PATH}}/features/<module>/<feature>/spec.md` (FROZEN at CONFIRM) | @Analyst (write), @Designer (UI section before CONFIRM only) | Frozen contract: Why / ACs / ECs / How / Test plan / UI |
+| `{{VAULT_PATH}}/features/<module>/<feature>/plan.md` | @Analyst (skeleton), @Main (steps, diff stats, diff-review), @DoDGate (DoD verdict), replan-on-discovery (REPLAN markers) | Mutable plan / replan log / DoD verdict |
 | `{{VAULT_PATH}}/features/<module>/<feature>/test-cases.md` | @TestKeeper, @BugFixer (Status flips on fix) | Live test state |
 | `{{VAULT_PATH}}/features/<module>/<feature>/retro.md` | @BugFixer | Accumulating bug retros for this feature |
 | `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md` | @CodeWriter, @BugFixer | External library documentation cache |

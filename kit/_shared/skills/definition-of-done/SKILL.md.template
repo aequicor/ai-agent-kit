@@ -40,13 +40,13 @@ Walk in order. Stop walking only when you hit BLOCK — record it and continue: 
 
 | # | Group | Check | Evidence required |
 |---|-------|-------|-------------------|
-| 1 | ACs | Every Acceptance Criterion in `feature.md` has at least one TC in `test-cases.md` whose `Verifies` cell references it AND that TC has Status PASS | List AC-id → TC-id (verbatim cell), confirm Status PASS |
+| 1 | ACs | Every Acceptance Criterion in `spec.md` has at least one TC in `test-cases.md` whose `Verifies` cell references it AND that TC has Status PASS | List AC-id → TC-id (verbatim cell), confirm Status PASS |
 | 2 | Critical ECs | Every Critical Edge Case has at least one TC with Status PASS | List EC-id → TC-id, confirm Status PASS |
 | 3 | TCs state | No TC has Status PEND or FAIL | Counts of PEND and FAIL must both be zero |
 | 4 | Test run | The latest `@TestKeeper RECONCILE` verdict was `ALL_GREEN` | Quote the verdict line from the reconcile output |
 | 5 | Reviewer | The last `@Reviewer` verdict for the feature was `CLEAN` (no open CRITICAL or HIGH) | Quote the verdict line from the latest reviewer output |
 | 6 | Build & lint | Build PASS + lint clean from the latest `@TestKeeper EXECUTE` run | Quote the build/lint result |
-| 7 | Plan complete | Every step in `feature.md` § "Implementation plan" is marked done | Count `[x]` checkboxes vs total steps |
+| 7 | Plan complete | Every step in `plan.md` § "Implementation plan" is marked done | Count `[x]` checkboxes vs total steps |
 
 ## Info-only diagnostics (non-blocking)
 
@@ -60,7 +60,8 @@ These appear in the DoD report but **do not** affect the verdict:
 
 `@DoDGate` receives:
 
-- `FEATURE_DOC` — `{{VAULT_PATH}}/features/<module>/<feature>/feature.md`
+- `SPEC_DOC` — `{{VAULT_PATH}}/features/<module>/<feature>/spec.md` (FROZEN — AC/EC source)
+- `PLAN_DOC` — `{{VAULT_PATH}}/features/<module>/<feature>/plan.md` (Implementation plan checkboxes; the verdict block is written into this file's § Definition of Done — never spec.md)
 - `TEST_CASES` — `{{VAULT_PATH}}/features/<module>/<feature>/test-cases.md`
 - `LAST_RECONCILE` — verdict from the most recent `@TestKeeper RECONCILE`
 - `LAST_REVIEW` — verdict from the most recent `@Reviewer`

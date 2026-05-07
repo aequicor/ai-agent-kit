@@ -1,0 +1,103 @@
+# ai-agent-kit v6.0+ — real-CI mirror of in-session @TestKeeper EXECUTE gates.
+# Rendered when capability profile `ci-github` is selected and ci_host=github.
+# Without this workflow, the lint/compile/test gates exist only during agent
+# sessions — a PR merged via the GitHub web UI bypasses them. This workflow
+# ensures every push and PR runs the same gates as a real safety net.
+#
+# Commands are sourced from your manifest (stack.compile_command / lint_command /
+# test_command). [module] in test_command is replaced with each module name in
+# parallel jobs. Edit this file to add caching, matrix builds, or extra checks
+# specific to your stack — the kit will not re-overwrite it on /kit-update
+# unless you delete it first.
+
+name: kit-gates
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: kit-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    name: Compile ({{PROJECT_NAME}})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile
+        run: {{COMPILE_COMMAND}}
+
+  lint:
+    name: Lint ({{PROJECT_NAME}})
+    runs-on: ubuntu-latest
+    needs: compile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: {{LINT_COMMAND}}
+
+  test:
+    name: Test ({{PROJECT_NAME}})
+    runs-on: ubuntu-latest
+    needs: compile
+    strategy:
+      fail-fast: false
+      matrix:
+        # Modules from manifest.modules[].name. The kit re-renders this list
+        # on /kit-update; manual edits here will be preserved.
+        module: [{{MODULE_NAMES_LIST}}]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test ${{ matrix.module }}
+        run: ${{ format('{{TEST_COMMAND_TEMPLATE}}', matrix.module) }}
+        # ↑ TEST_COMMAND_TEMPLATE contains the literal token [module]; the
+        # rendering substitutes it at install time. If your project does not
+        # use a [module] placeholder, the matrix degenerates to a single job.
+
+  bypass-scan:
+    # P3 forbid-channel scan — fails if any AI-bypass marker is committed
+    # without an issue id reference. Catches --no-verify in scripts and
+    # @SuppressWarnings without justification.
+    name: Bypass-marker scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for unjustified bypass markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Patterns that must always be paired with an issue id (e.g. #123,
+          # JIRA-456) or DECISIONS.md reference on the same line or the
+          # immediately preceding comment.
+          patterns=(
+            '@SuppressWarnings'
+            '@Suppress\b'
+            '@ts-ignore'
+            '@ts-expect-error'
+            '# noqa\b'
+            '# type: *ignore\b'
+            'eslint-disable\b'
+            '--no-verify'
+            '@SuppressLint'
+            'ktlint-disable'
+            'detekt:suppress'
+          )
+          fail=0
+          for p in "${patterns[@]}"; do
+            # Find unjustified occurrences (no #NUM, no JIRA-style id, no DECISIONS, no TC-NN).
+            matches=$(grep -RInE "$p" --include='*.kt' --include='*.kts' --include='*.ts' --include='*.tsx' --include='*.js' --include='*.py' --include='*.go' --include='*.java' --include='*.rs' --include='*.rb' --include='*.sh' --include='Makefile' . 2>/dev/null \
+              | grep -vE '(#[0-9]+|[A-Z]+-[0-9]+|DECISIONS\.md|TC-[0-9]+|TD-[a-z]+)' || true)
+            if [ -n "$matches" ]; then
+              echo "::error::Unjustified bypass marker '$p':"
+              echo "$matches"
+              fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "Add an issue id or DECISIONS.md reference next to each marker, or remove it."
+            exit 1
+          fi

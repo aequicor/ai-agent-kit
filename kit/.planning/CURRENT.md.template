@@ -7,3 +7,9 @@
 active_task: (none)
 started:
 summary:
+mode: interactive          # v6.1+: interactive | sleep. Default interactive.
+                           # Set to sleep by /kit-sleep or /kit-new-feature --sleep at task creation.
+                           # Reset to interactive when task closes.
+status:                    # v6.1+: empty | SLEEP_BLOCKED. SLEEP_BLOCKED set by sleep-mode BLOCKED-shutdown;
+                           # PO clears by editing this file or running /kit-resume after fixing the block.
+awaiting_po: false         # v6.1+: true if status=SLEEP_BLOCKED and there's a MORNING_REPORT.md to read.

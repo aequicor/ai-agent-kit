@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "5.2.0"
+kit_version: "6.1.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -38,7 +38,78 @@ language_code: en
 #
 # Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always
 # require explicit /kit-approve — auto_approve does not affect them.
+#
+# v6.0+ also adds `auto_approve.diff_review` (object form only) for the
+# mandatory PO-eye gate at step 5.10. Default false even when feature/tech/bug
+# are all true. Setting it true bypasses the only PO-eye step v6 introduces —
+# do not enable lightly.
 auto_approve: false
+
+# ─────────────────────────────────────────────
+# SLICE CAPS (v6.0+ — P1)
+# ─────────────────────────────────────────────
+# Hard caps enforced by @Main at PLAN/CONFIRM and by @CodeWriter at every step.
+# Overflow → BLOCKED (no auto-trim). Set any field to 0 to disable that cap.
+slice_caps:
+  max_steps: 6              # max steps in plan.md § Implementation plan
+  max_files_per_step: 5     # max files (Create+Modify+Delete) per @CodeWriter step
+  max_lines_per_step: 400   # max +lines + -lines per step
+
+# ─────────────────────────────────────────────
+# TEST STRATEGY (v6.0+ — P8)
+# ─────────────────────────────────────────────
+# tdd_first   — failing tests before production code (v5 default; v6 default)
+# test_after  — production code first, then tests against actual behaviour;
+#               @Reviewer Pass A4 enforces assertion quality
+# mixed       — tdd_first for AC-bound steps, test_after for [exploratory]
+#               sub-tasks; CodeWriter picks per sub-task
+test_strategy: tdd_first
+# Object form (granular):
+# test_strategy:
+#   default: tdd_first
+#   allow_per_step_override: false   # if true, plan.md steps may set Test strategy: <mode>
+
+# ─────────────────────────────────────────────
+# SESSION ISOLATION (v6.1+ — P15)
+# ─────────────────────────────────────────────
+# Per-step clean-session automation. After 5.6 CHECKPOINT @Main suggests /clear
+# according to `mode`; the SessionStart hook (Claude Code) and session.created
+# plugin (OpenCode) inject pending-step context on the new session.
+#   mode: per_step       — nudge after every 5.6 (vertical-slicing default)
+#   mode: per_milestone  — nudge only before 5.7 RECONCILE / 5.10 diff-review
+#   mode: overflow_only  — nudge only on slice-cap overflow / replan / BLOCKED
+#   prompt_style: silent — additionalContext only (CC) / .session-bootstrap.md only (OC)
+#   prompt_style: stderr — visible reminder before first input
+#   prompt_style: both   — silent injection + visible reminder
+session_isolation:
+  mode: per_step
+  prompt_style: both
+
+# ─────────────────────────────────────────────
+# AUTO-COMMIT PER STEP (v6.1+ — P12)
+# ─────────────────────────────────────────────
+# Commit after every @Reviewer CLEAN at @Main step 5.4b. Required for
+# /kit-step-resume and /kit-revert-step (both anchor to per-step commits).
+# Set false only if external commit policy conflicts; /kit-step-resume then
+# falls back to /kit-resume semantics.
+auto_commit_per_step: true
+
+# ─────────────────────────────────────────────
+# ALLOW INTERNAL STEPS (v6.1+ — P13)
+# ─────────────────────────────────────────────
+# Runnable-slice gate at @Main step 3a. False (default) requires every plan
+# step to declare a user-visible `Runnable: <one line>` field. True allows
+# `Runnable: internal — <reason>` for pure-backend modules with no UI surface.
+allow_internal_steps: false
+
+# ─────────────────────────────────────────────
+# CI HOST (v6.0+ — P10)
+# ─────────────────────────────────────────────
+# Set to "github" if you also include the `ci-github` capability profile in
+# stack.profiles below. The kit will render .github/workflows/kit-gates.yml
+# mirroring the in-session lint/compile/test gates plus a bypass-marker scan.
+# Required iff `ci-github` is in stack.profiles (schema enforces this).
+ci_host: none
 
 # ─────────────────────────────────────────────
 # HOSTS (1..N — projects can run on OpenCode, Claude Code, or both)
@@ -86,6 +157,7 @@ stack:
     - solid                   # capability (SOLID + class-level OO design)
     - clean-architecture      # capability (system-level layering / ports & adapters / boundary DTOs)
     - quality-gates           # capability (opt-in test-quality + traceability forbidden patterns)
+    # - ci-github             # capability (v6+, P10 — renders .github/workflows/kit-gates.yml; needs ci_host: github)
     # - requirements-pipeline # capability (legacy, no-op in v5+ — Analyst is always on)
 
   # external_profiles is populated automatically by /kit-extend when you add a

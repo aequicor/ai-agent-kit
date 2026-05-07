@@ -1,0 +1,21 @@
+# ai-agent-kit profile: GitHub Actions CI gates (capability axis)
+#
+# Adds a real GitHub Actions workflow at .github/workflows/kit-gates.yml that
+# mirrors the in-session lint / compile / test gates @CodeWriter and @TestKeeper
+# enforce inside the agent runtime. Without this profile, the gates exist only
+# during an active agent session — a PR merged via the GitHub web UI bypasses
+# them. With this profile, every push and PR runs the same gates as a real CI
+# safety net.
+#
+# Requires manifest field `ci_host: github` (the schema enforces this when the
+# profile is in stack.profiles). Declares no manifest fields itself — the
+# trigger for rendering kit/.github/workflows/kit-gates.yml.template is the
+# presence of this profile in the merged manifest.
+#
+# Layered with: any language / framework profile. Language-specific commands
+# are pulled from stack.{compile_command, lint_command, test_command} so the
+# workflow stays portable.
+
+_profile_name: ci-github
+_profile_description: "GitHub Actions workflow that mirrors @TestKeeper EXECUTE gates (compile / lint / test) on every push and PR — v6.0+"
+_profile_axis: capability

@@ -564,6 +564,10 @@ Append to `<target>/.gitignore` (create if missing). Skip any line already prese
 ```
 # ai-agent-kit: local session pointer — not shared, each developer has their own
 .planning/CURRENT.md
+# ai-agent-kit v6.1+: local generated artifacts (per-developer, regenerated on demand)
+.planning/REPO_MAP.md
+.planning/.session-bootstrap.md
+.planning/MORNING_REPORT.md
 ```
 
 ### 3.9. Create vault scaffold

@@ -9,7 +9,7 @@ Optional v5.2+ skill. Auto-fills `evals/runs/<kit_version>/<task-slug>.md` at ta
 
 ## Why partial automation
 
-Some metrics from `evals/metrics.md` are derivable from the filesystem (artifact counts, file sizes, verdict from `feature.md § Definition of Done`, checkpoint timestamps for wall time). Others — token counts, PO clarifying questions, plan revisions — are session-state that lives in the chat transcript only. The kit operates **inside** the agent runtime; it does not have a programmatic view of its own chat history.
+Some metrics from `evals/metrics.md` are derivable from the filesystem (artifact counts, file sizes, verdict from `spec.md+plan.md § Definition of Done`, checkpoint timestamps for wall time). Others — token counts, PO clarifying questions, plan revisions — are session-state that lives in the chat transcript only. The kit operates **inside** the agent runtime; it does not have a programmatic view of its own chat history.
 
 Rather than pretend full automation, this skill is honest: it auto-fills the ~70% it can derive, and clearly marks the rest as `(manual)` so PO knows what still needs to be entered for a formal eval run. The result is still a 5× reduction in effort vs filling everything by hand.
 
@@ -37,7 +37,7 @@ If `evals/runs/` does not exist → no-op, no warning, no log entry. The skill i
 1. RESOLVE inputs:
    - task_slug = active_task from .planning/CURRENT.md
    - task_file = .planning/tasks/<slug>.md
-   - feature_doc = vault/features/<module>/<feature>/feature.md (from task file path reference)
+   - feature_doc = vault/features/<module>/<feature>/spec.md+plan.md (from task file path reference)
    - test_cases = vault/features/<module>/<feature>/test-cases.md
    - kit_version = manifest.kit_version
    - host = manifest.hosts (or first host if multi-host)
@@ -53,12 +53,12 @@ If `evals/runs/` does not exist → no-op, no warning, no log entry. The skill i
      in minutes; if either missing → "(N/A)"
    - po_clarifying_questions ≈ count of "Clarifying questions:" lines that
      PO answered (parse task file for clarification markers); if unclear → "(manual)"
-   - po_plan_revisions = count of "REPLAN-N" markers in feature.md;
+   - po_plan_revisions = count of "REPLAN-N" markers in spec.md+plan.md;
      defaults to 0 if no replan-on-discovery skill installed
    - po_waivers = 0 (v5+ has no waiver mechanism — record as 0 unless
      dod_waiver: lines exist for legacy compatibility)
 
-   ## From feature.md (verdicts + counts)
+   ## From spec.md+plan.md (verdicts + counts)
    - dod_verdict = parse "Verdict:" line from § Definition of Done
    - ac_count = count rows in § Acceptance Criteria table
    - ec_critical_count = count rows with Severity=Critical in § Edge Cases
@@ -137,7 +137,7 @@ For tasks with `tier: long-horizon` in their seed file (`evals/seed-tasks/featur
 
 - `sessions_used` (auto): count of resume cycles
 - `replan_events` (auto): count of REPLAN-N markers
-- `steps_planned / executed` (auto): from feature.md checkbox counts
+- `steps_planned / executed` (auto): from spec.md+plan.md checkbox counts
 - `cross_day_continuity` (manual)
 - `build_green_checkpoint_rate` (manual — needs run-level test results, not just final)
 - `escalations` (auto): from task file

@@ -1,8 +1,8 @@
-# AI-agent kit `v5.2.0`
+# AI-agent kit `v6.1.0`
 
-AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete, **deliberately small** agent team into your project — 9 agents instead of v4's 19, one design doc per feature instead of seven, seven Definition-of-Done checks instead of twenty-five.
+AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete, **deliberately small** agent team into your project — 9 agents (unchanged since v5), with hard slice caps, a mandatory diff-review gate, scope-drift detection, a frozen-vs-mutable spec/plan split, and (new in v6.1) **per-step commits, vertical-slice gate, runbook reports, clean-session-per-step automation, defect-feedback at 5.6, and an autonomous `sleep mode`** for unattended runs.
 
-The v5 redesign follows the 2025–2026 multi-agent research consensus: for tightly-coupled work like coding, fewer agents with shared context outperform large orchestrator-worker chains. See [docs/migration/changelog.yaml](docs/migration/changelog.yaml) for the full rationale.
+v6.1 is a workflow-guarantees layer on top of v6.0. All five additions (P12–P16) are backward-compatible — opt out via manifest flags if needed. v6.0 itself was the structural release that closed three v5 gaps: scope drift, missing diff-review step, and spec rot during replan. See [docs/migration/changelog.yaml](docs/migration/changelog.yaml) for the full rationale and per-version migration plans.
 
 **Multi-host:** pick `opencode`, `claude-code`, or both — projects can run on either runtime, or on both side-by-side. Subagent prompts are shared via the kit's `_shared/` tree, while host-specific frontmatter and config files (`opencode.json`, `.claude/settings.json`) are rendered per host.
 
@@ -12,11 +12,57 @@ The v5 redesign follows the 2025–2026 multi-agent research consensus: for tigh
 
 | Trigger | Pipeline | Output |
 |---|---|---|
-| `/kit-new-feature "<feature>"` | CLASSIFY → ANALYSIS (`@Analyst` writes `feature.md`; `@TestKeeper GENERATE` creates `test-cases.md`) → PLAN (writing-plans → inline steps; `@Designer` if UI; `@TestKeeper DRAFT`) → CONFIRM (`/kit-approve` or auto-approve flag) → EXECUTE (`@CodeWriter` ↔ `@TestKeeper EXECUTE` ↔ `@Reviewer` per step) → RECONCILE → `@TraceabilityChecker` → `@DoDGate` (7 checks) → CLOSE | Single `feature.md` (Why / ACs / Edge Cases / How it works / Test plan / Implementation plan / DoD), live `test-cases.md`, code + tests |
+| `/kit-new-feature "<feature>"` | CLASSIFY → ANALYSIS (`@Analyst` writes **`spec.md`** + `plan.md` skeleton; `@TestKeeper GENERATE` creates `test-cases.md`) → PLAN (writing-plans → steps in `plan.md` with mandatory `Runnable:` lines; `@Designer` appends UI to spec.md before CONFIRM; `@TestKeeper DRAFT`) → **3a SLICE-CAP + RUNNABLE-SLICE GATE** → CONFIRM (`/kit-approve` or auto-approve flag; **spec.md FROZEN at PASS**) → EXECUTE per step (`@CodeWriter` (TDD-first by default; emits 5-section runbook) ↔ `@TestKeeper EXECUTE` ↔ `@Reviewer` (Pass A–E + adversarial A* on Critical-EC steps) ↔ **5.4a unchanged-call-sites** ↔ **5.4b per-step COMMIT** → 5.6 CHECKPOINT with **3-way fork** `/kit-approve` \| `/kit-defect <description>` \| `/kit-revert-step`) → RECONCILE → `@TraceabilityChecker` → `@DoDGate` (7 checks; verdict to plan.md) → **5.10 MANDATORY DIFF-REVIEW** (per-step + total) → CLOSE | `spec.md` (frozen) + `plan.md` (Slice budget / Implementation plan / Replan log / Diff-review / DoD), live `test-cases.md`, per-step git commits, code + tests |
+| `/kit-sleep "<feature>"` *(v6.1+)* | Same FEATURE pipeline but autonomous: all CONFIRM/diff-review/replan gates auto-approve; retry budgets doubled (CodeWriter 6 / Reviewer 6 / DoDGate 5 / replan 4); on unrecoverable failure → BLOCKED-shutdown writes `.planning/MORNING_REPORT.md`. PO reads the report on wake-up. | All FEATURE outputs above + `.planning/MORNING_REPORT.md` (TL;DR / per-step runbooks / total diff / Suggested next action) |
 | `/kit-fix [TC-id\|description]` or `/kit-fix` | SCAN test-cases.md → TRIAGE → DEBUG (`@BugFixer MODE=debug`) if needed → FIX (`@BugFixer MODE=fix`) → `@Reviewer` → `@TestKeeper RERUN` → optional `bug-retro` for CRIT/HIGH | Fixed code, regression test, test-cases.md updated (Status FAIL→PASS, Defects log OPEN→FIXED), retro entry |
-| `/kit-techdebt [TD-id\|module=<n>\|severity=<lvl>]` | SCAN `<vault_path>/tech-debt/<module>/` → TRIAGE with PO → DIRECT or PLAN fix loop per entry → `@Reviewer` → ARCHIVE to `done/` | Closed tech-debt entries, fix commits, batch report |
+| `/kit-techdebt [TD-id\|module=<n>\|severity=<lvl>]` | SCAN `<vault_path>/tech-debt/<module>/` → TRIAGE with PO → DIRECT or PLAN fix loop per entry (PLAN path synthesises `spec.md`+`plan.md` for the techdebt feature) → `@Reviewer` → ARCHIVE to `done/` | Closed tech-debt entries, fix commits, batch report |
 
 The **live test-cases file** at `<vault_path>/features/<module>/<feature>/test-cases.md` is the single source of truth for `/kit-fix`. PO can edit it manually — change Status to `FAIL`, append a new TC row, edit Notes — and `/kit-fix` will pick it up.
+
+### v6 mental model — frozen vs mutable
+
+```
+vault/features/<module>/<feature>/
+  spec.md         ← Why / ACs / Edge Cases / How it works / Test plan / UI
+                    FROZEN at CONFIRM. Read-only after that for the rest of
+                    the FEATURE pipeline. AC/EC changes go through PO + a
+                    fresh @Analyst DRAFT cycle, NOT through replan.
+  plan.md         ← Slice budget / Implementation plan / Replan log /
+                    Diff-review (per-step + total at 5.10) / DoD
+                    Mutable across EXECUTE. v6.1 dropped the v6.0
+                    `Step-level diff stats` section; per-step diff history
+                    now lives in .planning/tasks/<slug>.md.step_commits[].
+  test-cases.md   ← Live test state (TC table + Defects log)
+  retro.md        ← Optional, accumulates bug-fix retrospectives
+```
+
+This is the v6 split — see [docs/migration/changelog.yaml](docs/migration/changelog.yaml) v6.0.0 entry for why. v6.1 trimmed plan.md by moving per-step stats into the task-file `step_commits[]` array (single source of truth).
+
+### v6.1 mental model — workflow guarantees
+
+```
+Per step in EXECUTE (interactive default):
+  @CodeWriter writes (TDD-first) → emits 5-section runbook
+  @TestKeeper EXECUTE → green
+  @Reviewer (Pass A–E) → CLEAN
+  5.4b: git commit -m "step <N>: <goal>" → step_commits[N].sha
+  5.6 CHECKPOINT — PO sees runbook + 3-way fork:
+    /kit-approve              → next step (or /clear → /kit-step-resume)
+    /kit-defect <description> → re-open step N with PO-found defect
+    /kit-revert-step          → undo step entirely
+  Repeat until all plan steps done → RECONCILE → DoDGate → 5.10 → CLOSE.
+
+Sleep mode (per-task opt-in via /kit-sleep or --sleep flag):
+  Same pipeline, but all forks auto-/kit-approve; retry budgets doubled;
+  on unrecoverable failure → BLOCKED-shutdown writes MORNING_REPORT.md
+  with TL;DR + last green sha + suggested next action. PO reads on wake-up.
+
+Clean session per step:
+  After 5.6, /clear (or new OC session) — SessionStart hook (CC) /
+  session.created plugin (OC) injects pending-step context. PO runs
+  /kit-step-resume to enter step N+1 with a focused per-step bundle
+  instead of the full /kit-resume dump.
+```
 
 ---
 
@@ -104,7 +150,7 @@ Profiles are organised along five **orthogonal axes**. Each profile is restricte
 | `framework` | 0..N | `ui`, `code_quality.forbidden_patterns` | `compose-multiplatform`, `paper-plugin` |
 | `host` | 1..N | which template tree is rendered, host config file, agent frontmatter format, instruction file | `opencode`, `claude-code` |
 | `provider` | exactly 1 IF `opencode` ∈ hosts, else 0 | `provider`, `models` (used only by OpenCode rendering) | `routerai` (default), `ollama-cloud` |
-| `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire skills | `security-baseline`, `solid`, `clean-architecture`, `requirements-pipeline` (no-op in v5+, kept for back-compat), `quality-gates` |
+| `capability` | 0..N (`security-baseline` always added) | `code_quality.forbidden_patterns`; may wire skills; `ci-github` enables real-CI rendering | `security-baseline`, `solid`, `clean-architecture`, `requirements-pipeline` (no-op in v5+, kept for back-compat), `quality-gates`, `ci-github` (v6+, P10 — needs `ci_host: github`) |
 
 **Common combos:**
 
@@ -180,6 +226,24 @@ Each finding becomes one file under `<vault_path>/tech-debt/<module>/<slug>.md` 
 ```
 
 ---
+
+## What's new in v6 — at a glance
+
+| Proposal | What it does | Where |
+|----------|--------------|-------|
+| P1 | Hard slice caps (steps / files-per-step / lines-per-step). Overflow → BLOCKED, no auto-trim | `manifest.slice_caps`; @Main step 3a; @CodeWriter Step 5b |
+| P2 | Mandatory diff-review gate at step 5.10 between EXECUTE and CLOSE; PO eye on every close | @Main 5.10; `auto_approve.diff_review` (separate from class flags) |
+| P3 | Forbid bypass markers (`@SuppressWarnings`, `@ts-ignore`, `--no-verify`, …) without an issue id | `security-baseline` profile; @Reviewer Pass A7; `ci-github` bypass-scan job |
+| P4 | @Reviewer Pass D — scope drift (out-of-step files MEDIUM, cross-module HIGH) | @Reviewer Pass D |
+| P5 | Section-sliced dispatch — subagents get only the relevant slice of spec.md/plan.md | @Main step 5.1 EXTRACT |
+| P6 | Step-level diff-stat checkpoints (telemetry for tuning slice_caps) | @Main step 5.6; plan.md § Step-level diff stats |
+| P7 | Adversarial second-pass for Critical-EC steps ("what is missing?") | @Reviewer Pass A* |
+| P8 | Configurable test_strategy (tdd_first / test_after / mixed) | `manifest.test_strategy`; @CodeWriter Step 3 |
+| P9 | spec.md (frozen at CONFIRM) + plan.md (mutable) split — replan can no longer rot the spec | every agent / skill / template / command |
+| P10 | Real CI workflow mirroring in-session gates + bypass-scan | `ci-github` profile; `ci_host: github`; `kit/.github/workflows/kit-gates.yml` |
+| P11 | Unchanged-call-sites quick check after every step's review | @Main step 5.4a |
+
+New manifest fields (auto-added by `/kit-update` with documented defaults): `slice_caps`, `test_strategy`, `ci_host`, `auto_approve.diff_review`.
 
 ## Eval suite (new in v5)
 
@@ -263,26 +327,30 @@ ai-agent-kit/
     ├── AUTO_MEMORY.md.template
     ├── opencode.json.template             # rendered iff opencode ∈ hosts
     ├── nested/MODULE.body.md.template     # rendered per module per host
+    ├── .github/workflows/kit-gates.yml.template   # v6+ rendered iff ci-github profile + ci_host: github (P10)
     ├── _shared/                           # single source of truth — pulled into both hosts via {{INCLUDE: ...}}
     │   ├── PROJECT_RULES.body.md.template
     │   ├── _shared.md.template
     │   ├── FILE_STRUCTURE.md.template
     │   ├── i18n/{en,ru}.md
     │   ├── agents/        (9 .body.md.template — agent prose without frontmatter)
-    │   ├── commands/      (12 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-config, ...)
+    │   ├── commands/      (17 .md.template — /kit-new-feature, /kit-fix, /kit-techdebt, /kit-config, /kit-resume, /kit-step-resume, /kit-map, /kit-sleep, /kit-defect, /kit-revert-step, ...)
     │   └── skills/        (8 — bug-retro, definition-of-done, look-up, pre-mortem, spec-to-code-trace, tech-debt-record + v5.2 optional: replan-on-discovery, eval-collector)
     ├── .opencode/
-    │   └── agents/        (9 .md.template — OpenCode frontmatter + INCLUDE directive)
+    │   ├── agents/        (9 .md.template — OpenCode frontmatter + INCLUDE directive)
+    │   └── plugins/       (1 .ts — session-bootstrap plugin on session.created/compacted; v6.1+)
     ├── .claude/
     │   ├── agents/        (8 .md.template — Claude Code frontmatter + INCLUDE; Main lives in CLAUDE.md)
+    │   ├── hooks/         (3 .mjs — session-start-context, pre-tool-bash-guard, stop-status-reminder)
     │   └── settings.json.template
     ├── .planning/
-    │   ├── CURRENT.md.template
+    │   ├── CURRENT.md.template            # session pointer (mode: interactive | sleep)
     │   ├── DECISIONS.md.template
-    │   └── tasks/TASK.md.template         # per-task planning stubs
+    │   ├── MORNING_REPORT.md.template     # v6.1+ sleep mode report
+    │   └── tasks/TASK.md.template         # per-task state (current_step_idx, step_commits[])
     └── .vault/                            # rendered to <vault_path>/ at install time
         ├── _INDEX.md.template
-        └── _templates/{feature,test-cases,retro,tech-debt}.md
+        └── _templates/{spec,plan,test-cases,retro,tech-debt}.md   # v6+ — spec/plan split (P9)
 ```
 
 ---

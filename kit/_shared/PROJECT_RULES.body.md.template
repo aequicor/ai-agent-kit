@@ -53,11 +53,13 @@
 
 ### Knowledge Vault ({{VAULT_PATH}}/)
 
-v5 uses a flat layout — one folder per feature with two or three files. No Diátaxis subtrees.
+v6 splits the v5 monolithic feature.md along the frozen-vs-mutable boundary. One folder per feature, three or four files.
 
 ```
 {{VAULT_PATH}}/features/<module>/<feature>/
-├── feature.md       — single design doc (Why / ACs / Edge cases / How it works / Test plan / Implementation plan)
+├── spec.md          — FROZEN at CONFIRM (Why / ACs / Edge cases / How it works / Test plan / UI)
+├── plan.md          — MUTABLE during EXECUTE (Slice budget / Implementation plan / Replan log /
+│                      Step-level diff stats / Diff-review / Definition of Done)
 ├── test-cases.md    — live state (TC table + Defects log)
 └── retro.md         — optional, only created if a bug-fix retro is recorded for this feature
 ```
@@ -108,14 +110,14 @@ Full rules + pre-flight checklist: `{{HOST_DIR}}/_shared.md` → "Tool Use Disci
 
 ## Edge cases
 
-- Edge cases (called "EC-N" in feature.md) MUST be identified during analysis, not discovered during implementation.
-- Every feature has them as a section in `{{VAULT_PATH}}/features/<module>/<feature>/feature.md` § "Edge Cases". Read it before implementing.
+- Edge cases (called "EC-N" in spec.md) MUST be identified during analysis, not discovered during implementation.
+- Every feature has them as a section in `{{VAULT_PATH}}/features/<module>/<feature>/spec.md` § "Edge Cases". Read it before implementing. (v6 — used to be in feature.md.)
 - Critical edge cases (data loss, security, system crash) require a passing TC in the test plan.
 
 ## Testing
 
-- Write a failing test before implementing (TDD is the default).
-- Every Critical edge case from feature.md MUST have a TC.
+- Write a failing test before implementing when `manifest.test_strategy: tdd_first` (default). For `test_after`, write code first then tests against expected behaviour. See @CodeWriter for full discipline.
+- Every Critical edge case from spec.md MUST have a TC.
 - All existing tests must continue to pass after your change.
 - Network calls in tests → use mocks or test doubles, **never real endpoints**.
 - SQL only via parameterized queries — never concatenate user input into queries.
@@ -150,12 +152,13 @@ Do not commit `TODO` or `FIXME` without a corresponding entry in `.planning/DECI
 
 ## Definition of Done
 
-A task is **complete** only when ALL of the following are true (the canonical 7 checks of v5; full list in `{{HOST_DIR}}/skills/definition-of-done/SKILL.md`):
+A task is **complete** only when ALL of the following are true (the canonical 7 checks; full list in `{{HOST_DIR}}/skills/definition-of-done/SKILL.md`) AND the v6 diff-review gate passes:
 
-- [ ] Every AC has at least one TC with Status PASS in `test-cases.md`.
-- [ ] Every Critical EC has at least one TC with Status PASS.
+- [ ] Every AC (from `spec.md`) has at least one TC with Status PASS in `test-cases.md`.
+- [ ] Every Critical EC (from `spec.md`) has at least one TC with Status PASS.
 - [ ] No TC has Status PEND or FAIL.
 - [ ] Last `@TestKeeper RECONCILE` verdict was `ALL_GREEN`.
 - [ ] Last `@Reviewer` verdict was `CLEAN` (no open CRITICAL or HIGH).
 - [ ] Build PASS + lint clean from the latest run.
-- [ ] Every step in `feature.md` § Implementation plan is marked done.
+- [ ] Every step in `plan.md` § Implementation plan is marked done.
+- [ ] (v6) Step 5.10 diff-review APPROVED in `plan.md` § Diff-review (or `auto_approve.diff_review: true`).

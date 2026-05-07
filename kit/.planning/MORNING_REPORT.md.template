@@ -1,0 +1,78 @@
+# Morning Report — {{TASK_SLUG}}
+
+> Generated: {{ISO_TIMESTAMP_PLACEHOLDER}}
+> Sleep started: <ISO> — Sleep ended: <ISO>
+> Final status: SUCCESS | BLOCKED | PARTIAL
+> **Gitignored — local artifact. Read on wake-up; archive or delete after.**
+
+---
+
+## TL;DR
+
+<one or two sentences: what got done, what (if anything) is stuck>
+
+---
+
+## Steps completed
+
+| Step | Goal | Files | +/- | Commit | Runbook anchor |
+|------|------|-------|-----|--------|----------------|
+| 1 | <goal> | 3 | +180/-22 | abc123de | #step-1 |
+| 2 | <goal> | 5 | +210/-40 | def456ab | #step-2 |
+
+---
+
+## Per-step runbooks (for morning manual verification)
+
+### Step 1
+
+**How to verify**
+1. <action> → <expected result>
+2. ...
+
+**Regression — what prior steps could be affected**
+- Step K: <feature> — check <how>
+- (none)
+
+**Known limitations (intentionally NOT done)**
+- <limitation>
+- (none)
+
+**Decisions I made**
+- Chose <X> over <Y> because <reason>
+- (none)
+
+### Step 2
+
+(same structure)
+
+---
+
+## Replans triggered
+
+- REPLAN-1 at step 3 — Pattern B (uncovered Critical EC); 2 new steps added.
+- (none if no replans)
+
+---
+
+## Open questions / blocks (require PO)
+
+- BLOCKED at step N: <reason>. Last error: <ref>. Suggested fix: <agent's hypothesis>.
+- (none if SUCCESS)
+
+---
+
+## Total diff
+
+- Range: `<start_commit>..HEAD`
+- Total: <N> files, +<A> lines, -<B> lines
+- Files NOT in any step.Files declaration: <list, or (none)>
+- Out-of-module touches: <list, or (none)>
+
+---
+
+## Suggested next action
+
+- **If SUCCESS:** run `/kit-approve` to CLOSE — the diff-review block in plan.md was auto-approved (sleep mode), but you can still `/kit-revert <file>` before CLOSE if something looks off.
+- **If BLOCKED:** open the listed step in spec.md / plan.md, read "Open questions / blocks" above, then either fix manually + `/kit-resume`, or give the agent direction via `/kit-rework <reason>`.
+- **If PARTIAL:** sleep ended cleanly mid-feature (not stuck — e.g. PO interrupted). Resume with `/kit-step-resume`; sleep mode stays active unless you run `/kit-resume --interactive` to switch.

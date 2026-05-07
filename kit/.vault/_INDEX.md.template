@@ -14,7 +14,7 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 # {{PROJECT_NAME}} — Knowledge Vault
 
 > **Entry point for AI agents.** Search this vault before any action.
-> ai-agent-kit v5 — flat layout, one folder per feature.
+> ai-agent-kit v6 — flat layout, one folder per feature, spec/plan split.
 
 ---
 
@@ -23,10 +23,13 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 ```
 {{VAULT_PATH}}/
 ├── _INDEX.md
-├── _templates/feature.md             ← canonical feature doc skeleton
+├── _templates/
+│   ├── spec.md                       ← FROZEN portion (Why/ACs/ECs/How/Test plan)
+│   └── plan.md                       ← MUTABLE portion (Implementation plan / DoD / step diff stats)
 │
 ├── features/<module>/<feature>/      ← one folder per feature
-│   ├── feature.md                    ← single design doc (replaces v4 requirements / spec / plan / corner-cases / test-plan)
+│   ├── spec.md                       ← frozen at CONFIRM (replaces v5 feature.md § spec sections)
+│   ├── plan.md                       ← mutable across EXECUTE (replaces v5 feature.md § plan + DoD)
 │   ├── test-cases.md                 ← live test state
 │   └── retro.md                      ← optional, accumulates bug retros
 │
@@ -38,7 +41,7 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
     └── done/<slug>.md                ← archived
 ```
 
-v4 used five Diátaxis subtrees (`concepts/`, `reference/`, `how-to/`, `tutorials/`, `guidelines/`) with one file per concern. The split produced 7–10 files per feature — too many for any PO to read end-to-end. v5 collapses everything per feature into `feature.md` plus `test-cases.md`.
+v4 used five Diátaxis subtrees (one file per concern → 7–10 files per feature). v5 collapsed them into a single `feature.md` per feature. v6 splits that one file again — but along the **frozen-vs-mutable** boundary, not the document-genre boundary: `spec.md` is the contract (untouched after CONFIRM) and `plan.md` carries everything that legitimately changes during EXECUTE (steps, replans, diff stats, DoD verdict). This stops replans from rotting the spec.
 
 ---
 
@@ -51,7 +54,7 @@ v4 used five Diátaxis subtrees (`concepts/`, `reference/`, `how-to/`, `tutorial
 ## Agent Workflow
 
 1. **Search**: `search_docs("topic")` — find relevant rules
-2. **Read**: open the linked feature.md / guideline files
+2. **Read**: open the linked spec.md / plan.md / guideline files
 3. **Execute**: implement by the rules
 4. **Write**: `write_guideline(...)` / `update_doc(...)` — record learnings
 

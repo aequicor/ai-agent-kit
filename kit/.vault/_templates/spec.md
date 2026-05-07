@@ -1,9 +1,9 @@
 ---
-genre: feature
-title: Feature Doc Template (single-file design)
+genre: feature-spec
+title: Feature Spec Template (frozen at CONFIRM)
 topic: feature
 triggers:
-  - "feature doc"
+  - "feature spec"
   - "feature design"
   - "spec"
   - "requirements"
@@ -17,6 +17,19 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 > Status: DRAFT | APPROVED | DONE
 > Module: <module>
 > Owner: <PO>
+
+<!--
+  ⚠ FROZEN at CONFIRM. v6.0+ rule: once @Main step 4 (CONFIRM) passes, this file
+  is read-only for the rest of the FEATURE pipeline. EXECUTE-phase agents
+  (@CodeWriter, @Reviewer, @TestKeeper, @TraceabilityChecker, @DoDGate,
+  replan-on-discovery) MUST NOT edit this file. Mutable state — implementation
+  steps, DoD verdict, replan markers — lives in the sibling plan.md.
+
+  If a structural discovery requires changing AC / EC / How-it-works,
+  @Main escalates to PO and re-dispatches @Analyst with TYPE=FEATURE
+  EXISTING_DOCS=<this spec.md>. The amendment is a new DRAFT cycle, not
+  an in-place edit. Spec rot is the failure mode this split prevents.
+-->
 
 ## Why
 
@@ -78,32 +91,10 @@ GET  /api/v1/orders/:id → getOrderHandler
 **Type values:** `unit` | `integration` | `e2e` | `manual`.
 **Verifies** lists AC/EC ids covered by this TC. Every Critical EC must appear at least once.
 
-## Implementation plan
-
-Filled by `@Main` via `superpowers:writing-plans` after Test plan is approved. Each step is a contract:
-
-```
-- [ ] Step 1: <goal>
-      Owned ACs/ECs/TCs: AC-1, EC-1, TC-1, TC-3
-      Files: src/orders/Service.kt, src/orders/Repository.kt
-      Public signatures:
-        - fun saveOrder(o: Order): Long
-      Guidelines: [[guidelines/<module>/transactions]]
-
-- [ ] Step 2: <goal>
-      ...
-```
-
-Steps live as sections inside this file, not as separate stage-NN.md files.
-
 ## UI / UX
 
-(Filled by `@Designer` for UI features only. Otherwise omit this section.)
+(Filled by `@Designer` for UI features only. Otherwise omit this section. UI/UX is part of the spec — frozen at CONFIRM along with everything else.)
 
 ## Open questions
 
 (Delete this section before APPROVED. Items here block CONFIRM.)
-
-## Definition of Done
-
-(Filled by `@DoDGate` at CLOSE. Left empty until then.)

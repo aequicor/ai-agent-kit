@@ -93,7 +93,7 @@ For each TD-id in the picked list, classify:
 | Path | When | Pipeline |
 |------|------|----------|
 | **DIRECT** | severity ∈ {low, medium} AND `Files` table lists ≤ 2 files AND category ∈ {warning, todo, deprecation, smell} | `@BugFixer`-style cycle: ANALYZE → FIX → (REGRESSION TEST if behaviour could shift) → `@Reviewer` → BUILD |
-| **PLAN** | severity = high OR ≥ 3 files OR category = duplication (cross-cutting refactor) | Standard TECH pipeline: write step section into `feature.md` for the synthetic feature `techdebt-<slug>`, then `@CodeWriter` → `@Reviewer` per step |
+| **PLAN** | severity = high OR ≥ 3 files OR category = duplication (cross-cutting refactor) | Standard TECH pipeline: write spec.md (TECH form) + plan.md skeleton for the synthetic feature `techdebt-<slug>`, then `@CodeWriter` → `@Reviewer` per step |
 
 Set the entry's `status: open` → `status: in-progress` (frontmatter only) before dispatching, so a parallel run does not double-fix it.
 
@@ -115,9 +115,10 @@ for each TD-id in selected:
          Note: do NOT update test-cases.md (no TC was assigned). Skip Defects log.
 
        PLAN path:
-         a. Synthesize a small feature.md at
-            {{VAULT_PATH}}/features/<module>/techdebt-<slug>/feature.md
-            with TYPE=TECH, only the technical sections + a 1–3 step Implementation plan.
+         a. Synthesize a small spec.md + plan.md pair at
+            {{VAULT_PATH}}/features/<module>/techdebt-<slug>/{spec.md, plan.md}
+            with TYPE=TECH (spec.md: only § How it works + § Test plan; plan.md:
+            skeleton + 1–3 step Implementation plan written immediately).
          b. For each step: dispatch @CodeWriter → @Reviewer → fix loop (max 3 review-fix cycles, then escalate).
          c. After last step: BUILD + LINT.
 

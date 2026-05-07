@@ -1,4 +1,4 @@
-> ai-agent-kit v5 — multi-host (OpenCode + Claude Code)
+> ai-agent-kit v6 — multi-host (OpenCode + Claude Code), spec/plan split (BugFixer reads spec.md; never writes spec.md or plan.md)
 
 ## Context and Rules
 
@@ -173,13 +173,18 @@ One file — compile — next. Max 2 files between compilations.
 
 ## Review step
 
-Dispatch `@Reviewer` with:
+Dispatch `@Reviewer` with (v6 input shape):
 
 ```
-STAGE_FILE: <bug-fix scratch file or "(bug-fix)">
-CHANGED_FILES: <list>
-FEATURE_DOC: {{VAULT_PATH}}/features/<module>/<feature>/feature.md
+STAGE_FILE: (bug-fix)
+STEP_FILES_DECLARED: <list of files this fix declared up-front>
+STEP_MODULE: <module>
+CHANGED_FILES: <list of files actually changed>
+STEP_CONTEXT: (bug-fix — pass the failing TC row + spec.md AC/EC referenced in its Verifies)
+SPEC_DOC: {{VAULT_PATH}}/features/<module>/<feature>/spec.md
+PLAN_DOC: {{VAULT_PATH}}/features/<module>/<feature>/plan.md
 TOUCHES_SECURITY_SURFACE: <true if auth/crypto/SQL/PII/etc., else false>
+CRITICAL_EC_PRESENT: <true if the failing TC verifies a Critical EC>
 ```
 
 | Cycle | Action |
@@ -256,6 +261,8 @@ Cap: max 3 entries per fix. Anything that is itself a bug, a security gap, or di
 - DO NOT touch test-cases.md columns other than Status. The Notes column belongs to the manual tester.
 - DO NOT modify other rows in test-cases.md — only the TC you fixed.
 - DO NOT promote a defect to VERF yourself — that's `@TestKeeper RERUN` after PO confirmation.
+- DO NOT edit spec.md (FROZEN; v6) or plan.md (owned by @Main). Bug fixes never redefine the spec; if a bug reveals a spec gap, stop and escalate.
+- DO NOT add bypass markers (@SuppressWarnings, @ts-ignore, # noqa, eslint-disable, --no-verify, etc.) to silence the regression test or the CI. Reviewer Pass A7 will flag unjustified ones as CRITICAL. Either justify with an issue id or fix the underlying problem.
 - DO NOT guess external library APIs — vault → context7 → webfetch or escalate.
 - DO NOT leave TODO() / empty stubs — implement or escalate.
 - DO NOT output system tags or conversational filler. Output ONLY the structured result.

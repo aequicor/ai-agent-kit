@@ -33,8 +33,61 @@
       "enum": ["en", "ru"],
       "default": "en"
     },
+    "slice_caps": {
+      "type": "object",
+      "description": "v6.0+ hard caps on plan/step size, enforced by @Main at CONFIRM and by @CodeWriter at EXECUTE. When exceeded, @Main asks PO to split before EXECUTE; @CodeWriter returns BLOCKED with reason OVERFLOW. Set any field to 0 to disable that cap.",
+      "properties": {
+        "max_steps": {"type": "integer", "minimum": 0, "default": 6, "description": "Max number of steps in plan.md § Implementation plan (v5 read this from feature.md § Implementation plan). 0 = no cap."},
+        "max_files_per_step": {"type": "integer", "minimum": 0, "default": 5, "description": "Max files (Create+Modify+Delete) a single @CodeWriter step may touch. 0 = no cap."},
+        "max_lines_per_step": {"type": "integer", "minimum": 0, "default": 400, "description": "Max total lines added+removed in a single @CodeWriter step (approx, from the agent's Changed Files table). 0 = no cap."}
+      },
+      "additionalProperties": false,
+      "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400}
+    },
+    "test_strategy": {
+      "description": "v6.0+ controls the order of test-vs-code writing in @CodeWriter. tdd_first (default, v5 behaviour): failing tests before production code. test_after: production code first, then tests against actual behaviour with @Reviewer Pass A4 enforcing assertion quality. mixed: tdd_first for AC-bound steps, test_after for exploratory/spike steps (CodeWriter picks per step). Two forms: (a) string for the project default; (b) object with {default, allow_per_step_override}.",
+      "default": "tdd_first",
+      "oneOf": [
+        {"type": "string", "enum": ["tdd_first", "test_after", "mixed"]},
+        {
+          "type": "object",
+          "required": ["default"],
+          "properties": {
+            "default": {"type": "string", "enum": ["tdd_first", "test_after", "mixed"]},
+            "allow_per_step_override": {"type": "boolean", "default": false, "description": "If true, individual steps in plan.md may declare `test_strategy: <mode>` to override the project default."}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ci_host": {
+      "type": "string",
+      "description": "v6.0+ marks the CI runtime so the kit can render a real CI workflow (P10). Currently supported: github (renders kit/.github/workflows/kit-gates.yml mirroring in-session lint/build/test gates). Required iff capability profile `ci-github` is in stack.profiles. Omit otherwise — the kit still works but real-CI gates are not deployed.",
+      "enum": ["github", "none"],
+      "default": "none"
+    },
+    "session_isolation": {
+      "type": "object",
+      "description": "v6.1+ controls per-step clean-session automation. mode=per_step: @Main nudges PO toward /clear after every 5.6 CHECKPOINT (default; matches the vertical-slicing workflow). mode=per_milestone: nudge only before 5.7 RECONCILE and 5.10 diff-review. mode=overflow_only: nudge only on slice-cap overflow / replan / BLOCKED. prompt_style=silent: SessionStart hook injects context via additionalContext (Claude Code) / .planning/.session-bootstrap.md (OpenCode), no visible reminder. prompt_style=stderr: hook prints reminder to stderr before first PO input. prompt_style=both (default): silent injection + stderr reminder.",
+      "properties": {
+        "mode": {"type": "string", "enum": ["per_step", "per_milestone", "overflow_only"], "default": "per_step"},
+        "prompt_style": {"type": "string", "enum": ["silent", "stderr", "both"], "default": "both"}
+      },
+      "additionalProperties": false,
+      "default": {"mode": "per_step", "prompt_style": "both"}
+    },
+    "auto_commit_per_step": {
+      "type": "boolean",
+      "description": "v6.1+ commits after each step's @Reviewer CLEAN (step 5.4b). Required for /kit-step-resume — clean-session-per-step relies on step_commits[] shas as anchor points. Set to false only if external commit policy conflicts; in that case /kit-step-resume falls back to last-known-state read without per-step revert capability.",
+      "default": true
+    },
+    "allow_internal_steps": {
+      "type": "boolean",
+      "description": "v6.1+ controls the runnable-slice gate at @Main step 3a. If false (default), every plan step must declare a user-visible Runnable: line; @Main BLOCKs PLAN if any step declares 'Runnable: internal — ...'. Set true for pure-backend modules with no UI surface where vertical slicing is impractical.",
+      "default": false
+    },
     "auto_approve": {
-      "description": "Controls whether @Main skips the CONFIRM step. Two forms: (a) boolean — same setting for all task classes; (b) object with per-class flags. Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit PO approval — auto_approve does not affect them. Replaces the v4 AUTO_APPROVE=true magic string and @AutoApprover agent. Granular form added in v5.1.",
+      "description": "Controls whether @Main skips the CONFIRM step. Three forms: (a) boolean — same setting for all task classes; (b) object with per-class flags; (c) v6.0+ adds the diff_review key (mandatory PO eye on the full diff between EXECUTE and CLOSE — defaults to false even when other classes are auto-approved; this is the single-PO-eye gate that cannot be obscured by class-level autos). Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit PO approval — auto_approve does not affect them. Replaces the v4 AUTO_APPROVE=true magic string and @AutoApprover agent. Granular form added in v5.1; diff_review added in v6.0.",
       "default": false,
       "oneOf": [
         {
@@ -70,6 +123,11 @@
                 "critical": {"type": "boolean", "default": false}
               },
               "additionalProperties": false
+            },
+            "diff_review": {
+              "type": "boolean",
+              "default": false,
+              "description": "v6.0+ — auto-approve the diff-review gate between EXECUTE and CLOSE (P2). Default false even when feature/tech/bug are all true. Setting this to true bypasses the only mandatory PO-eye gate; do not enable lightly."
             }
           },
           "additionalProperties": false
@@ -290,6 +348,14 @@
         "required": ["hosts"]
       },
       "then": {"required": ["claude_code"]}
+    },
+    {
+      "description": "If capability profile ci-github is selected, ci_host must be set to github (v6.0+).",
+      "if": {
+        "properties": {"stack": {"properties": {"profiles": {"type": "array", "contains": {"const": "ci-github"}}}}},
+        "required": ["stack"]
+      },
+      "then": {"properties": {"ci_host": {"const": "github"}}, "required": ["ci_host"]}
     }
   ]
 }

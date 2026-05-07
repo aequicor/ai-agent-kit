@@ -167,6 +167,19 @@ Same as setup.md 3.7. For each module and each host: render `kit/nested/MODULE.b
 
 Re-run the directory scaffold from setup.md 3.9. Skip any directory that already exists.
 
+### 3.8. Update .gitignore — append missing lines (v6.1+)
+
+Re-run setup.md 3.8 in *append-only* mode: for each line listed in setup.md 3.8, check if it is already present in `<target>/.gitignore` (string match, ignoring leading/trailing whitespace). If absent, append it. Never remove existing lines — PO may have edited the file. The exact set of lines to ensure (kept in sync with setup.md 3.8):
+
+```
+.planning/CURRENT.md
+.planning/REPO_MAP.md
+.planning/.session-bootstrap.md
+.planning/MORNING_REPORT.md
+```
+
+This is the only mechanism by which existing installs receive new gitignore entries when the kit version they update to introduces new local artifacts. Skipping this step on a v6.0 → v6.1 update would commit `.session-bootstrap.md` / `MORNING_REPORT.md` files into the project repo, which contain per-developer state.
+
 ---
 
 ## PHASE 4 — Update manifest

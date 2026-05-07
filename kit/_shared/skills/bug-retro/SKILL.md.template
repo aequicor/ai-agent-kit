@@ -64,7 +64,7 @@ For each root cause, define a specific action:
 | **New test** | Write unit or integration test | Mirror of src/ in test/ |
 | **Update guideline** | Add rule, pattern, anti-pattern | `{{VAULT_PATH}}/guidelines/<module>/` |
 | **New guideline** | Create document on the bug topic | `{{VAULT_PATH}}/guidelines/<module>/` |
-| **Update feature doc** | Clarify Edge Cases or How it works | `{{VAULT_PATH}}/features/<module>/<feature>/feature.md` |
+| **Update feature spec** | Clarify Edge Cases or How it works — escalate to PO; spec.md is FROZEN, amendments go through @Analyst as a fresh DRAFT cycle | `{{VAULT_PATH}}/features/<module>/<feature>/spec.md` (read-only after CONFIRM) |
 | **Refactor task** | Describe TECH task | Return to PO |
 
 ### Step 4 — Implement Actions (priority order)

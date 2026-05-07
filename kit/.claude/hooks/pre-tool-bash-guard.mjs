@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 // ai-agent-kit — Claude Code hook: PreToolUse for Bash
-// Two checks the permission-table cannot enforce alone:
+// Three checks the permission-table cannot enforce alone:
 //   1. Hard-deny `git push --force` to main/master regardless of pattern allow-list.
-//   2. Pre-commit sync: if src/ is staged without test-cases.md update — ask PO.
+//   2. Pre-commit sync: if src/ is staged without test-cases.md update — ask PO
+//      (in interactive mode) or allow with stderr note (in sleep mode — sleep is
+//      autonomous; PO chose this trade-off).
+//   3. v6.1+: --no-verify and amend-of-published commits — hard deny.
 // Cross-platform: Node.js + git only. Fail-soft (default allow on error).
 
 import { execSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -62,6 +67,25 @@ if (/(>|tee|cp|mv)\s+[^|]*?(\.env(?:\.\w+)?|~?\/?\.ssh\/|~?\/?\.aws\/|credential
   process.exit(0);
 }
 
+// ── Hard deny: --no-verify on git commit/push (v6.1+) ──────────────────
+if (/^git\s+(commit|push|merge|rebase)\b/.test(cmd) && /--no-verify\b/.test(cmd)) {
+  emit("deny", "--no-verify is forbidden in ai-agent-kit. If a hook fails, fix the underlying issue or escalate to PO. Sleep mode also forbids this — the BLOCKED-shutdown procedure is the correct response.");
+  process.exit(0);
+}
+
+// ── Hard deny: amending a commit that's already pushed ─────────────────
+if (/^git\s+commit\b.*--amend\b/.test(cmd)) {
+  emit("deny", "git commit --amend is forbidden in ai-agent-kit pipelines. v6.1 per-step commits are append-only history; corrections go through /kit-defect (re-open step) or /kit-revert-step (drop step). Amending a step commit silently breaks step_commits[] integrity.");
+  process.exit(0);
+}
+
+// ── Sleep-mode awareness: read .planning/CURRENT.md for mode ───────────
+let sleepMode = false;
+try {
+  const cm = fs.readFileSync(path.join(process.cwd(), ".planning", "CURRENT.md"), "utf8");
+  sleepMode = /^mode:\s*sleep\b/m.test(cm);
+} catch { /* ignore */ }
+
 // ── Pre-commit: source-vs-tests sync check ─────────────────────────────
 if (/^git\s+commit\b/.test(cmd)) {
   const staged = safeExec("git diff --cached --name-only").split(/\r?\n/).filter(Boolean);
@@ -69,7 +93,8 @@ if (/^git\s+commit\b/.test(cmd)) {
 
   const isSrc = (p) => /(^|\/)src\//i.test(p) && !/\/test\//i.test(p) && !/Test\.[a-z]+$/i.test(p);
   const isTestCases = (p) => /vault\/features\/[^/]+\/[^/]+\/test-cases\.md$/i.test(p);
-  const isFeatureDoc = (p) => /vault\/features\/[^/]+\/[^/]+\/feature\.md$/i.test(p);
+  // v6 — accept spec.md or plan.md updates as a sync signal (replaces v5's feature.md)
+  const isFeatureDoc = (p) => /vault\/features\/[^/]+\/[^/]+\/(spec|plan|feature)\.md$/i.test(p);
   const isTestFile = (p) => /\/test\//i.test(p) || /Test\.[a-z]+$/i.test(p) || /\.test\.[a-z]+$/i.test(p);
 
   const srcFiles = staged.filter(isSrc);
@@ -79,11 +104,17 @@ if (/^git\s+commit\b/.test(cmd)) {
     const hasTests = staged.some(isTestFile);
 
     if (!hasTestCases && !hasFeatureDoc && !hasTests) {
-      emit(
-        "ask",
-        `Source files staged (${srcFiles.slice(0, 3).join(", ")}${srcFiles.length > 3 ? ", …" : ""}) without any test or test-cases.md update. Likely missing @TestKeeper RECONCILE or regression test. Proceed anyway?`
-      );
-      process.exit(0);
+      if (sleepMode) {
+        // v6.1+: sleep mode is autonomous; PO chose this trade-off. Allow with stderr note.
+        process.stderr.write(`⚠️  pre-commit sync: src staged without tests in sleep mode (${srcFiles.slice(0, 3).join(", ")}). Logged for MORNING_REPORT.\n`);
+        // Fall through to allow (no emit).
+      } else {
+        emit(
+          "ask",
+          `Source files staged (${srcFiles.slice(0, 3).join(", ")}${srcFiles.length > 3 ? ", …" : ""}) without any test, test-cases.md, or plan.md update. Likely missing @TestKeeper RECONCILE or regression test. Proceed anyway?`
+        );
+        process.exit(0);
+      }
     }
   }
 }
