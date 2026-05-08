@@ -45,6 +45,17 @@
       "additionalProperties": false,
       "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400, "max_tokens_per_step": 30000}
     },
+    "telemetry": {
+      "type": "object",
+      "description": "v6.3+ (P20) — gate-signal-ratio telemetry. Each gate verdict is appended to `evals/runs/<kit_version>/gates.csv` via the gate-telemetry skill (opt-in by directory presence). At task CLOSE the eval-collector skill aggregates per-task signal_ratio into the per-task record. /kit-status shows rolling cross-task signal_ratio over the last `evaluation_window_tasks` tasks; gates with rolling signal_ratio below `signal_ratio_threshold` AND no defect_origin matches are flagged as deprecation candidates. Together with defects.csv (P19, v6.2+), this is the kit's self-cleaning gate-evaluation mechanism.",
+      "properties": {
+        "gates_log_enabled": {"type": "boolean", "default": true, "description": "Master switch for gate-telemetry skill. true = log every gate verdict to gates.csv (skipped silently if evals/runs/<kit_version>/ does not exist). false = suppress all gate-csv writes (escape hatch for projects that don't want filesystem writes during agent runs)."},
+        "evaluation_window_tasks": {"type": "integer", "minimum": 1, "default": 30, "description": "Rolling window size (in distinct tasks) for /kit-status gate-signal aggregation. Larger window = more stable ratio but slower to react to gate quality drift."},
+        "signal_ratio_threshold": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.05, "description": "Gates with rolling signal_ratio below this threshold AND no false_negatives in window are flagged 🟡 deprecation_candidate by /kit-status. Per PIPELINE_V7_PROPOSAL § 8.2: gate that does not earn its token cost across N tasks should be removed in next minor release."}
+      },
+      "additionalProperties": false,
+      "default": {"gates_log_enabled": true, "evaluation_window_tasks": 30, "signal_ratio_threshold": 0.05}
+    },
     "ground_truth": {
       "type": "object",
       "description": "v6.2+ (P18) — ground-truth artefact gate at 5.6 CHECKPOINT. Backed by Anthropic harness guidance: e2e verification through browser automation / command output / contract tests is critical, AI-only review has measurable accuracy ceiling. Per-step PO must attach one of: screenshot (ui), command-output diff (cli), contract-test pass (api), mutation-sample report (backend). Or override per-step via /kit-approve --no-ground-truth (logged as technical debt in test-cases.md Defects log) or project-wide via required: false (logged once per task).",

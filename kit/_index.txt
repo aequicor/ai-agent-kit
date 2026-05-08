@@ -75,6 +75,7 @@ kit/_shared/sessions/SESSIONS.md.template
 kit/_shared/skills/bug-retro/SKILL.md.template
 kit/_shared/skills/definition-of-done/SKILL.md.template
 kit/_shared/skills/eval-collector/SKILL.md.template
+kit/_shared/skills/gate-telemetry/SKILL.md.template
 kit/_shared/skills/look-up/SKILL.md.template
 kit/_shared/skills/pre-mortem/SKILL.md.template
 kit/_shared/skills/replan-on-discovery/SKILL.md.template

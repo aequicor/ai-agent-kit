@@ -49,6 +49,44 @@ If you have used v5: spec content moved from `feature.md § Why/ACs/ECs/How it w
 
 If you have used v4 (relevant only if you skipped v5): v4 had 19 agents and five Diátaxis subtrees per feature; v5 already collapsed those to 9 agents + one feature.md. v6 inherits the v5 agent set unchanged (still 9), only resplits the artifact along the freeze boundary.
 
+## Gate telemetry (v6.3+)
+
+Every gate verdict (pass / block / warn / info) is logged to `evals/runs/<kit_version>/gates.csv` via the `gate-telemetry` skill. Opt-in by directory presence — if `evals/runs/` does not exist, logging is a no-op.
+
+**When to log:** at every gate fire across the pipeline. Authoritative enumeration in `kit/_shared/skills/gate-telemetry/SKILL.md` § "Gate enumeration". Summary:
+
+- 3a SLICE-CAP CHECK → `slice-cap`, `runnable-slice`
+- 5.1 EXTRACT → `token-budget`
+- 5.3 VERIFY → `build`
+- 5.4 REVIEW → `review-correctness`, `review-scope`, `review-bypass`, `review-runbook`, `review-adversarial` (Critical-EC only)
+- 5.4a → `unchanged-call-sites` (info)
+- 5.6 CHECKPOINT → `runbook-complete`, `ground-truth`
+- 5.7 RECONCILE → `reconcile`
+- 5.8 TRACE → `traceability`
+- 5.9 DoDGate → `dod`
+- 5.10 DIFF-REVIEW → `diff-review`
+
+PO commands also log read-only events: `defect-origin`, `revert-step`, `ground-truth-waiver`.
+
+**How to log (compact form per call):**
+
+```
+gate-telemetry:
+  task_slug:    <active_task>
+  step:         <current_step_idx | 0 for pre-EXECUTE>
+  gate:         <id from enumeration>
+  verdict:      pass | block | warn | info
+  blocked_close: true iff this verdict prevented CLOSE this attempt
+  lane:         standard    # v6.3 always; lanes ship in v7+
+  reason:       <≤120 chars; (none) if no specific reason>
+```
+
+**Cap on noise:** never log more than once per (gate, step, fire-attempt). Fix loops (e.g. 3 review-fix cycles) generate 3 rows — that retry signal is intentional, not duplication.
+
+**Reading the data:** at task CLOSE, `eval-collector` aggregates gates.csv into per-task signal_ratio. Cross-task rolling signal_ratio is shown by `/kit-status` over the last `manifest.telemetry.evaluation_window_tasks` tasks (default 30). Gates with rolling signal_ratio < `manifest.telemetry.signal_ratio_threshold` (default 0.05) are flagged as deprecation candidates.
+
+If `manifest.telemetry.gates_log_enabled: false` → all logging is suppressed (escape hatch for projects that don't want filesystem writes during agent runs).
+
 ## Anti-Loop (CRITICAL — check constantly)
 
 | Symptom | Action |

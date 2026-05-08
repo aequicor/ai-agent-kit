@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "6.2.0"
+kit_version: "6.3.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -62,6 +62,24 @@ slice_caps:
   max_files_per_step: 5           # max files (Create+Modify+Delete) per @CodeWriter step
   max_lines_per_step: 400         # max +lines + -lines per step
   max_tokens_per_step: 30000      # v6.2+ — STEP_CONTEXT bundle cap (bytes/4 estimate)
+
+# ─────────────────────────────────────────────
+# TELEMETRY (v6.3+ — P20)
+# ─────────────────────────────────────────────
+# Gate-signal-ratio telemetry. Each gate verdict (slice-cap, runnable-slice,
+# token-budget, build, review-*, runbook-complete, ground-truth, reconcile,
+# traceability, dod, diff-review) is appended to evals/runs/<kit_version>/gates.csv
+# via the gate-telemetry skill. Together with defects.csv (P19, v6.2+) gives
+# the kit a self-cleaning gate-evaluation mechanism: gates with rolling
+# signal_ratio < threshold AND no defect_origin matches are flagged as
+# deprecation candidates by /kit-status.
+#
+# Opt-in by directory presence: if evals/runs/<kit_version>/ does not exist,
+# all logging is a no-op (no error, no warning).
+telemetry:
+  gates_log_enabled: true        # master switch; set false to suppress all gate-csv writes
+  evaluation_window_tasks: 30    # rolling window size for /kit-status aggregation
+  signal_ratio_threshold: 0.05   # gates below this AND no false_negatives → 🟡 deprecation_candidate
 
 # ─────────────────────────────────────────────
 # GROUND TRUTH (v6.2+ — P18)

@@ -1,4 +1,126 @@
 versions:
+  - version: "6.3.0"
+    released: "2026-05-08"
+    breaking: false
+    description: |
+      Telemetry-only iteration. Closes the data side of the v7 self-cleaning
+      gate-evaluation mechanism (PIPELINE_V7_PROPOSAL.md § 8). v6.2 gave us
+      defects.csv (P19); v6.3 gives us gates.csv (P20) — together they let
+      the kit answer "which gates earn their token cost" with rolling
+      data instead of intuition.
+
+      No agents change. No new pipeline branches. No new manifest fields
+      that affect behaviour outside telemetry. This release is a pure
+      observability layer; it is the prerequisite for v7's data-driven
+      agent consolidation (9→5).
+
+      ## P20 — gate_signal_ratio infrastructure
+
+      New skill `gate-telemetry` (`kit/_shared/skills/gate-telemetry/`) is
+      invoked at every gate verdict and appends one row to
+      `evals/runs/<kit_version>/gates.csv`. Opt-in by directory presence
+      (same convention as eval-collector and defects.csv).
+
+      Schema (one row per gate fire):
+        timestamp, task_slug, step, gate, verdict, blocked_close,
+        false_positive, lane, reason
+
+      Logged gates (16 total):
+        - 3a — slice-cap, runnable-slice
+        - 5.1 — token-budget
+        - 5.3 — build
+        - 5.4 — review-correctness, review-scope, review-bypass,
+                review-runbook, review-adversarial (Critical-EC only)
+        - 5.4a — unchanged-call-sites (info)
+        - 5.6 — runbook-complete, ground-truth
+        - 5.7 — reconcile
+        - 5.8 — traceability
+        - 5.9 — dod
+        - 5.10 — diff-review
+
+      PO commands also emit read-only events: defect-origin, revert-step,
+      ground-truth-waiver.
+
+      ## eval-collector skill extended
+
+      At task CLOSE, eval-collector now reads gates.csv and computes
+      per-gate signal_ratio (blocking_fires / total_fires) into the per-task
+      `<task_slug>.md` § "Gate signals (v6.3+)".
+
+      Cross-references defects.csv to mark false_negatives:
+        - If defect.origin maps to a gate (mapping in skill body) AND that
+          gate logged `pass` for the same step before the defect was
+          reported → the gate missed; annotated with `*` + footnote.
+        - false_positive remains `unknown` at write time; updated only when
+          PO invokes /kit-defect with optional `--false-positive=<gate>`
+          (v6.3 partial; full attribution is v7+).
+
+      ## /kit-status extended
+
+      When `evals/runs/<kit_version>/` exists, /kit-status appends two new
+      sections:
+
+      1. "Gate signal — rolling over last N tasks" — table of fires/blocks/
+         signal_ratio per gate, ordered ascending. Rows below
+         `manifest.telemetry.signal_ratio_threshold` AND without
+         false_negatives are highlighted 🟡 deprecation_candidate. Rows
+         with false_negatives > 0 are highlighted 🔴 missed_defects.
+
+      2. "Defect origin distribution" — top-5 histogram of /kit-defect
+         --origin values across the same window.
+
+      Window size and threshold are read from manifest.telemetry.
+
+      ## New manifest block
+
+      `manifest.telemetry`:
+        gates_log_enabled (default true)
+        evaluation_window_tasks (default 30)
+        signal_ratio_threshold (default 0.05)
+
+      All defaults are safe — for projects without `evals/runs/`, the entire
+      telemetry stack is dormant.
+
+      ## Migration position
+
+      Per PIPELINE_V7_PROPOSAL.md § 9:
+        v6.2 (done) → v6.3 (this; telemetry foundation) →
+        v7.0.0-alpha (lanes opt-in) → v7.0.0-beta (agent consolidation
+        based on defects.csv + gates.csv data) → v7.0.0 stable.
+
+      The proposal recommended ~30 tasks of v6.3 operation before v7-alpha
+      to gather meaningful signal. In practice we ship v6.3 + v7.0.0-alpha
+      together (both backward-compatible, both opt-in for the new behaviour),
+      so PO can choose to enable lanes early or wait for telemetry data.
+
+      ## What this release does NOT change
+
+      - No agent prompt rewrites. All 9 agents keep their v6.2 bodies.
+      - No pipeline branches. CLASSIFY → ANALYSIS → PLAN → CONFIRM → EXECUTE
+        → CLOSE is unchanged.
+      - No new gates beyond the telemetry meta-gate (`gate-telemetry` skill
+        itself is not a "gate" in the verdict sense).
+      - Existing v6.2 task files keep parsing. New step_commits[].defects
+        and ground_truth fields from v6.2 work as before.
+    files_changed:
+      - kit/_shared/skills/gate-telemetry/SKILL.md.template
+      - kit/_shared/skills/eval-collector/SKILL.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/commands/kit-status.md.template
+      - kit/manifest.schema.json
+      - manifest.example.yaml
+    manifest_changes:
+      added_fields:
+        - path: "telemetry.gates_log_enabled"
+          default: true
+          description: "v6.3+ (P20) — master switch for gate-telemetry skill. true = log every gate verdict to evals/runs/<kit_version>/gates.csv (skipped silently if directory absent). false = suppress all gate-csv writes."
+        - path: "telemetry.evaluation_window_tasks"
+          default: 30
+          description: "v6.3+ — rolling window size for /kit-status gate-signal aggregation. Larger window = more stable ratio, slower to react to drift."
+        - path: "telemetry.signal_ratio_threshold"
+          default: 0.05
+          description: "v6.3+ — gates with rolling signal_ratio below this threshold AND no false_negatives are flagged 🟡 deprecation_candidate by /kit-status. Per PIPELINE_V7_PROPOSAL § 8.2."
+
   - version: "6.2.0"
     released: "2026-05-08"
     breaking: false
