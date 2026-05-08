@@ -1,0 +1,19 @@
+---
+description: v7.0.0+ Verifier — mode-driven verification (GENERATE / DRAFT / EXECUTE / RECONCILE / RERUN / SCAN / APPEND / REVIEW / DOD / TRACE). Replaces v6.x @TestKeeper + @Reviewer + @DoDGate + @TraceabilityChecker; per-mode behaviour and output formats inlined in Verifier.body.md.template.
+mode: subagent
+model: {{PROVIDER_ID}}/{{VERIFIER_MODEL}}
+temperature: 0.1
+steps: 30
+permission:
+  read: allow
+  edit: allow
+  bash: allow
+  grep: allow
+  glob: allow
+  task: deny
+  webfetch: allow
+  skill: allow
+  "knowledge-my-app_*": allow
+---
+
+{{INCLUDE: _shared/agents/Verifier.body.md.template}}

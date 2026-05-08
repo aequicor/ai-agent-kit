@@ -1,8 +1,0 @@
----
-name: TestKeeper
-description: TestKeeper — owns test-cases.md end-to-end. Generates from feature doc, executes test suite independently, reconciles Status, reruns on demand. Replaces v4 QA + TestExecutor + TestRunner + CoverageChecker.
-tools: Read,Edit,Write,Bash,Grep,Glob,Skill
-model: {{CODER_MODEL}}
----
-
-{{INCLUDE: _shared/agents/TestKeeper.body.md.template}}

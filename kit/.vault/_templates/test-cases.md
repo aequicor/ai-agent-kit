@@ -21,7 +21,7 @@ updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
 
 ## How this file works
 
-Live document owned by `@TestKeeper` end-to-end:
+Live document owned by `@Verifier` end-to-end:
 
 - `MODE=GENERATE` creates this file from `spec.md § Test plan`.
 - `MODE=DRAFT` appends impl-level TCs (unit-edge, integration, error) once the implementation plan is written.
@@ -55,7 +55,7 @@ The PO can edit the file directly — change a Status to FAIL, add a row, append
 
 **Type:** `unit` | `unit-edge` | `integration` | `error` | `e2e` | `manual`.
 **Verifies:** comma-separated AC/EC ids from `spec.md`.
-**Test impl:** filled by `@TestKeeper RECONCILE` — `tests/path/to/file.kt:line`.
+**Test impl:** filled by `@Verifier RECONCILE` — `tests/path/to/file.kt:line`.
 
 ---
 
@@ -63,4 +63,4 @@ The PO can edit the file directly — change a Status to FAIL, add a row, append
 
 > Append-only. Each entry references a TC by id.
 
-- **DEF-1** — [HIGH] *<one-line summary>* — TC-NN — Status: OPEN — Opened: YYYY-MM-DD by @TestKeeper
+- **DEF-1** — [HIGH] *<one-line summary>* — TC-NN — Status: OPEN — Opened: YYYY-MM-DD by @Verifier

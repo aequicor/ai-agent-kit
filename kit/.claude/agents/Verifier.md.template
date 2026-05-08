@@ -1,0 +1,8 @@
+---
+name: Verifier
+description: v7.0.0+ Verifier — mode-driven verification (GENERATE / DRAFT / EXECUTE / RECONCILE / RERUN / SCAN / APPEND / REVIEW / DOD / TRACE). Replaces v6.x @TestKeeper + @Reviewer + @DoDGate + @TraceabilityChecker; per-mode behaviour and output formats inlined in Verifier.body.md.template.
+tools: Read,Edit,Write,Bash,Grep,Glob,Skill
+model: {{VERIFIER_MODEL}}
+---
+
+{{INCLUDE: _shared/agents/Verifier.body.md.template}}

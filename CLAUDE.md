@@ -275,6 +275,8 @@ Commands and skills are host-agnostic — single source under `_shared/`, render
 | `{{REVIEWER_MODEL}}` | `models.reviewer` |
 | `{{DESIGNER_MODEL}}` | `models.designer` (omits @Designer if `null`) |
 | `{{SMALL_MODEL}}` | `models.small` |
+| `{{ARCHITECT_MODEL}}` | `models.architect` (v7.0.0-beta+; falls back to `models.reviewer` if absent — required when `agents.consolidated_architect: true`) |
+| `{{VERIFIER_MODEL}}` | `models.verifier` (v7.0.0-beta+; falls back to `models.reviewer` if absent — required when `agents.consolidated_verifier: true`) |
 
 **Build, test, modules**
 

@@ -8,8 +8,8 @@
   "properties": {
     "kit_version": {
       "type": "string",
-      "description": "Kit version — used for migration checks",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+      "description": "Kit version — used for migration checks. Accepts SemVer 2.0 with optional prerelease tag (e.g. '6.3.0', '7.0.0-alpha', '7.0.0-beta.2').",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$"
     },
     "hosts": {
       "type": "array",
@@ -35,14 +35,84 @@
     },
     "slice_caps": {
       "type": "object",
-      "description": "v6.0+ hard caps on plan/step size, enforced by @Main at CONFIRM and by @CodeWriter at EXECUTE. When exceeded, @Main asks PO to split before EXECUTE; @CodeWriter returns BLOCKED with reason OVERFLOW. Set any field to 0 to disable that cap.",
+      "description": "v6.0+ hard caps on plan/step size, enforced by @Main at CONFIRM and by @CodeWriter at EXECUTE. When exceeded, @Main asks PO to split before EXECUTE; @CodeWriter returns BLOCKED with reason OVERFLOW. v6.2+ adds max_tokens_per_step (P17). Set any field to 0 to disable that cap.",
       "properties": {
         "max_steps": {"type": "integer", "minimum": 0, "default": 6, "description": "Max number of steps in plan.md § Implementation plan (v5 read this from feature.md § Implementation plan). 0 = no cap."},
         "max_files_per_step": {"type": "integer", "minimum": 0, "default": 5, "description": "Max files (Create+Modify+Delete) a single @CodeWriter step may touch. 0 = no cap."},
-        "max_lines_per_step": {"type": "integer", "minimum": 0, "default": 400, "description": "Max total lines added+removed in a single @CodeWriter step (approx, from the agent's Changed Files table). 0 = no cap."}
+        "max_lines_per_step": {"type": "integer", "minimum": 0, "default": 400, "description": "Max total lines added+removed in a single @CodeWriter step (approx, from the agent's Changed Files table). 0 = no cap."},
+        "max_tokens_per_step": {"type": "integer", "minimum": 0, "default": 30000, "description": "v6.2+ (P17). Estimated tokens (bytes / 4) of the STEP_CONTEXT bundle dispatched to subagents at step 5.1. Backed by Anthropic context-engineering guidance ('smallest set of high-signal tokens') + 2024–2026 research showing LLM-as-reviewer accuracy degrades with prompt complexity. Overflow → @Main attempts to trim optional sub-bundles, then BLOCKED with reason OVERFLOW_TOKENS if still over. 0 = no cap (legacy v6.1 behaviour)."}
       },
       "additionalProperties": false,
-      "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400}
+      "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400, "max_tokens_per_step": 30000}
+    },
+    "lanes": {
+      "type": "object",
+      "description": "v7.0.0+ (P21) — risk-based pipeline triage (MANDATORY in v7.0.0). @Main's Step 0a CLASSIFY computes a `risk` value for the task (trivial | standard | critical) and routes through a different pipeline density. trivial: short pipeline (no Architect spec, no DoD, no Trace, no diff-review; ground-truth still mandatory). standard: full pipeline. critical: standard + adversarial 2nd pass + mutation-sample backend artefact + sleep mode forbidden. Per PIPELINE_V7_PROPOSAL.md § 5.",
+      "properties": {
+        "default_risk": {"type": "string", "enum": ["trivial", "standard", "critical"], "default": "standard", "description": "Fallback risk when @Main cannot determine from heuristics and PO did not pass --risk explicitly. standard is the safe default — overflows escalate, never undershoots."},
+        "trivial_max_files": {"type": "integer", "minimum": 1, "default": 1, "description": "Maximum files a trivial-lane task may touch. Overflow auto-reclassifies to standard with a notice."},
+        "trivial_max_lines": {"type": "integer", "minimum": 1, "default": 30, "description": "Maximum lines added+removed for a trivial-lane task. Overflow auto-reclassifies."},
+        "trivial_no_new_public_symbols": {"type": "boolean", "default": true, "description": "Trivial lane forbids new public functions/types/endpoints/exports. true = enforce; false = allow (for projects where 'trivial' is shorthand for 'small but allowed to introduce a public symbol')."},
+        "critical_block_sleep": {"type": "boolean", "default": true, "description": "Refuse /kit-sleep for critical-lane tasks. Critical risk + autonomous run is the highest blast-radius combination; default true blocks at /kit-sleep startup. Set false only if you accept the trade-off."},
+        "critical_require_mutation_sample": {"type": "boolean", "default": true, "description": "Critical lane backend steps require a mutation-sample with ≥3 mutants killed (vs ≥1 for standard backend). Pure-UI/API/CLI critical steps still require their respective ground-truth types."},
+        "auto_classify": {"type": "boolean", "default": true, "description": "Let @Main infer risk at Step 0a from heuristics (file count estimate, public-API touch, security-surface keywords, Critical EC presence). false = always require explicit --risk flag in /kit-new-feature; missing flag falls back to default_risk."}
+      },
+      "additionalProperties": false,
+      "default": {"default_risk": "standard", "trivial_max_files": 1, "trivial_max_lines": 30, "trivial_no_new_public_symbols": true, "critical_block_sleep": true, "critical_require_mutation_sample": true, "auto_classify": true}
+    },
+    "mutation_sample": {
+      "type": "object",
+      "description": "v7.1.0+ — mutation-sample skill configuration. Used by the 5.6 ground-truth gate when REQUIRED_TYPE = mutation-sample-pass (backend steps in standard / critical lanes), and by the /kit-mutate ad-hoc command. Disable by setting all fields to lane-skipping defaults (e.g. max_mutants: 0 acts as kill-switch — gate falls back to manual /kit-attach).",
+      "properties": {
+        "max_mutants": {"type": "integer", "minimum": 0, "default": 10, "description": "Hard cap on generated mutants per invocation. 0 = effectively disabled (skill skips and the 5.6 gate falls back to manual /kit-attach with type=mutation-sample-pass)."},
+        "timeout_seconds": {"type": "integer", "minimum": 30, "default": 300, "description": "Per-mutant test-run timeout. Mutants that exceed this are counted as survived (worst-case). Increase for slow test suites; decrease to bound cost on fast suites."},
+        "fallback_ai": {"type": "boolean", "default": false, "description": "When true, the skill uses AI-driven mutation if the language's native tool (PIT / Stryker / mutmut / Gremlins / cargo-mutants) is not installed. When false (default), missing-tool BLOCKs the 5.6 gate and surfaces install instructions to PO. AI mutation is lower fidelity than native tooling — opt-in only when install is impractical."},
+        "scope": {"type": "string", "enum": ["all_changed", "smallest_file_only", "diff_lines_only"], "default": "all_changed", "description": "Mutation scope. all_changed: all files in CHANGED_FILES (default). smallest_file_only: only the smallest file by line count (cost-saving for large steps). diff_lines_only: only lines added/modified by this step's diff (cost-saving but may miss regressions in untouched lines that the change relies on)."}
+      },
+      "additionalProperties": false,
+      "default": {"max_mutants": 10, "timeout_seconds": 300, "fallback_ai": false, "scope": "all_changed"}
+    },
+    "telemetry": {
+      "type": "object",
+      "description": "v6.3+ (P20) — gate-signal-ratio telemetry. Each gate verdict is appended to `evals/runs/<kit_version>/gates.csv` via the gate-telemetry skill (opt-in by directory presence). At task CLOSE the eval-collector skill aggregates per-task signal_ratio into the per-task record. /kit-status shows rolling cross-task signal_ratio over the last `evaluation_window_tasks` tasks; gates with rolling signal_ratio below `signal_ratio_threshold` AND no defect_origin matches are flagged as deprecation candidates. Together with defects.csv (P19, v6.2+), this is the kit's self-cleaning gate-evaluation mechanism.",
+      "properties": {
+        "gates_log_enabled": {"type": "boolean", "default": true, "description": "Master switch for gate-telemetry skill. true = log every gate verdict to gates.csv (skipped silently if evals/runs/<kit_version>/ does not exist). false = suppress all gate-csv writes (escape hatch for projects that don't want filesystem writes during agent runs)."},
+        "evaluation_window_tasks": {"type": "integer", "minimum": 1, "default": 30, "description": "Rolling window size (in distinct tasks) for /kit-status gate-signal aggregation. Larger window = more stable ratio but slower to react to gate quality drift."},
+        "signal_ratio_threshold": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.05, "description": "Gates with rolling signal_ratio below this threshold AND no false_negatives in window are flagged 🟡 deprecation_candidate by /kit-status. Per PIPELINE_V7_PROPOSAL § 8.2: gate that does not earn its token cost across N tasks should be removed in next minor release."}
+      },
+      "additionalProperties": false,
+      "default": {"gates_log_enabled": true, "evaluation_window_tasks": 30, "signal_ratio_threshold": 0.05}
+    },
+    "ground_truth": {
+      "type": "object",
+      "description": "v6.2+ (P18) — ground-truth artefact gate at 5.6 CHECKPOINT. Backed by Anthropic harness guidance: e2e verification through browser automation / command output / contract tests is critical, AI-only review has measurable accuracy ceiling. Per-step PO must attach one of: screenshot (ui), command-output diff (cli), contract-test pass (api), mutation-sample report (backend). Or override per-step via /kit-approve --no-ground-truth (logged as technical debt in test-cases.md Defects log) or project-wide via required: false (logged once per task).",
+      "properties": {
+        "required": {"type": "boolean", "default": true, "description": "Enforce 5.6 ground-truth gate project-wide. false = skip the gate entirely (log once per task as 'gate disabled project-wide'). Default true."},
+        "exclusions": {
+          "type": "object",
+          "description": "Module-level exclusions. List module names (matching modules[].name) where the gate is skipped. Useful for pure-headless modules where there is no visual surface and mutation-sample is too expensive. Each excluded module's steps still log Source: ground-truth-excluded for traceability.",
+          "properties": {
+            "modules": {"type": "array", "items": {"type": "string"}, "default": []}
+          },
+          "additionalProperties": false,
+          "default": {"modules": []}
+        },
+        "default_types": {
+          "type": "object",
+          "description": "Override the @Main 5.6 type-inference defaults. Each key maps a step pattern to a REQUIRED_TYPE. @Main checks these in order; first match wins; falls back to built-in inference (see kit/_shared/agents/Main.body.md.template § 5.6 @ GROUND-TRUTH ARTEFACT GATE).",
+          "properties": {
+            "ui": {"type": "string", "enum": ["screenshot", "preview-snapshot"], "default": "screenshot"},
+            "api": {"type": "string", "enum": ["contract-test-pass"], "default": "contract-test-pass"},
+            "cli": {"type": "string", "enum": ["command-output-diff"], "default": "command-output-diff"},
+            "backend": {"type": "string", "enum": ["mutation-sample-pass"], "default": "mutation-sample-pass"},
+            "refactor": {"type": "string", "enum": ["diff-stat-and-smoke"], "default": "diff-stat-and-smoke"}
+          },
+          "additionalProperties": false,
+          "default": {"ui": "screenshot", "api": "contract-test-pass", "cli": "command-output-diff", "backend": "mutation-sample-pass", "refactor": "diff-stat-and-smoke"}
+        }
+      },
+      "additionalProperties": false,
+      "default": {"required": true, "exclusions": {"modules": []}, "default_types": {"ui": "screenshot", "api": "contract-test-pass", "cli": "command-output-diff", "backend": "mutation-sample-pass", "refactor": "diff-stat-and-smoke"}}
     },
     "test_strategy": {
       "description": "v6.0+ controls the order of test-vs-code writing in @CodeWriter. tdd_first (default, v5 behaviour): failing tests before production code. test_after: production code first, then tests against actual behaviour with @Reviewer Pass A4 enforcing assertion quality. mixed: tdd_first for AC-bound steps, test_after for exploratory/spike steps (CodeWriter picks per step). Two forms: (a) string for the project default; (b) object with {default, allow_per_step_override}.",
@@ -206,24 +276,32 @@
     },
     "models": {
       "type": "object",
-      "description": "OpenCode model role assignments (used as {{PROVIDER_ID}}/{{MODEL}} in opencode.json and agent frontmatter). Required iff 'opencode' ∈ hosts.",
+      "description": "OpenCode model role assignments (used as {{PROVIDER_ID}}/{{MODEL}} in opencode.json and agent frontmatter). Required iff 'opencode' ∈ hosts. v7.0.0 roster: 4 OpenCode subagents (Architect, CodeWriter, Verifier, BugFixer) + small. `models.architect` and `models.verifier` are optional — fall back to `models.reviewer` if absent (matches the v6.x convention where multiple legacy agents shared the reviewer model).",
       "required": ["default", "coder", "reviewer"],
       "properties": {
         "default": {"type": "string", "minLength": 1},
         "coder": {"type": "string", "minLength": 1},
-        "reviewer": {"type": "string", "minLength": 1},
-        "designer": {
+        "reviewer": {"type": "string", "minLength": 1, "description": "Default model for @Architect and @Verifier when `models.architect` / `models.verifier` are absent. Named `reviewer` for v6.x compatibility — actual usage in v7.0.0 covers Architect/Verifier dispatch."},
+        "small": {"type": "string"},
+        "architect": {
+          "description": "v7.0.0+ — model for @Architect. Optional; falls back to `models.reviewer` if absent or null.",
           "oneOf": [
             {"type": "string", "minLength": 1},
             {"type": "null"}
           ]
         },
-        "small": {"type": "string"}
+        "verifier": {
+          "description": "v7.0.0+ — model for @Verifier. Optional; falls back to `models.reviewer` if absent or null.",
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        }
       }
     },
     "claude_code": {
       "type": "object",
-      "description": "Claude Code runtime config. Required iff 'claude-code' ∈ hosts. Models accept the Claude Code CLI aliases (opus | sonnet | haiku) or full model IDs (e.g. claude-opus-4-7, claude-sonnet-4-6, claude-haiku-4-5).",
+      "description": "Claude Code runtime config. Required iff 'claude-code' ∈ hosts. Models accept the Claude Code CLI aliases (opus | sonnet | haiku) or full model IDs. v7.0.0 roster: 4 subagents (Architect, CodeWriter, Verifier, BugFixer) — main session is the orchestrator.",
       "required": ["models"],
       "properties": {
         "models": {
@@ -232,14 +310,22 @@
           "properties": {
             "default": {"type": "string", "minLength": 1},
             "coder": {"type": "string", "minLength": 1},
-            "reviewer": {"type": "string", "minLength": 1},
-            "designer": {
+            "reviewer": {"type": "string", "minLength": 1, "description": "Default for @Architect/@Verifier when their dedicated entries are absent. Named for v6.x compatibility."},
+            "small": {"type": "string"},
+            "architect": {
+              "description": "v7.0.0+ — model for @Architect. Optional; falls back to `reviewer`.",
               "oneOf": [
                 {"type": "string", "minLength": 1},
                 {"type": "null"}
               ]
             },
-            "small": {"type": "string"}
+            "verifier": {
+              "description": "v7.0.0+ — model for @Verifier. Optional; falls back to `reviewer`.",
+              "oneOf": [
+                {"type": "string", "minLength": 1},
+                {"type": "null"}
+              ]
+            }
           }
         }
       }

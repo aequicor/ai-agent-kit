@@ -33,20 +33,20 @@
   features/<module>/<feature>/
     spec.md                     ← FROZEN at CONFIRM — Why / ACs / Edge cases / How it works /
                                   Test plan / UI section
-                                  (@Analyst writes core; @Designer appends UI section
+                                  (@Architect writes core; @Architect (UI section) appends UI section
                                    BEFORE CONFIRM; nothing edits this after CONFIRM)
     plan.md                     ← MUTABLE — Slice budget / Implementation plan / Replan log /
                                   Step-level diff stats / Diff-review / Definition of Done
-                                  (@Analyst writes skeleton; @Main fills steps + diff stats +
-                                   diff-review; @DoDGate fills DoD verdict; replan-on-discovery
+                                  (@Architect writes skeleton; @Main fills steps + diff stats +
+                                   diff-review; @Verifier MODE=DOD fills DoD verdict; replan-on-discovery
                                    skill appends REPLAN-N markers)
-    test-cases.md               ← live state — TC table + Defects log (@TestKeeper)
+    test-cases.md               ← live state — TC table + Defects log (@Verifier)
     retro.md                    ← optional — accumulates bug-fix retros (@BugFixer, bug-retro skill)
 
   guidelines/<module>/<topic>.md   ← coding patterns / conventions (optional)
   guidelines/libs/<lib>-<version>.md  ← cached external API docs (@CodeWriter, @BugFixer)
 
-  tech-debt/<module>/<slug>.md     ← open / in-progress entries (@CodeWriter, @BugFixer, @Reviewer)
+  tech-debt/<module>/<slug>.md     ← open / in-progress entries (@CodeWriter, @BugFixer, @Verifier MODE=REVIEW)
   tech-debt/<module>/done/<slug>.md  ← archived after `/kit-techdebt` closes them
 ```
 
@@ -60,12 +60,12 @@
 |------|-------|---------|
 | `{{VAULT_PATH}}/_templates/spec.md` | (template) | Canonical spec.md skeleton — frozen portion |
 | `{{VAULT_PATH}}/_templates/plan.md` | (template) | Canonical plan.md skeleton — mutable portion |
-| `{{VAULT_PATH}}/features/<module>/<feature>/spec.md` (FROZEN at CONFIRM) | @Analyst (write), @Designer (UI section before CONFIRM only) | Frozen contract: Why / ACs / ECs / How / Test plan / UI |
-| `{{VAULT_PATH}}/features/<module>/<feature>/plan.md` | @Analyst (skeleton), @Main (steps, diff stats, diff-review), @DoDGate (DoD verdict), replan-on-discovery (REPLAN markers) | Mutable plan / replan log / DoD verdict |
-| `{{VAULT_PATH}}/features/<module>/<feature>/test-cases.md` | @TestKeeper, @BugFixer (Status flips on fix) | Live test state |
+| `{{VAULT_PATH}}/features/<module>/<feature>/spec.md` (FROZEN at CONFIRM) | @Architect (write), @Architect (UI section) (UI section before CONFIRM only) | Frozen contract: Why / ACs / ECs / How / Test plan / UI |
+| `{{VAULT_PATH}}/features/<module>/<feature>/plan.md` | @Architect (skeleton), @Main (steps, diff stats, diff-review), @Verifier MODE=DOD (DoD verdict), replan-on-discovery (REPLAN markers) | Mutable plan / replan log / DoD verdict |
+| `{{VAULT_PATH}}/features/<module>/<feature>/test-cases.md` | @Verifier, @BugFixer (Status flips on fix) | Live test state |
 | `{{VAULT_PATH}}/features/<module>/<feature>/retro.md` | @BugFixer | Accumulating bug retros for this feature |
 | `{{VAULT_PATH}}/guidelines/libs/<lib>-<version>.md` | @CodeWriter, @BugFixer | External library documentation cache |
-| `{{VAULT_PATH}}/tech-debt/<module>/<slug>.md` | @CodeWriter, @BugFixer, @Reviewer | Open tech-debt entries |
+| `{{VAULT_PATH}}/tech-debt/<module>/<slug>.md` | @CodeWriter, @BugFixer, @Verifier MODE=REVIEW | Open tech-debt entries |
 | `{{VAULT_PATH}}/tech-debt/<module>/done/<slug>.md` | @Main (via `/kit-techdebt`) | Closed entries |
 
 ---

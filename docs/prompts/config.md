@@ -48,7 +48,7 @@ For each thing PO wants changed:
    - "добавь запрещённый паттерн: только val, не var" →
      append `"var declarations (use val for immutability)"` to
      `code_quality.forbidden_patterns`.
-   - "удали designer" → `models.designer = null` (omits @Designer agent).
+   - "поменяй модель Architect/Verifier на X" → `models.architect = "X"` / `models.verifier = "X"` (v7.0.0+; absent fields fall back to `models.reviewer`).
    - "переименуй модуль server в backend" → `modules[].name`, `gradle_module`,
      `source_root`, `test_root`, `docs_path` — HIGH blast radius, see PHASE 3.
 2. If the request is ambiguous (multi-host with role change, "выключи MCP"

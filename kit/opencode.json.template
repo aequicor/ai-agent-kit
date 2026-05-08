@@ -39,8 +39,11 @@
         "{{REVIEWER_MODEL}}": {
           "name": "{{REVIEWER_MODEL}}"
         },
-        "{{DESIGNER_MODEL}}": {
-          "name": "{{DESIGNER_MODEL}}"
+        "{{ARCHITECT_MODEL}}": {
+          "name": "{{ARCHITECT_MODEL}}"
+        },
+        "{{VERIFIER_MODEL}}": {
+          "name": "{{VERIFIER_MODEL}}"
         }
       }
     }
