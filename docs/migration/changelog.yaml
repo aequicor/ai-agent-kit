@@ -1,4 +1,165 @@
 versions:
+  - version: "7.0.0-alpha"
+    released: "2026-05-08"
+    breaking: false
+    description: |
+      Lane-triage opt-in. Adds risk-based pipeline routing (trivial / standard
+      / critical) as a fully opt-in feature. v6.x pipeline is preserved
+      verbatim when `manifest.lanes.enabled: false` (default), so the version
+      is technically non-breaking — the MAJOR bump signals the v7 roadmap
+      milestone, not a breaking schema change.
+
+      Why MAJOR despite non-breaking: PIPELINE_V7_PROPOSAL.md defined v7.0.0
+      as the lane-triage release. Shipping it as alpha first lets PO opt in,
+      gather data via v6.3 telemetry, and validate the lane heuristics before
+      v7.0.0-beta consolidates agents (9→5) and v7.0.0-stable makes lanes
+      mandatory. Per-major versioning aligns the public roadmap with the
+      release vehicle.
+
+      Three lanes available when enabled: true:
+
+        trivial  — ≤1 file, ≤30 lines, no new public symbols. Pipeline
+                   collapses to: @CodeWriter → @Reviewer (Pass A only) →
+                   ground-truth → commit. Skips ANALYSIS, DoDGate,
+                   TraceabilityChecker, RECONCILE, 5.10 diff-review.
+                   Saves ~70% tokens for tiny tasks. Auto-reclassifies to
+                   standard on overflow (file count, line count, public
+                   symbol introduction).
+
+        standard — current v6.3 pipeline. Default fallback. Unchanged.
+
+        critical — standard + pre-mortem skill mandatory + Reviewer
+                   adversarial 2nd pass on every step (not just Critical-EC)
+                   + ≥3 mutants killed for backend ground-truth + sleep mode
+                   forbidden + diff-review never auto-approved + tdd_first
+                   forced regardless of test_strategy.
+
+      Activation requires explicit `manifest.lanes.enabled: true`. With
+      enabled false (default), the entire lane system is dormant — risk is
+      classified for telemetry but pipeline behaves exactly like v6.3.
+
+      ## P21 — manifest.lanes block
+
+      New manifest section. All defaults are non-breaking.
+
+        lanes:
+          enabled: false                          # opt-in
+          default_risk: standard                  # fallback
+          trivial_max_files: 1
+          trivial_max_lines: 30
+          trivial_no_new_public_symbols: true
+          critical_block_sleep: true
+          critical_require_mutation_sample: true
+          auto_classify: true
+
+      ## Step 0a CLASSIFY extended
+
+      @Main now performs risk classification at Step 0a:
+
+      1. Parse PO's task description for explicit `--risk=trivial|standard|critical`.
+      2. If no flag AND auto_classify=true → infer risk from heuristics:
+         - critical keywords: auth, token, secret, password, credential,
+           migration, schema change, external API, webhook, third-party,
+           security surface answer = yes.
+         - trivial: ≤1 file, ≤30 lines, no new public symbols, no
+           security-surface keywords.
+         - standard: default fallback.
+      3. Surface classified risk to PO in clarifying-questions message
+         with --risk override hint.
+      4. PO can dispute by passing --risk on the next message.
+      5. Critical + sleep is refused at /kit-sleep entry by default.
+
+      Once classified, risk is recorded in:
+        .planning/CURRENT.md.risk
+        .planning/tasks/<slug>.md.risk
+
+      Mid-flight upgrades allowed (standard → critical when Critical EC
+      discovered). Downgrades are forbidden — once a risk is set, it sticks.
+
+      ## /kit-new-feature extended
+
+      Accepts `--risk=<value>` flag (or `--risk <value>` space-separated).
+      Multiple flags allowed (e.g. `--sleep --risk=standard`). Risk is
+      passed through to @Main. Combination `--sleep --risk=critical` is
+      refused at startup if `lanes.critical_block_sleep: true`.
+
+      ## /kit-sleep extended
+
+      Pre-flight gate added:
+      - Refuses critical risk if `lanes.critical_block_sleep: true`.
+      - Advises about `Bash(git reset --hard *)` allowlist requirement
+        (BLOCKED-shutdown uses git reset; without allowlist, the harness
+        prompts mid-sleep and defeats autonomous mode).
+
+      ## Lane pipeline variants — § "Lane pipeline variants" in Main body
+
+      New documentation section covers the trivial / critical overlays
+      explicitly. Standard lane = v6.3 pipeline as documented in the
+      existing "Pipeline — FEATURE" / "Pipeline — TECH" sections.
+
+      ## What this release does NOT change
+
+      - Agents unchanged (still 9). v7.0.0-beta will consolidate to 5
+        based on gates.csv data.
+      - Mutation-sample skill not yet shipped. Critical lane requires PO to
+        attach a mutation-sample report (e.g. via PIT, Stryker, etc.); the
+        kit does not generate it. v7.0.0-beta wraps mutation-generation in
+        @Verifier.
+      - Pure-text and refactor lanes not separated. Refactor stays in
+        standard lane with TECH pipeline; future v7.x may split.
+      - Lane manifest field `enabled: false` keeps EXACT v6.3 behaviour.
+        Kit upgrades from v6.3 to v7.0.0-alpha are zero-impact unless PO
+        flips `enabled: true`.
+
+      ## Migration path
+
+        v6.3 (telemetry) → v7.0.0-alpha (this; lanes opt-in) →
+        v7.0.0-beta (agent consolidation 9→5 based on data) →
+        v7.0.0 stable (lanes mandatory; ground-truth mandatory in critical).
+
+      Recommended path for PO:
+        1. Stay on v6.3 for ~30 tasks to accumulate gates.csv signal.
+        2. /kit-update to v7.0.0-alpha (no behaviour change at default
+           manifest).
+        3. Set `lanes.enabled: true` for the first feature; observe trivial
+           lane behaviour on a small task.
+        4. Adjust manifest defaults per project needs (e.g. raise
+           trivial_max_lines for chatty projects).
+        5. Wait for v7.0.0-beta agent consolidation (release cadence
+           depends on accumulated data quality).
+    files_changed:
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/commands/kit-new-feature.md.template
+      - kit/_shared/commands/kit-sleep.md.template
+      - kit/manifest.schema.json
+      - manifest.example.yaml
+    manifest_changes:
+      added_fields:
+        - path: "lanes.enabled"
+          default: false
+          description: "v7.0.0-alpha+ (P21) — opt-in for the lane-triage system. false (default) = pipeline behaves exactly like v6.3. true = @Main classifies risk at Step 0a and routes through trivial / standard / critical lane variants."
+        - path: "lanes.default_risk"
+          default: standard
+          description: "v7.0.0-alpha+ — fallback risk when @Main cannot determine from heuristics and PO did not pass --risk explicitly. standard is the safe default."
+        - path: "lanes.trivial_max_files"
+          default: 1
+          description: "v7.0.0-alpha+ — max files a trivial-lane task may touch before auto-reclassifying to standard."
+        - path: "lanes.trivial_max_lines"
+          default: 30
+          description: "v7.0.0-alpha+ — max lines added+removed for a trivial-lane task before auto-reclassifying."
+        - path: "lanes.trivial_no_new_public_symbols"
+          default: true
+          description: "v7.0.0-alpha+ — trivial lane forbids new public functions/types/endpoints/exports. Set false to allow."
+        - path: "lanes.critical_block_sleep"
+          default: true
+          description: "v7.0.0-alpha+ — refuse /kit-sleep for critical-lane tasks. Highest blast-radius combination; default true blocks at startup."
+        - path: "lanes.critical_require_mutation_sample"
+          default: true
+          description: "v7.0.0-alpha+ — critical lane backend steps require ≥3 mutants killed (vs ≥1 for standard backend)."
+        - path: "lanes.auto_classify"
+          default: true
+          description: "v7.0.0-alpha+ — let @Main infer risk from heuristics (file count, public-API touch, security-surface keywords). false = always require explicit --risk flag, missing flag falls back to default_risk."
+
   - version: "6.3.0"
     released: "2026-05-08"
     breaking: false

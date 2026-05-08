@@ -8,8 +8,8 @@
   "properties": {
     "kit_version": {
       "type": "string",
-      "description": "Kit version — used for migration checks",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+      "description": "Kit version — used for migration checks. Accepts SemVer 2.0 with optional prerelease tag (e.g. '6.3.0', '7.0.0-alpha', '7.0.0-beta.2').",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$"
     },
     "hosts": {
       "type": "array",
@@ -44,6 +44,22 @@
       },
       "additionalProperties": false,
       "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400, "max_tokens_per_step": 30000}
+    },
+    "lanes": {
+      "type": "object",
+      "description": "v7.0.0-alpha+ (P21) — risk-based pipeline triage. When `enabled: true`, @Main's Step 0a CLASSIFY computes a `risk` value for the task (trivial | standard | critical) and routes through a different pipeline density. The 9 agents are unchanged — lanes change which gates fire, not who fires them. trivial: short pipeline (no Analyst, no DoDGate, no TraceabilityChecker, no diff-review; ground-truth still mandatory). standard: current v6.x pipeline. critical: standard + Reviewer adversarial 2nd pass + mutation-sample backend artefact + sleep mode forbidden. Default disabled — projects without explicit opt-in keep the v6.x pipeline. Per PIPELINE_V7_PROPOSAL.md § 5.",
+      "properties": {
+        "enabled": {"type": "boolean", "default": false, "description": "Opt-in for the lane-triage system. false (default) = pipeline behaves exactly like v6.3 regardless of risk. true = @Main classifies risk at Step 0a and routes accordingly."},
+        "default_risk": {"type": "string", "enum": ["trivial", "standard", "critical"], "default": "standard", "description": "Fallback risk when @Main cannot determine from heuristics and PO did not pass --risk explicitly. standard is the safe default — overflows escalate, never undershoots."},
+        "trivial_max_files": {"type": "integer", "minimum": 1, "default": 1, "description": "Maximum files a trivial-lane task may touch. Overflow auto-reclassifies to standard with a notice."},
+        "trivial_max_lines": {"type": "integer", "minimum": 1, "default": 30, "description": "Maximum lines added+removed for a trivial-lane task. Overflow auto-reclassifies."},
+        "trivial_no_new_public_symbols": {"type": "boolean", "default": true, "description": "Trivial lane forbids new public functions/types/endpoints/exports. true = enforce; false = allow (for projects where 'trivial' is shorthand for 'small but allowed to introduce a public symbol')."},
+        "critical_block_sleep": {"type": "boolean", "default": true, "description": "Refuse /kit-sleep for critical-lane tasks. Critical risk + autonomous run is the highest blast-radius combination; default true blocks at /kit-sleep startup. Set false only if you accept the trade-off."},
+        "critical_require_mutation_sample": {"type": "boolean", "default": true, "description": "Critical lane backend steps require a mutation-sample with ≥3 mutants killed (vs ≥1 for standard backend). Pure-UI/API/CLI critical steps still require their respective ground-truth types."},
+        "auto_classify": {"type": "boolean", "default": true, "description": "Let @Main infer risk at Step 0a from heuristics (file count estimate, public-API touch, security-surface keywords, Critical EC presence). false = always require explicit --risk flag in /kit-new-feature; missing flag falls back to default_risk."}
+      },
+      "additionalProperties": false,
+      "default": {"enabled": false, "default_risk": "standard", "trivial_max_files": 1, "trivial_max_lines": 30, "trivial_no_new_public_symbols": true, "critical_block_sleep": true, "critical_require_mutation_sample": true, "auto_classify": true}
     },
     "telemetry": {
       "type": "object",

@@ -140,13 +140,59 @@ Bug / error / regression                                        →  BUG
 Refactoring / dependency update / optimization (no behaviour)   →  TECH
 ```
 
+v7.0.0-alpha+ — RISK CLASSIFICATION (P21):
+
+Read `manifest.lanes` (defaults below):
+  enabled: false
+  default_risk: standard
+  trivial_max_files: 1
+  trivial_max_lines: 30
+  trivial_no_new_public_symbols: true
+  critical_block_sleep: true
+  critical_require_mutation_sample: true
+  auto_classify: true
+
+If `lanes.enabled: false` → SKIP risk classification entirely; record `risk: standard` in the task file (informational only — pipeline behaves exactly like v6.3) and proceed to current pipeline. ALL the lane-specific behaviour described below activates ONLY when `lanes.enabled: true`.
+
+When `lanes.enabled: true`:
+
+1. Parse PO's task description for explicit `--risk=trivial|standard|critical` flag. Explicit flag always wins.
+2. If no flag AND `auto_classify: true` — infer risk from heuristics:
+   ```
+   risk = critical IF any of:
+     - Description contains "auth" / "token" / "secret" / "password" / "credential"
+     - Description contains "migration" / "schema change" / "data migration"
+     - Description contains "external API" / "webhook" / "third-party"
+     - PO answered yes to "touches security surface?" in clarifying questions
+     - Bug severity = critical (BUG pipeline only)
+     - Description references a Critical EC from existing spec.md
+
+   risk = trivial IF ALL of:
+     - Description fits in one sentence
+     - PO confirms in clarifying questions: "≤1 file, ≤30 lines, no new public symbols"
+     - No security-surface keywords (per critical heuristics above)
+     - Type ∈ {FEATURE, TECH} (BUG always at least standard, see § BUG TRIAGE)
+     - Module is a single existing module (no cross-module touch)
+
+   risk = standard otherwise (default fallback per manifest.lanes.default_risk)
+   ```
+3. If no flag AND `auto_classify: false` → use `manifest.lanes.default_risk` and surface to PO: "Risk auto-classification disabled. Using default `<default_risk>`. Pass --risk=<value> to override."
+4. Show PO the classified risk in the clarifying-questions message:
+   ```
+   Risk: <trivial | standard | critical>  (auto-classified | from --risk flag | default)
+   Why: <one-line reason from heuristic>
+   To override: re-run with --risk=<value>
+   ```
+   PO can dispute by passing --risk=<other> on next message.
+5. Sleep mode + critical risk: if `critical_block_sleep: true` AND task is being started via `/kit-sleep` or `/kit-new-feature --sleep` → REFUSE at startup. Output: "Critical risk + sleep mode is the highest blast-radius combination. Refused per `manifest.lanes.critical_block_sleep: true`. Either run interactively, or set the flag false (logged as risk acceptance)."
+
 Ask clarifying questions in **one message** — do not proceed until PO responds.
 
 After PO responds:
 
 1. Derive `task_slug` in kebab-case (max 30 chars). Examples: `feat-user-auth`, `fix-tc-123`, `tech-refactor-db`.
 2. Record start commit: `git rev-parse HEAD` → save as `start_commit: <sha>`. (v6 — used by step 5.10 diff-review.) If git is unavailable, save `start_commit: (no-git)` and step 5.10 falls back to scanning CHANGED_FILES across all task checkpoints.
-3. Create `.planning/tasks/<task_slug>.md` with Type, Module, Description, start_commit, **and v6.1 fields**: `current_step_idx: 0`, empty `step_commits:` block, single-line `Last-checkpoint: <ISO> — NEXT: ANALYSIS`, `status: active`.
+3. Create `.planning/tasks/<task_slug>.md` with Type, Module, Description, start_commit, **and v6.1 fields**: `current_step_idx: 0`, empty `step_commits:` block, single-line `Last-checkpoint: <ISO> — NEXT: ANALYSIS`, `status: active`. **v7.0.0-alpha+:** also `risk: <trivial|standard|critical>` (informational if lanes.enabled=false; routing-relevant if true).
 4. Write to `.planning/CURRENT.md`:
    ```
    active_task: <task_slug>
@@ -154,11 +200,12 @@ After PO responds:
    start_commit: <sha or (no-git)>
    summary: <type> — <one-line description>
    mode: interactive | sleep    # v6.1+ — set to `sleep` only if this task was started via /kit-sleep or /kit-new-feature --sleep
+   risk: <trivial | standard | critical>   # v7.0.0-alpha+ — informational if lanes.enabled=false
    status:                       # empty unless sleep BLOCKED-shutdown ran
    awaiting_po: false
    ```
 5. v6.1: if mode == sleep, output PO one-time notice: "🌙 Sleep mode active for task <slug>. The pipeline will run autonomously through all CONFIRM/diff-review/replan gates with doubled retry budgets. Final output: `.planning/MORNING_REPORT.md`. Read it on wake-up. To interrupt: edit `.planning/CURRENT.md` and set `mode: interactive`."
-6. Proceed with the relevant pipeline.
+6. Proceed with the relevant pipeline. v7.0.0-alpha+ — if `lanes.enabled: true`, route per § LANE PIPELINE VARIANTS below.
 
 ### Questions for FEATURE
 
@@ -275,6 +322,64 @@ auto_approve:
 PO can override per-task with `--no-auto-approve` in the task prompt to force CONFIRM regardless of manifest. There is no override the other way (you cannot bypass a `false` flag); for that, edit the manifest with `/kit-config enable auto_approve.<class>`.
 
 There is no `@AutoApprover` agent in v5+; the flag is just a flag. Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit `/kit-approve` regardless of `auto_approve`.
+
+## Lane pipeline variants (v7.0.0-alpha+, P21 — only when manifest.lanes.enabled: true)
+
+When `lanes.enabled: false` (default), this whole section is dormant — pipelines below behave exactly like v6.3. When `lanes.enabled: true`, the FEATURE / TECH pipelines (Pipeline — FEATURE / Pipeline — TECH below) get the following lane-specific modifications applied as overlays.
+
+### Trivial lane
+
+Activated when task's `risk: trivial`. Constraints (enforced at planning + execution):
+- `lanes.trivial_max_files` files maximum (default 1)
+- `lanes.trivial_max_lines` lines added+removed maximum (default 30)
+- `lanes.trivial_no_new_public_symbols` (default true): no new public functions / types / endpoints / exports
+
+Pipeline collapse — skip the following stages from § Pipeline — FEATURE / TECH:
+- Step 2 ANALYSIS: SKIP. No `@Analyst`, no `spec.md`, no `@TestKeeper GENERATE`, no `@TestKeeper DRAFT`. PO's one-sentence description is the spec; the change is small enough that an explicit AC table is overhead.
+- Step 3 PLAN: SKIP. Trivial = one step by definition. Plan synthesised inline by @Main: single Step 1 with `Goal: <PO description>`, `Files: <inferred>`, `Runnable: <one-line user-visible change>`.
+- Step 3a SLICE-CAP CHECK: REPLACED with TRIVIAL-CONSTRAINTS CHECK. Verify the inferred Files count and estimated diff size fit `trivial_max_files` and `trivial_max_lines`. Overflow → STOP, output: "Task exceeds trivial-lane constraints (files=<X>, max=<Y>; lines~<A>, max=<B>). Auto-reclassifying to standard. Re-run with --risk=standard or restate the task more narrowly." Update `.planning/CURRENT.md.risk: standard` and re-enter Step 0a.
+- Step 4 CONFIRM: SKIP. Auto-approve trivial regardless of `auto_approve.feature`. Log `auto-approved (trivial lane)` in checkpoint.
+- Step 5 EXECUTE: ONE step. @CodeWriter → @TestKeeper EXECUTE (build + lint + targeted tests if any) → @Reviewer (Pass A only — no Pass B/C/D/E, no adversarial). On CRITICAL/HIGH from Reviewer → fix loop max 2 cycles, then auto-reclassify to standard.
+- 5.4a unchanged-call-sites: SKIP (1-file change cannot drift cross-module).
+- 5.4b COMMIT: KEEP — even trivial gets a per-step commit for `step_commits[]` integrity.
+- 5.6 CHECKPOINT: KEEP runbook (mandatory all 4 sections — empty `(none)` is fine) and **ground-truth artefact (mandatory — this is the only verification step that survives the lane collapse)**. 3-way fork is just `/kit-approve` + `/kit-defect` (no `/kit-revert-step` — too much ceremony for trivial; manual `git revert <sha>` if needed).
+- Step 5.7 RECONCILE: SKIP.
+- Step 5.8 TRACE: SKIP.
+- Step 5.9 DoDGate: SKIP.
+- Step 5.10 DIFF-REVIEW: SKIP. The 5.6 ground-truth artefact + PO's `/kit-approve` is the verification.
+- Step 6 CLOSE: simplified. No "update guidelines if patterns emerged" — trivial doesn't establish patterns.
+
+Trivial lane saves ~70% of token budget vs standard for tiny tasks (no Analyst spec, no Test plan generation, no DoDGate run, no Trace matrix). The trade-off: less safety net for non-trivial tasks misclassified as trivial. The auto-reclassification on overflow is the safety mechanism.
+
+### Standard lane
+
+Activated when task's `risk: standard` (or default fallback). Pipeline runs **exactly as documented in § Pipeline — FEATURE / TECH below**, no overlays. This is the v6.3 baseline.
+
+### Critical lane
+
+Activated when task's `risk: critical`. Adds the following overlays on top of standard pipeline:
+
+- Step 2 ANALYSIS: dispatch `pre-mortem` skill **mandatory** (currently opt-in). Pre-mortem brainstorms how the change could fail before code is written. Writes findings into spec.md § "Open questions" → @Analyst addresses before CONFIRM.
+- Step 3 PLAN: every step's Test strategy must be `tdd_first` (override `manifest.test_strategy` for critical-lane tasks). Critical-lane tasks may not opt into `test_after`.
+- Step 4 CONFIRM: NEVER auto-approve regardless of `auto_approve.feature` setting. Critical risk requires explicit PO `/kit-approve` for both spec and plan.
+- Step 5.4 REVIEW: `@Reviewer` adversarial 2nd pass (Pass A*) becomes **mandatory for every step**, not just Critical-EC steps. Cost: ~+30% review token spend per step; benefit: reduced LLM-as-reviewer convergence on shared blind spots.
+- Step 5.6 CHECKPOINT ground-truth: backend artefact requires **≥3 mutants killed** in mutation-sample (vs ≥1 for standard backend) when `manifest.lanes.critical_require_mutation_sample: true`. UI/API/CLI artefact types unchanged.
+- Step 5.7 RECONCILE: critical/high uncovered EC → escalate immediately to PO, do NOT auto-invoke `replan-on-discovery` skill (Pattern B). Critical-lane discoveries warrant pause-and-think, not autopilot.
+- Step 5.10 DIFF-REVIEW: NEVER auto-approve regardless of `auto_approve.diff_review`. Critical risk forces PO eye on the final diff.
+- Sleep mode: REFUSED at /kit-sleep startup if `manifest.lanes.critical_block_sleep: true` (default). Critical + autonomous run is the highest blast-radius combination.
+- DEPLOY / DESTROY / SECRET_ROTATE / MIGRATION / EXTERNAL_API gates: same as standard (always manual), but critical-lane tasks tend to hit these — surface to PO with extra context "this is a critical-lane task; double-check before /kit-approve".
+
+Critical lane costs ~+20–30% tokens vs standard but is the right routing for security/migration/external integration tasks. Log every critical-lane invocation with rationale to `step_commits[1].notes` for retro.
+
+### Mid-flight lane changes
+
+If a standard-lane task discovers Critical EC during ANALYSIS or REVIEW → @Main may upgrade to critical lane mid-flight:
+- Update `.planning/CURRENT.md.risk: critical` and `.planning/tasks/<slug>.md.risk: critical`.
+- Re-dispatch `pre-mortem` skill if not already done.
+- Subsequent gates apply critical overlays.
+- Log the upgrade reason in step_commits[N].notes.
+
+Downgrade (critical → standard, standard → trivial) is forbidden — once a higher risk is classified, it sticks. Lower risk = relaxed gates = potential safety regression. PO can manually edit `.planning/CURRENT.md.risk` if they accept the risk; this is logged but not blocked.
 
 ## Pipeline — FEATURE
 

@@ -1,33 +1,43 @@
 ---
-description: Start a new feature, bug fix, or tech task. Argument: $FEATURE_DESCRIPTION (optionally prefixed with `--sleep` to enter autonomous mode — equivalent to /kit-sleep). Delegates to @Main for full orchestration.
+description: Start a new feature, bug fix, or tech task. Argument: $FEATURE_DESCRIPTION. Optional flags (any order, before description): `--sleep` (autonomous mode — equivalent to /kit-sleep), `--risk=trivial|standard|critical` (v7.0.0-alpha+; only effective when manifest.lanes.enabled=true; otherwise informational). Delegates to @Main for full orchestration.
 ---
 
 You are a Senior project orchestrator. Your task is to start a new feature, bug fix, or tech task and hand it off to `@Main` for full pipeline execution.
 
 Argument: $FEATURE_DESCRIPTION
 
-## Step 0 — Detect --sleep flag (v6.1+)
+## Step 0 — Parse leading flags
 
-Check if `$FEATURE_DESCRIPTION` starts with `--sleep` (with any whitespace before/after):
+Inspect the head of `$FEATURE_DESCRIPTION` for leading flags. Multiple flags allowed in any order; strip them in turn from the start of the string until no more flags. Recognised flags:
 
-- If yes → strip the `--sleep` flag and any leading/trailing whitespace from the description, then **delegate to `/kit-sleep`** with the cleaned description as its argument. Do NOT proceed with the interactive flow below.
+- `--sleep` (v6.1+): switch to autonomous mode. After stripping all flags, **delegate to `/kit-sleep`** with the cleaned description.
+- `--risk=<value>` (v7.0.0-alpha+): explicit risk classification. Valid values: `trivial`, `standard`, `critical`. Captured as `EXPLICIT_RISK`; passed to @Main below.
+- `--risk trivial|standard|critical` (alternative space-separated form): same effect as `--risk=<value>`.
 
-  Output: "Detected --sleep flag, delegating to /kit-sleep..."
+After parsing, `FEATURE_DESCRIPTION_CLEAN` = original string with all leading flags stripped, leading/trailing whitespace removed.
 
-  Then invoke /kit-sleep semantics (read `kit-sleep.md` and follow it). Stop after that.
+If `--sleep` was set:
+- Output: "Detected --sleep flag, delegating to /kit-sleep..." (with risk note if --risk was also set: "Risk: <EXPLICIT_RISK>")
+- v7.0.0-alpha+: if `EXPLICIT_RISK == critical` AND `manifest.lanes.critical_block_sleep: true` (default) → STOP. Output: "Critical risk + sleep mode is the highest blast-radius combination. Refused per manifest.lanes.critical_block_sleep. Run interactively (drop --sleep) or override manifest."
+- Else → invoke /kit-sleep semantics (pass FEATURE_DESCRIPTION_CLEAN and EXPLICIT_RISK).
 
-- If no → proceed with the interactive flow below.
+If `--sleep` was not set → proceed with the interactive flow below.
 
 ## Interactive flow
 
 Hand off to `@Main` with the following prompt:
 
 ```
-New task: $FEATURE_DESCRIPTION
+New task: <FEATURE_DESCRIPTION_CLEAN>
 
 Type: FEATURE (or clarify if this is BUG/TECH)
 Mode: interactive
+Risk: <EXPLICIT_RISK or "(auto-classify)">    # v7.0.0-alpha+; @Main resolves at Step 0a
 ```
+
+If `manifest.lanes.enabled: false` → @Main records `risk: standard` informationally and runs the v6.3 pipeline as-is, regardless of EXPLICIT_RISK or auto-classify outcome. The Risk: line is recorded for future telemetry only.
+
+If `manifest.lanes.enabled: true` → @Main routes through the matching lane variant (trivial / standard / critical — see kit/_shared/agents/Main.body.md.template § "Lane pipeline variants").
 
 `@Main` will execute the v6 FEATURE pipeline:
 
