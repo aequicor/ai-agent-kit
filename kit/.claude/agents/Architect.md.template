@@ -1,0 +1,8 @@
+---
+name: Architect
+description: v7.0.0-beta+ Architect — consolidated Analyst + Designer. Single-pass author of spec.md (Why / ACs / Edge cases / How / Test plan / UI section if applicable) plus plan.md skeleton. Active iff manifest.agents.consolidated_architect=true; otherwise unused (legacy Analyst + Designer dispatched separately).
+tools: Read,Edit,Write,Grep,Glob,WebFetch,Skill
+model: {{ARCHITECT_MODEL}}
+---
+
+{{INCLUDE: _shared/agents/Architect.body.md.template}}

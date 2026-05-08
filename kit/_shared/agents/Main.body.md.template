@@ -323,6 +323,74 @@ PO can override per-task with `--no-auto-approve` in the task prompt to force CO
 
 There is no `@AutoApprover` agent in v5+; the flag is just a flag. Other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API) always require explicit `/kit-approve` regardless of `auto_approve`.
 
+## Agent dispatch decision (v7.0.0-beta+, P22 — manifest.agents.{consolidated_architect, consolidated_verifier})
+
+The kit ships two agent rosters side-by-side until v7.0.0-stable. Per-merger flags in `manifest.agents` decide which is dispatched at each call site.
+
+**Architect merger** — controlled by `manifest.agents.consolidated_architect` (default false):
+
+```
+At step 2 ANALYSIS:
+
+if manifest.agents.consolidated_architect == true:
+    dispatch @Architect with:
+        FEATURE, MODULE, DESCRIPTION, TYPE, EXISTING_DOCS,
+        UI_REQUIRED: <true if FEATURE AND manifest.ui.framework != null
+                       AND PO confirmed UI surface affected>,
+        UI_FRAMEWORK, PLATFORMS, COLOR_PALETTE
+    @Architect produces spec.md (with UI section if UI_REQUIRED) +
+    plan.md skeleton in one round-trip.
+    → SKIP step 3's separate @Designer dispatch — UI is already in spec.md.
+
+else (default v6.x path):
+    dispatch @Analyst with:
+        FEATURE, MODULE, DESCRIPTION, TYPE, EXISTING_DOCS
+    @Analyst produces spec.md (no UI) + plan.md skeleton.
+    if FEATURE AND manifest.ui.framework != null:
+        at step 3 PLAN, ALSO dispatch @Designer with:
+            FEATURE, MODULE, FEATURE_DOC=spec.md, DESCRIPTION
+        @Designer appends ## UI / UX to spec.md BEFORE step 4 CONFIRM
+        freezes the file.
+```
+
+**Verifier merger** — controlled by `manifest.agents.consolidated_verifier` (default false):
+
+```
+At every per-step verification call (5.3 / 5.4 / 5.7 / 5.8 / 5.9):
+
+if manifest.agents.consolidated_verifier == true:
+    dispatch @Verifier with MODE=<mode> + the inputs the corresponding
+    legacy agent expected:
+        5.3 VERIFY        → @Verifier MODE=EXECUTE   (was @TestKeeper EXECUTE)
+        5.4 REVIEW        → @Verifier MODE=REVIEW    (was @Reviewer)
+        5.7 RECONCILE     → @Verifier MODE=RECONCILE (was @TestKeeper RECONCILE)
+        5.8 TRACE         → @Verifier MODE=TRACE     (was @TraceabilityChecker)
+        5.9 DoD GATE      → @Verifier MODE=DOD       (was @DoDGate)
+    Output formats per mode are documented in Verifier.body.md.template;
+    they parse identically to legacy outputs in eval-collector and /kit-status.
+
+    Step 2 ANALYSIS test-cases generation also goes through @Verifier:
+        TestKeeper GENERATE → @Verifier MODE=GENERATE
+        TestKeeper DRAFT    → @Verifier MODE=DRAFT
+    BUG pipeline test-cases scan / append:
+        TestKeeper SCAN     → @Verifier MODE=SCAN
+        TestKeeper APPEND   → @Verifier MODE=APPEND
+        TestKeeper RERUN    → @Verifier MODE=RERUN
+
+else (default v6.x path):
+    dispatch the legacy agents separately at each call site, exactly as
+    documented in § Pipeline — FEATURE / TECH / BUG below.
+```
+
+**Telemetry symmetry:** gate ids in gates.csv are stable across consolidated ∈ {true, false}. Both code paths log `gate: build` / `review-correctness` / `dod` / etc. — so signal_ratio aggregation in /kit-status is comparable across the A/B configurations.
+
+**Migration mid-task:** flipping `consolidated_*` flags during an active task is undefined behaviour. /kit-config refuses the flip if `.planning/CURRENT.md.active_task` is set; PO must finish (or revert) the task first.
+
+**Model resolution at dispatch time:**
+- `@Architect` requires `models.architect`. If absent → fallback to `models.reviewer`.
+- `@Verifier` requires `models.verifier`. If absent → fallback to `models.reviewer`.
+- The fallback is silent — it preserves single-source-of-truth (`models.reviewer` already controls @Reviewer's model in v6.x); explicit `models.architect`/`models.verifier` lets PO bind a different model when consolidating.
+
 ## Lane pipeline variants (v7.0.0-alpha+, P21 — only when manifest.lanes.enabled: true)
 
 When `lanes.enabled: false` (default), this whole section is dormant — pipelines below behave exactly like v6.3. When `lanes.enabled: true`, the FEATURE / TECH pipelines (Pipeline — FEATURE / Pipeline — TECH below) get the following lane-specific modifications applied as overlays.

@@ -1,4 +1,5 @@
 kit/.claude/agents/Analyst.md.template
+kit/.claude/agents/Architect.md.template
 kit/.claude/agents/BugFixer.md.template
 kit/.claude/agents/CodeWriter.md.template
 kit/.claude/agents/Designer.md.template
@@ -6,6 +7,7 @@ kit/.claude/agents/DoDGate.md.template
 kit/.claude/agents/Reviewer.md.template
 kit/.claude/agents/TestKeeper.md.template
 kit/.claude/agents/TraceabilityChecker.md.template
+kit/.claude/agents/Verifier.md.template
 kit/.claude/hooks/README.md
 kit/.claude/hooks/pre-tool-bash-guard.mjs
 kit/.claude/hooks/session-start-context.mjs
@@ -14,6 +16,7 @@ kit/.claude/settings.json.template
 kit/.github/workflows/kit-gates.yml.template
 kit/.mcp.json.template
 kit/.opencode/agents/Analyst.md.template
+kit/.opencode/agents/Architect.md.template
 kit/.opencode/agents/BugFixer.md.template
 kit/.opencode/agents/CodeWriter.md.template
 kit/.opencode/agents/Designer.md.template
@@ -22,6 +25,7 @@ kit/.opencode/agents/Main.md.template
 kit/.opencode/agents/Reviewer.md.template
 kit/.opencode/agents/TestKeeper.md.template
 kit/.opencode/agents/TraceabilityChecker.md.template
+kit/.opencode/agents/Verifier.md.template
 kit/.opencode/plugins/session-bootstrap.ts
 kit/.planning/CURRENT.md.template
 kit/.planning/DECISIONS.md.template
@@ -43,6 +47,7 @@ kit/_shared/FILE_STRUCTURE.md.template
 kit/_shared/PROJECT_RULES.body.md.template
 kit/_shared/_shared.md.template
 kit/_shared/agents/Analyst.body.md.template
+kit/_shared/agents/Architect.body.md.template
 kit/_shared/agents/BugFixer.body.md.template
 kit/_shared/agents/CodeWriter.body.md.template
 kit/_shared/agents/Designer.body.md.template
@@ -51,6 +56,7 @@ kit/_shared/agents/Main.body.md.template
 kit/_shared/agents/Reviewer.body.md.template
 kit/_shared/agents/TestKeeper.body.md.template
 kit/_shared/agents/TraceabilityChecker.body.md.template
+kit/_shared/agents/Verifier.body.md.template
 kit/_shared/commands/kit-approve.md.template
 kit/_shared/commands/kit-attach.md.template
 kit/_shared/commands/kit-config.md.template

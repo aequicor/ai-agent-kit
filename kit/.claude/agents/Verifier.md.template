@@ -1,0 +1,8 @@
+---
+name: Verifier
+description: v7.0.0-beta+ Verifier — consolidated TestKeeper + Reviewer + DoDGate + TraceabilityChecker. Mode-driven (GENERATE / DRAFT / EXECUTE / RECONCILE / RERUN / SCAN / APPEND / REVIEW / DOD / TRACE). Each MODE matches the legacy agent's behaviour exactly; consolidation eliminates four separate dispatches across the per-step verification chain. Active iff manifest.agents.consolidated_verifier=true; otherwise unused (legacy 4 agents dispatched separately).
+tools: Read,Edit,Write,Bash,Grep,Glob,Skill
+model: {{VERIFIER_MODEL}}
+---
+
+{{INCLUDE: _shared/agents/Verifier.body.md.template}}

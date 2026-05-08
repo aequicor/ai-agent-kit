@@ -45,6 +45,16 @@
       "additionalProperties": false,
       "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400, "max_tokens_per_step": 30000}
     },
+    "agents": {
+      "type": "object",
+      "description": "v7.0.0-beta+ (P22) — agent consolidation flags. The kit ships both legacy v6.x agents (Analyst, Designer, TestKeeper, Reviewer, DoDGate, TraceabilityChecker) and new consolidated v7.x agents (Architect, Verifier). Each consolidation is a separate opt-in flag — PO can A/B test one merger at a time, validate via gates.csv telemetry, then enable the next. v7.0.0-stable will remove the legacy agents and force consolidation; until then both code paths coexist.",
+      "properties": {
+        "consolidated_architect": {"type": "boolean", "default": false, "description": "v7.0.0-beta+ — when true, @Main dispatches @Architect (single body merging Analyst + Designer) instead of @Analyst + @Designer separately. Saves one dispatch per UI feature; one agent reads spec.md once. Requires models.architect (or fallback). Default false (legacy path) until v7.0.0-stable."},
+        "consolidated_verifier": {"type": "boolean", "default": false, "description": "v7.0.0-beta+ — when true, @Main dispatches @Verifier with MODE={GENERATE|DRAFT|EXECUTE|RECONCILE|RERUN|SCAN|APPEND|REVIEW|DOD|TRACE} instead of @TestKeeper / @Reviewer / @DoDGate / @TraceabilityChecker separately. Per-mode behaviour identical to legacy; saves four dispatches across the per-step verification chain. Requires models.verifier (or fallback). Default false (legacy path) until v7.0.0-stable."}
+      },
+      "additionalProperties": false,
+      "default": {"consolidated_architect": false, "consolidated_verifier": false}
+    },
     "lanes": {
       "type": "object",
       "description": "v7.0.0-alpha+ (P21) — risk-based pipeline triage. When `enabled: true`, @Main's Step 0a CLASSIFY computes a `risk` value for the task (trivial | standard | critical) and routes through a different pipeline density. The 9 agents are unchanged — lanes change which gates fire, not who fires them. trivial: short pipeline (no Analyst, no DoDGate, no TraceabilityChecker, no diff-review; ground-truth still mandatory). standard: current v6.x pipeline. critical: standard + Reviewer adversarial 2nd pass + mutation-sample backend artefact + sleep mode forbidden. Default disabled — projects without explicit opt-in keep the v6.x pipeline. Per PIPELINE_V7_PROPOSAL.md § 5.",
@@ -265,7 +275,7 @@
     },
     "models": {
       "type": "object",
-      "description": "OpenCode model role assignments (used as {{PROVIDER_ID}}/{{MODEL}} in opencode.json and agent frontmatter). Required iff 'opencode' ∈ hosts.",
+      "description": "OpenCode model role assignments (used as {{PROVIDER_ID}}/{{MODEL}} in opencode.json and agent frontmatter). Required iff 'opencode' ∈ hosts. v7.0.0-beta+ adds optional architect/verifier roles for consolidated agents — fallback chain: architect → reviewer; verifier → reviewer (matching the legacy bodies' model assignments).",
       "required": ["default", "coder", "reviewer"],
       "properties": {
         "default": {"type": "string", "minLength": 1},
@@ -277,12 +287,26 @@
             {"type": "null"}
           ]
         },
-        "small": {"type": "string"}
+        "small": {"type": "string"},
+        "architect": {
+          "description": "v7.0.0-beta+ — model for the consolidated @Architect agent (Analyst + Designer). Required iff agents.consolidated_architect: true. If absent, kit falls back to `reviewer`.",
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        },
+        "verifier": {
+          "description": "v7.0.0-beta+ — model for the consolidated @Verifier agent. Required iff agents.consolidated_verifier: true. If absent, kit falls back to `reviewer`.",
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        }
       }
     },
     "claude_code": {
       "type": "object",
-      "description": "Claude Code runtime config. Required iff 'claude-code' ∈ hosts. Models accept the Claude Code CLI aliases (opus | sonnet | haiku) or full model IDs (e.g. claude-opus-4-7, claude-sonnet-4-6, claude-haiku-4-5).",
+      "description": "Claude Code runtime config. Required iff 'claude-code' ∈ hosts. Models accept the Claude Code CLI aliases (opus | sonnet | haiku) or full model IDs (e.g. claude-opus-4-7, claude-sonnet-4-6, claude-haiku-4-5). v7.0.0-beta+ adds optional architect/verifier — fallback chain identical to OpenCode side.",
       "required": ["models"],
       "properties": {
         "models": {
@@ -298,7 +322,21 @@
                 {"type": "null"}
               ]
             },
-            "small": {"type": "string"}
+            "small": {"type": "string"},
+            "architect": {
+              "description": "v7.0.0-beta+ — model for consolidated @Architect. Falls back to `reviewer` if absent.",
+              "oneOf": [
+                {"type": "string", "minLength": 1},
+                {"type": "null"}
+              ]
+            },
+            "verifier": {
+              "description": "v7.0.0-beta+ — model for consolidated @Verifier. Falls back to `reviewer` if absent.",
+              "oneOf": [
+                {"type": "string", "minLength": 1},
+                {"type": "null"}
+              ]
+            }
           }
         }
       }

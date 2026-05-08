@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "7.0.0-alpha"
+kit_version: "7.0.0-beta"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -62,6 +62,37 @@ slice_caps:
   max_files_per_step: 5           # max files (Create+Modify+Delete) per @CodeWriter step
   max_lines_per_step: 400         # max +lines + -lines per step
   max_tokens_per_step: 30000      # v6.2+ — STEP_CONTEXT bundle cap (bytes/4 estimate)
+
+# ─────────────────────────────────────────────
+# AGENTS (v7.0.0-beta+ — P22, OPT-IN consolidation)
+# ─────────────────────────────────────────────
+# v7 path consolidates 9 agents → 5 over multiple stages. v7.0.0-beta ships
+# both legacy and consolidated agent bodies; per-merger flags control which
+# is dispatched. Default false on all flags = exact v7.0.0-alpha behaviour.
+#
+# Mergers available:
+#   consolidated_architect — replaces @Analyst + @Designer with @Architect
+#                           (one dispatch produces spec.md + plan.md skeleton
+#                           + UI section if applicable). Saves one dispatch
+#                           per UI feature.
+#   consolidated_verifier  — replaces @TestKeeper + @Reviewer + @DoDGate +
+#                           @TraceabilityChecker with @Verifier (mode-driven
+#                           single agent). Saves four dispatches across the
+#                           per-step verification chain.
+#
+# Recommended A/B path:
+#   1. Stay on consolidated_architect=false, consolidated_verifier=false for
+#      ~30 tasks to accumulate gates.csv baseline.
+#   2. Flip consolidated_architect=true for 15 tasks; compare gates.csv
+#      signal_ratio for analyst-spec/designer-ui vs architect-spec/architect-ui.
+#   3. If quality holds, flip consolidated_verifier=true. Same comparison.
+#   4. v7.0.0-stable will remove the legacy bodies once data validates the
+#      mergers across the user community.
+#
+# To enable: /kit-config set agents.consolidated_architect true
+agents:
+  consolidated_architect: false   # @Analyst + @Designer → @Architect
+  consolidated_verifier: false    # @TestKeeper + @Reviewer + @DoDGate + @TraceabilityChecker → @Verifier
 
 # ─────────────────────────────────────────────
 # LANES (v7.0.0-alpha+ — P21, OPT-IN)
@@ -295,8 +326,13 @@ models:
   default: moonshotai/kimi-k2.6
   coder: qwen/qwen3-coder-next
   reviewer: deepseek/deepseek-v4-pro
-  designer: openai/gpt-5.4         # set to null to omit @Designer agent
+  designer: openai/gpt-5.4         # set to null to omit @Designer agent (legacy v6.x)
   small: qwen/qwen3-coder-next
+  # v7.0.0-beta+ — required ONLY when the matching consolidated flag is true.
+  # If absent, kit falls back to `reviewer`. Uncomment + set when enabling
+  # agents.consolidated_architect / agents.consolidated_verifier.
+  # architect: deepseek/deepseek-v4-pro    # for consolidated @Architect
+  # verifier: deepseek/deepseek-v4-pro     # for consolidated @Verifier
 
 # ─────────────────────────────────────────────
 # CLAUDE_CODE (required iff claude-code ∈ hosts; omit otherwise)

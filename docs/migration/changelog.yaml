@@ -1,4 +1,190 @@
 versions:
+  - version: "7.0.0-beta"
+    released: "2026-05-08"
+    breaking: false
+    description: |
+      Agent consolidation infrastructure. v7.0.0-beta ships TWO new
+      consolidated agent bodies — @Architect (replaces @Analyst + @Designer)
+      and @Verifier (replaces @TestKeeper + @Reviewer + @DoDGate +
+      @TraceabilityChecker) — alongside the existing legacy bodies. Per-merger
+      manifest flags decide which is dispatched. Default is legacy path
+      (consolidated_*=false), so this release is zero-impact at upgrade unless
+      PO opts in.
+
+      Why ship both: the v7 proposal (PIPELINE_V7_PROPOSAL.md § 4 П5) requires
+      data-validated consolidation — gates with signal_ratio < threshold over
+      30 tasks become deprecation candidates; agents get the same treatment.
+      Without v6.3's gates.csv data accumulated, slamming 9→5 in one release
+      would be the same intuition-driven move v7 was designed to avoid.
+      v7.0.0-beta provides the infrastructure for A/B testing; v7.0.0-stable
+      will remove legacy bodies once data validates the merger.
+
+      ## P22 — manifest.agents block (consolidation flags)
+
+      New manifest section, fully optional:
+
+        agents:
+          consolidated_architect: false   # @Analyst + @Designer → @Architect
+          consolidated_verifier: false    # 4-agent merge → @Verifier
+
+      When false (default) → @Main dispatches the legacy 4-agent / 2-agent
+      separations exactly as in v7.0.0-alpha. Zero behavioural change.
+
+      When true → @Main dispatches the consolidated agent. Output formats
+      match legacy on a per-mode basis; gates.csv ids are stable across
+      both paths so signal_ratio aggregation in /kit-status compares
+      configurations directly.
+
+      ## @Architect — consolidates @Analyst + @Designer
+
+      Single dispatch produces:
+        - spec.md (Why / ACs / Edge Cases / How / Test plan / Open questions)
+        - plan.md skeleton (slice budget headers + empty section blocks)
+        - ## UI / UX section (only when UI_REQUIRED=true: TYPE=FEATURE AND
+          manifest.ui.framework != null AND PO confirmed UI surface affected)
+
+      Saves one dispatch per UI feature (no separate @Designer turn). Designer's
+      Chain-of-Thought (UX problem → information hierarchy → interaction flow
+      → platform notes → accessibility → states → animation) is integrated
+      into Architect's Pass 1 when UI_REQUIRED=true. Reflection (Pass 2)
+      checklist extended with UI-specific checks (every screen has Color
+      reference; every Component has States ladder).
+
+      Body: kit/_shared/agents/Architect.body.md.template.
+      Host wrappers: kit/.claude/agents/Architect.md.template,
+                     kit/.opencode/agents/Architect.md.template.
+
+      ## @Verifier — consolidates @TestKeeper + @Reviewer + @DoDGate +
+                     @TraceabilityChecker
+
+      Mode-driven single agent. Each MODE invocation matches the legacy
+      agent's behaviour exactly:
+
+        GENERATE / DRAFT / EXECUTE / RECONCILE / RERUN / SCAN / APPEND
+                                              ← was @TestKeeper modes
+        REVIEW                                ← was @Reviewer (5 passes + A* if Critical-EC)
+        DOD                                   ← was @DoDGate (7 hard checks)
+        TRACE                                 ← was @TraceabilityChecker (4-pass matrix)
+
+      Saves four dispatches across the per-step verification chain (5.3 → 5.4
+      → 5.7 → 5.8 → 5.9). Per-mode telemetry preserved: gates.csv logs the
+      same gate ids (build, review-correctness, review-scope, ..., dod,
+      traceability) regardless of which roster is dispatched.
+
+      Body: kit/_shared/agents/Verifier.body.md.template (MODE dispatch table
+      + per-mode behaviour summaries; references legacy bodies for the
+      detailed pass logic to avoid duplication during the coexistence period).
+      Host wrappers: kit/.claude/agents/Verifier.md.template,
+                     kit/.opencode/agents/Verifier.md.template.
+
+      Mode-driven dispatch matches Anthropic context-engineering guidance
+      (smallest set of high-signal tokens) — only the section matching the
+      input MODE is "active" in any single dispatch; other modes are
+      reference documentation the agent reads contextually.
+
+      ## models.architect / models.verifier with fallback
+
+      New optional model role assignments:
+
+        models:
+          architect: <model>     # for consolidated @Architect
+          verifier: <model>      # for consolidated @Verifier
+
+      If absent → fallback chain:
+        architect → reviewer
+        verifier  → reviewer
+
+      The reviewer fallback matches the legacy bodies (Analyst, Designer,
+      Reviewer, DoDGate, TraceabilityChecker all use models.reviewer in
+      v6.x). Explicit architect/verifier assignment lets PO bind a different
+      model when consolidating (e.g. dedicated stronger model for the
+      single Architect entry-point).
+
+      Same fallback applies to claude_code.models.architect /
+      claude_code.models.verifier when claude-code is the host.
+
+      ## Main.body.md.template — § "Agent dispatch decision"
+
+      New section above § "Lane pipeline variants" documents the dispatch
+      logic for both consolidated_architect and consolidated_verifier.
+      Pseudocode form: `if manifest.agents.consolidated_*: dispatch
+      @<consolidated>; else dispatch @<legacy_pair_or_quartet>`.
+
+      Mid-task flag flips are forbidden (`/kit-config refuses if
+      .planning/CURRENT.md.active_task is set`); PO must finish or revert
+      the active task before changing consolidation flags.
+
+      ## What this release does NOT change
+
+      - No legacy agent bodies modified. @Analyst, @Designer, @TestKeeper,
+        @Reviewer, @DoDGate, @TraceabilityChecker, @CodeWriter, @BugFixer,
+        @Main are unchanged.
+      - No mandatory consolidation. consolidated_* flags default false; the
+        upgrade from v7.0.0-alpha to v7.0.0-beta is zero-impact at default
+        manifest.
+      - No agent name changes. @CodeWriter is NOT renamed to @CodeAgent in
+        this release; the v7 proposal anticipated the rename but it offers
+        no functional improvement on its own. Postponed to v7.0.0-stable.
+      - No mutation-sample skill. Critical lane backend ground-truth still
+        requires PO to attach a mutation-sample report manually; v7.0.0
+        stable will wrap mutation-generation inside @Verifier.
+
+      ## Recommended A/B path
+
+        1. Stay on consolidated_architect=false, consolidated_verifier=false
+           for ~30 tasks to accumulate baseline gates.csv signal_ratio per
+           legacy gate (analyst-spec, designer-ui, build, review-correctness,
+           ...).
+        2. Flip consolidated_architect=true for 15 tasks. Compare /kit-status
+           signal_ratio for analyst-spec/designer-ui (now 0%) vs
+           architect-spec/architect-ui (newly accumulated). If quality holds
+           or improves, keep enabled.
+        3. Flip consolidated_verifier=true. Same comparison for
+           build/review-*/dod/traceability gates.
+        4. v7.0.0-stable will remove legacy bodies once aggregate data across
+           the user community validates the mergers.
+
+      ## Migration path position
+
+        v6.2 (research foundation) → v6.3 (telemetry) →
+        v7.0.0-alpha (lanes opt-in) → v7.0.0-beta (THIS; agent consolidation
+        opt-in) → v7.0.0-stable (lanes mandatory + consolidated mandatory +
+        legacy bodies removed; data-driven once accumulated).
+
+      v7.0.0-stable timing depends on accumulated signal_ratio data across
+      the user community — the kit ships when the data is in, not on a
+      release calendar.
+    files_changed:
+      - kit/_shared/agents/Architect.body.md.template
+      - kit/_shared/agents/Verifier.body.md.template
+      - kit/.claude/agents/Architect.md.template
+      - kit/.claude/agents/Verifier.md.template
+      - kit/.opencode/agents/Architect.md.template
+      - kit/.opencode/agents/Verifier.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/manifest.schema.json
+      - manifest.example.yaml
+    manifest_changes:
+      added_fields:
+        - path: "agents.consolidated_architect"
+          default: false
+          description: "v7.0.0-beta+ (P22) — when true, @Main dispatches @Architect (single body merging Analyst + Designer) instead of @Analyst + @Designer separately. Saves one dispatch per UI feature. Default false until v7.0.0-stable."
+        - path: "agents.consolidated_verifier"
+          default: false
+          description: "v7.0.0-beta+ (P22) — when true, @Main dispatches @Verifier with MODE={GENERATE|DRAFT|EXECUTE|RECONCILE|RERUN|SCAN|APPEND|REVIEW|DOD|TRACE} instead of @TestKeeper / @Reviewer / @DoDGate / @TraceabilityChecker separately. Saves four dispatches across the per-step verification chain. Default false until v7.0.0-stable."
+        - path: "models.architect"
+          default: null
+          description: "v7.0.0-beta+ — model for the consolidated @Architect (OpenCode side). Required iff agents.consolidated_architect=true. If absent, kit falls back to models.reviewer."
+        - path: "models.verifier"
+          default: null
+          description: "v7.0.0-beta+ — model for the consolidated @Verifier (OpenCode side). Required iff agents.consolidated_verifier=true. If absent, kit falls back to models.reviewer."
+        - path: "claude_code.models.architect"
+          default: null
+          description: "v7.0.0-beta+ — model for the consolidated @Architect (Claude Code side). Falls back to claude_code.models.reviewer if absent."
+        - path: "claude_code.models.verifier"
+          default: null
+          description: "v7.0.0-beta+ — model for the consolidated @Verifier (Claude Code side). Falls back to claude_code.models.reviewer if absent."
+
   - version: "7.0.0-alpha"
     released: "2026-05-08"
     breaking: false
