@@ -47,6 +47,7 @@ kit/_shared/commands/kit-extend.md.template
 kit/_shared/commands/kit-fix.md.template
 kit/_shared/commands/kit-lint.md.template
 kit/_shared/commands/kit-map.md.template
+kit/_shared/commands/kit-mutate.md.template
 kit/_shared/commands/kit-new-feature.md.template
 kit/_shared/commands/kit-resume.md.template
 kit/_shared/commands/kit-revert-step.md.template
@@ -67,6 +68,7 @@ kit/_shared/skills/definition-of-done/SKILL.md.template
 kit/_shared/skills/eval-collector/SKILL.md.template
 kit/_shared/skills/gate-telemetry/SKILL.md.template
 kit/_shared/skills/look-up/SKILL.md.template
+kit/_shared/skills/mutation-sample/SKILL.md.template
 kit/_shared/skills/pre-mortem/SKILL.md.template
 kit/_shared/skills/replan-on-discovery/SKILL.md.template
 kit/_shared/skills/spec-to-code-trace/SKILL.md.template

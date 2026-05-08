@@ -61,6 +61,7 @@ The complete set v6.3 logs (one row per fire):
 | `traceability` | @Verifier MODE=TRACE | 5.8 | `pass` no orphans; `block` orphan AC/EC/endpoint |
 | `dod` | @Verifier MODE=DOD | 5.9 | `pass` all 7 checks; `block` ≥1 check fails |
 | `diff-review` | @Main | 5.10 | `pass` PO `/kit-approve` (or auto-approved); `block` `/kit-revert <file>` or `/kit-rework` |
+| `mutation-sample` (v7.1.0+) | @Verifier MODE=MUTATION-SAMPLE | 5.6 (auto for backend) or `/kit-mutate` ad-hoc | `pass` killed≥THRESHOLD; `block` killed<THRESHOLD; `info` skipped (trivial lane / no production code in CHANGED_FILES). `reason` carries `<killed>/<total> killed; threshold <T>; tool <name>`. |
 
 PO commands also generate rows (read-only events for cross-reference):
 

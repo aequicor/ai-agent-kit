@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "7.0.1"
+kit_version: "7.1.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -105,6 +105,28 @@ lanes:
   critical_block_sleep: true              # refuse /kit-sleep for critical tasks
   critical_require_mutation_sample: true  # ≥3 mutants killed for critical backend
   auto_classify: true                     # let @Main infer risk from heuristics
+
+# ─────────────────────────────────────────────
+# MUTATION-SAMPLE (v7.1.0+ — backend ground-truth auto-generation)
+# ─────────────────────────────────────────────
+# Configures the mutation-sample skill invoked by @Main 5.6 gate when
+# REQUIRED_TYPE=mutation-sample-pass (backend steps in standard / critical
+# lanes) and by the /kit-mutate ad-hoc command.
+#
+# Auto-detects native tooling per language: PIT (Kotlin/Java), Stryker
+# (TS/JS), mutmut (Python), Gremlins (Go), cargo-mutants (Rust). Falls back
+# to AI-driven mutation only when fallback_ai: true (lower fidelity than
+# native tools — opt-in for projects where install is impractical).
+#
+# Cost: each mutant runs the full test suite. THRESHOLD per lane:
+#   standard backend: ≥1 killed
+#   critical backend: ≥3 killed (per lanes.critical_require_mutation_sample)
+# Total cost ≈ MAX_MUTANTS × (suite-runtime).
+mutation_sample:
+  max_mutants: 10            # hard cap; 0 = kill-switch (gate falls back to manual /kit-attach)
+  timeout_seconds: 300       # per-mutant test-run cap; increase for slow suites
+  fallback_ai: false         # use AI mutation when native tool absent (opt-in; weaker signal)
+  scope: all_changed         # all_changed | smallest_file_only | diff_lines_only
 
 # ─────────────────────────────────────────────
 # TELEMETRY (v6.3+ — P20)

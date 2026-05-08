@@ -46,8 +46,9 @@ Parse MODE first; route to ONE section:
 | REVIEW | Code review (5–6 passes) | (read-only — returns findings) |
 | DOD | Definition-of-done audit (7 hard checks) | plan.md § Definition of Done |
 | TRACE | Traceability matrix audit | (read-only — returns matrix) |
+| MUTATION-SAMPLE | (v7.1.0+) Generate small mutants of CHANGED_FILES + run test suite per mutant; report killed/survived | `.planning/artifacts/<task>/step-<N>/mutation-sample.md` (gitignored) + step_commits[N].ground_truth |
 
-Unknown MODE → STOP. Output: `VERIFIER ERROR: unknown MODE=<value>; valid: GENERATE|DRAFT|EXECUTE|RECONCILE|RERUN|SCAN|APPEND|REVIEW|DOD|TRACE`. Do not guess.
+Unknown MODE → STOP. Output: `VERIFIER ERROR: unknown MODE=<value>; valid: GENERATE|DRAFT|EXECUTE|RECONCILE|RERUN|SCAN|APPEND|REVIEW|DOD|TRACE|MUTATION-SAMPLE`. Do not guess.
 
 ---
 
@@ -571,6 +572,54 @@ If either spec.md or test-cases.md is missing → STOP, return `BLOCKED: missing
 Telemetry: log `gate: traceability`.
 
 ---
+
+## MODE=MUTATION-SAMPLE — auto-generate mutants and verify test sensitivity (v7.1.0+)
+
+Replaces "PO attaches mutation-sample report manually" with auto-generation.
+
+Inputs add:
+```
+CHANGED_FILES: <list of source files modified by @CodeWriter — production only;
+                 test files filtered out by the skill>
+LANGUAGE: <from manifest.stack.language>
+TEST_COMMAND: <project's test command for the step's module>
+THRESHOLD: <int — ≥1 (standard) | ≥3 (critical from manifest.lanes.critical_require_mutation_sample)>
+LANE: <trivial | standard | critical>
+TIMEOUT_SECONDS: <default 300; per-mutant cap>
+MAX_MUTANTS: <default 10; cap on generation>
+FALLBACK_AI: <true | false — force AI-driven mutation>
+```
+
+**Behaviour:** delegates to the `mutation-sample` skill (see `kit/_shared/skills/mutation-sample/SKILL.md`). The skill:
+1. Detects native tooling per language (PIT for Kotlin/Java, Stryker for TS/JS, mutmut for Python, Gremlins for Go, cargo-mutants for Rust). AI-driven fallback for `generic` or when native tool not installed AND `FALLBACK_AI=true`.
+2. Generates ≤ MAX_MUTANTS mutation candidates in CHANGED_FILES (preferring lines added/modified by this step's diff).
+3. Runs TEST_COMMAND per mutant with TIMEOUT_SECONDS cap.
+4. Aggregates: `killed = test failed (mutant detected)`, `survived = test passed (mutant slipped)`, `score = killed / (killed + survived)`.
+5. Verdict: `killed >= THRESHOLD` → PASS; else BLOCK with per-mutant report.
+6. Writes report to `.planning/artifacts/<task_slug>/step-<N>/mutation-sample.md` (gitignored).
+7. Updates `step_commits[N].ground_truth = {type: "mutation-sample-pass", path, summary, attached_at}`.
+
+**Return:**
+```
+VERIFIER MUTATION-SAMPLE RESULT
+verdict: PASS | BLOCK
+killed: <n>
+survived: <m>
+threshold: <T>
+tool: <native-name | ai-driven>
+report: <path>
+```
+
+**Telemetry:** logs `gate: mutation-sample` to gates.csv with `verdict: pass | block` and `reason: <killed>/<total> killed; threshold <T>; tool <name>`.
+
+**Hard rules** (from skill, summarised here for the agent runtime):
+- Mutate production code only (test files / generated / lock files excluded).
+- Restore between mutants — no cumulative changes to working tree.
+- Hard cap MAX_MUTANTS (default 10); never exceed without `manifest.mutation_sample.max_mutants` opt-in.
+- AI fallback labelled explicitly in report.
+- Trivial lane: skill returns PASS-skipped (mutation testing is for standard/critical).
+- Idempotent re-run: cache survivors keyed by file sha; do not re-test killed mutants.
+- Never silently skip — return BLOCK with reason if invocation fails for any cause.
 
 ## Coverage rule (replaces v4 @CoverageChecker, applies to MODE=GENERATE / RECONCILE)
 

@@ -1,4 +1,182 @@
 versions:
+  - version: "7.1.0"
+    released: "2026-05-08"
+    breaking: false
+    description: |
+      First post-migration MINOR. Closes the v7.0.0 gap where Critical-EC
+      backend ground-truth required PO to attach a mutation-sample report
+      manually — v7.1.0 ships the `mutation-sample` skill and wires
+      auto-generation into the 5.6 gate.
+
+      ## Why now
+
+      v7.0.0 introduced `manifest.lanes.critical_require_mutation_sample: true`
+      (default) — critical-lane backend steps require ≥3 mutants killed for
+      ground-truth. But the kit didn't generate mutants. PO had to install
+      a tool (PIT / Stryker / mutmut / etc.) and attach the report via
+      /kit-attach. In practice this meant most projects deferred the
+      requirement, weakening the critical lane's safety net.
+
+      v7.1.0 wraps mutation-generation inside @Verifier MODE=MUTATION-SAMPLE
+      with auto-detection per language. PO no longer needs to know what
+      tool to run.
+
+      ## What ships
+
+      ### New skill: `mutation-sample`
+
+      `kit/_shared/skills/mutation-sample/SKILL.md.template`. Detects
+      native tooling per language:
+
+        kotlin / java       → PIT
+        typescript / js     → Stryker
+        python              → mutmut
+        go                  → Gremlins
+        rust                → cargo-mutants
+        generic / unknown   → AI-driven (fallback)
+
+      AI-driven mutation is opt-in via `manifest.mutation_sample.fallback_ai:
+      true` for projects where native install is impractical. Native tools
+      give stronger signal — AI is conservative (boundary conditions,
+      negation, constants, branch inversion) and cheaper to run, but
+      auditable per-mutant in the report.
+
+      Hard cap: `manifest.mutation_sample.max_mutants` (default 10) bounds
+      cost. Per-mutant timeout: `timeout_seconds` (default 300). Scope:
+      `all_changed | smallest_file_only | diff_lines_only` for cost-saving
+      on large steps.
+
+      Skill writes a per-mutant report to `.planning/artifacts/<task>/step-<N>/mutation-sample.md`
+      (gitignored by default; PO commits explicitly if they want eval evidence).
+
+      ### New @Verifier MODE: `MUTATION-SAMPLE`
+
+      11th mode added to the existing 10-mode dispatch table. Per-mode
+      behaviour summary in Verifier.body.md.template; full procedure
+      delegated to the skill. Returns:
+
+        VERIFIER MUTATION-SAMPLE RESULT
+        verdict: PASS | BLOCK
+        killed: <n>
+        survived: <m>
+        threshold: <T>
+        tool: <native-name | ai-driven>
+        report: <path>
+
+      ### Auto-invocation at 5.6 ground-truth gate
+
+      When REQUIRED_TYPE = mutation-sample-pass AND step_commits[N].ground_truth
+      is empty/missing, @Main now auto-invokes @Verifier MODE=MUTATION-SAMPLE
+      before BLOCKing. THRESHOLD is computed from lane:
+
+        standard backend → ≥1 killed
+        critical backend → ≥3 killed (when manifest.lanes.critical_require_mutation_sample: true)
+
+      On verdict=PASS the gate succeeds silently; on verdict=BLOCK PO sees
+      the survivors with options (add tests / lower threshold / waive).
+      Sleep mode budget: 1 retry on BLOCK then BLOCKED-shutdown with the
+      survivors as the reason.
+
+      The legacy /kit-attach path still works for non-backend types (UI
+      screenshot, CLI output diff, API contract test) — those types have
+      no auto-generation equivalent.
+
+      ### New `/kit-mutate` command
+
+      `kit/_shared/commands/kit-mutate.md.template`. Ad-hoc invocation
+      outside the 5.6 flow:
+
+        /kit-mutate                              # current step's CHANGED_FILES, lane defaults
+        /kit-mutate --threshold=5                # tighter threshold for this run
+        /kit-mutate --max-mutants=20             # more mutants (only if cost is acceptable)
+        /kit-mutate --fallback-ai                # force AI mutation
+        /kit-mutate --scope=src/auth/Login.kt    # ad-hoc paths (active task not required)
+
+      Useful for retrying after fixing test gaps, or for validating
+      pre-existing code that didn't go through the kit's pipeline.
+
+      ### New manifest block: `mutation_sample`
+
+      ```
+      mutation_sample:
+        max_mutants: 10
+        timeout_seconds: 300
+        fallback_ai: false
+        scope: all_changed
+      ```
+
+      All defaults are safe. `max_mutants: 0` is a kill-switch (skill skips
+      and the 5.6 gate falls back to manual /kit-attach with type=
+      mutation-sample-pass — preserves v7.0.0 behaviour for projects that
+      explicitly opt out).
+
+      ### Telemetry: new gate id
+
+      `gate: mutation-sample` added to `gate-telemetry` enumeration. Logs
+      to `evals/runs/<kit_version>/gates.csv` with `verdict: pass | block |
+      info` and `reason: <killed>/<total> killed; threshold <T>; tool <name>`.
+
+      eval-collector signal_ratio aggregation includes the new gate
+      automatically — it is just another row in the existing schema.
+
+      ## What this release does NOT change
+
+      - No agent body changes beyond Verifier (one new MODE section + one
+        line in the dispatch table).
+      - No pipeline restructure. Lane variants, ground-truth gate trigger
+        conditions, all unchanged.
+      - No removal of /kit-attach. The manual path stays for non-backend
+        types and as escape hatch (max_mutants: 0 / fallback_ai: false +
+        no native tool installed).
+      - No breaking schema changes. New fields added under
+        `manifest.mutation_sample`; existing manifests work as-is (defaults
+        applied at /kit-update).
+
+      ## Migration v7.0.x → v7.1.0
+
+      `/kit-update` re-renders templates and appends `mutation_sample`
+      block to existing manifests with the documented defaults. No manifest
+      action required from PO. First time the 5.6 gate hits a backend step,
+      PO will see one of:
+        - PASS (native tool detected and tests are sensitive enough), or
+        - BLOCK with install-instructions for the native tool, or
+        - BLOCK with "set fallback_ai: true to use AI mutation".
+
+      First-time install or `--fallback-ai` opt-in is a one-time decision
+      per project.
+
+      ## Position in the post-migration arc
+
+      v7.0.0 was the migration plan terminus. v7.1.0 is the first additive
+      feature beyond it — listed in v7.0.0 changelog as "Future v7.x
+      releases focus on data-driven refinement: gate deprecation based on
+      accumulated signal_ratio, mutation-sample skill, cross-task pattern
+      detection". This release ships the second of those three. The other
+      two depend on accumulated telemetry data and are not on a fixed
+      schedule.
+    files_changed:
+      - kit/_shared/skills/mutation-sample/SKILL.md.template
+      - kit/_shared/commands/kit-mutate.md.template
+      - kit/_shared/agents/Verifier.body.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/skills/gate-telemetry/SKILL.md.template
+      - kit/manifest.schema.json
+      - manifest.example.yaml
+    manifest_changes:
+      added_fields:
+        - path: "mutation_sample.max_mutants"
+          default: 10
+          description: "v7.1.0+ — hard cap on generated mutants per invocation. 0 = kill-switch (gate falls back to manual /kit-attach)."
+        - path: "mutation_sample.timeout_seconds"
+          default: 300
+          description: "v7.1.0+ — per-mutant test-run timeout. Mutants exceeding this counted as survived."
+        - path: "mutation_sample.fallback_ai"
+          default: false
+          description: "v7.1.0+ — when true, skill uses AI-driven mutation if no native tool is installed for the project's language. Lower fidelity than native — opt-in only."
+        - path: "mutation_sample.scope"
+          default: "all_changed"
+          description: "v7.1.0+ — mutation scope. all_changed (all CHANGED_FILES), smallest_file_only (cost-saving), or diff_lines_only (only lines added/modified by the step's diff)."
+
   - version: "7.0.1"
     released: "2026-05-08"
     breaking: false

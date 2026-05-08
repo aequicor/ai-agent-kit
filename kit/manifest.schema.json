@@ -60,6 +60,18 @@
       "additionalProperties": false,
       "default": {"default_risk": "standard", "trivial_max_files": 1, "trivial_max_lines": 30, "trivial_no_new_public_symbols": true, "critical_block_sleep": true, "critical_require_mutation_sample": true, "auto_classify": true}
     },
+    "mutation_sample": {
+      "type": "object",
+      "description": "v7.1.0+ — mutation-sample skill configuration. Used by the 5.6 ground-truth gate when REQUIRED_TYPE = mutation-sample-pass (backend steps in standard / critical lanes), and by the /kit-mutate ad-hoc command. Disable by setting all fields to lane-skipping defaults (e.g. max_mutants: 0 acts as kill-switch — gate falls back to manual /kit-attach).",
+      "properties": {
+        "max_mutants": {"type": "integer", "minimum": 0, "default": 10, "description": "Hard cap on generated mutants per invocation. 0 = effectively disabled (skill skips and the 5.6 gate falls back to manual /kit-attach with type=mutation-sample-pass)."},
+        "timeout_seconds": {"type": "integer", "minimum": 30, "default": 300, "description": "Per-mutant test-run timeout. Mutants that exceed this are counted as survived (worst-case). Increase for slow test suites; decrease to bound cost on fast suites."},
+        "fallback_ai": {"type": "boolean", "default": false, "description": "When true, the skill uses AI-driven mutation if the language's native tool (PIT / Stryker / mutmut / Gremlins / cargo-mutants) is not installed. When false (default), missing-tool BLOCKs the 5.6 gate and surfaces install instructions to PO. AI mutation is lower fidelity than native tooling — opt-in only when install is impractical."},
+        "scope": {"type": "string", "enum": ["all_changed", "smallest_file_only", "diff_lines_only"], "default": "all_changed", "description": "Mutation scope. all_changed: all files in CHANGED_FILES (default). smallest_file_only: only the smallest file by line count (cost-saving for large steps). diff_lines_only: only lines added/modified by this step's diff (cost-saving but may miss regressions in untouched lines that the change relies on)."}
+      },
+      "additionalProperties": false,
+      "default": {"max_mutants": 10, "timeout_seconds": 300, "fallback_ai": false, "scope": "all_changed"}
+    },
     "telemetry": {
       "type": "object",
       "description": "v6.3+ (P20) — gate-signal-ratio telemetry. Each gate verdict is appended to `evals/runs/<kit_version>/gates.csv` via the gate-telemetry skill (opt-in by directory presence). At task CLOSE the eval-collector skill aggregates per-task signal_ratio into the per-task record. /kit-status shows rolling cross-task signal_ratio over the last `evaluation_window_tasks` tasks; gates with rolling signal_ratio below `signal_ratio_threshold` AND no defect_origin matches are flagged as deprecation candidates. Together with defects.csv (P19, v6.2+), this is the kit's self-cleaning gate-evaluation mechanism.",
