@@ -35,14 +35,46 @@
     },
     "slice_caps": {
       "type": "object",
-      "description": "v6.0+ hard caps on plan/step size, enforced by @Main at CONFIRM and by @CodeWriter at EXECUTE. When exceeded, @Main asks PO to split before EXECUTE; @CodeWriter returns BLOCKED with reason OVERFLOW. Set any field to 0 to disable that cap.",
+      "description": "v6.0+ hard caps on plan/step size, enforced by @Main at CONFIRM and by @CodeWriter at EXECUTE. When exceeded, @Main asks PO to split before EXECUTE; @CodeWriter returns BLOCKED with reason OVERFLOW. v6.2+ adds max_tokens_per_step (P17). Set any field to 0 to disable that cap.",
       "properties": {
         "max_steps": {"type": "integer", "minimum": 0, "default": 6, "description": "Max number of steps in plan.md § Implementation plan (v5 read this from feature.md § Implementation plan). 0 = no cap."},
         "max_files_per_step": {"type": "integer", "minimum": 0, "default": 5, "description": "Max files (Create+Modify+Delete) a single @CodeWriter step may touch. 0 = no cap."},
-        "max_lines_per_step": {"type": "integer", "minimum": 0, "default": 400, "description": "Max total lines added+removed in a single @CodeWriter step (approx, from the agent's Changed Files table). 0 = no cap."}
+        "max_lines_per_step": {"type": "integer", "minimum": 0, "default": 400, "description": "Max total lines added+removed in a single @CodeWriter step (approx, from the agent's Changed Files table). 0 = no cap."},
+        "max_tokens_per_step": {"type": "integer", "minimum": 0, "default": 30000, "description": "v6.2+ (P17). Estimated tokens (bytes / 4) of the STEP_CONTEXT bundle dispatched to subagents at step 5.1. Backed by Anthropic context-engineering guidance ('smallest set of high-signal tokens') + 2024–2026 research showing LLM-as-reviewer accuracy degrades with prompt complexity. Overflow → @Main attempts to trim optional sub-bundles, then BLOCKED with reason OVERFLOW_TOKENS if still over. 0 = no cap (legacy v6.1 behaviour)."}
       },
       "additionalProperties": false,
-      "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400}
+      "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400, "max_tokens_per_step": 30000}
+    },
+    "ground_truth": {
+      "type": "object",
+      "description": "v6.2+ (P18) — ground-truth artefact gate at 5.6 CHECKPOINT. Backed by Anthropic harness guidance: e2e verification through browser automation / command output / contract tests is critical, AI-only review has measurable accuracy ceiling. Per-step PO must attach one of: screenshot (ui), command-output diff (cli), contract-test pass (api), mutation-sample report (backend). Or override per-step via /kit-approve --no-ground-truth (logged as technical debt in test-cases.md Defects log) or project-wide via required: false (logged once per task).",
+      "properties": {
+        "required": {"type": "boolean", "default": true, "description": "Enforce 5.6 ground-truth gate project-wide. false = skip the gate entirely (log once per task as 'gate disabled project-wide'). Default true."},
+        "exclusions": {
+          "type": "object",
+          "description": "Module-level exclusions. List module names (matching modules[].name) where the gate is skipped. Useful for pure-headless modules where there is no visual surface and mutation-sample is too expensive. Each excluded module's steps still log Source: ground-truth-excluded for traceability.",
+          "properties": {
+            "modules": {"type": "array", "items": {"type": "string"}, "default": []}
+          },
+          "additionalProperties": false,
+          "default": {"modules": []}
+        },
+        "default_types": {
+          "type": "object",
+          "description": "Override the @Main 5.6 type-inference defaults. Each key maps a step pattern to a REQUIRED_TYPE. @Main checks these in order; first match wins; falls back to built-in inference (see kit/_shared/agents/Main.body.md.template § 5.6 @ GROUND-TRUTH ARTEFACT GATE).",
+          "properties": {
+            "ui": {"type": "string", "enum": ["screenshot", "preview-snapshot"], "default": "screenshot"},
+            "api": {"type": "string", "enum": ["contract-test-pass"], "default": "contract-test-pass"},
+            "cli": {"type": "string", "enum": ["command-output-diff"], "default": "command-output-diff"},
+            "backend": {"type": "string", "enum": ["mutation-sample-pass"], "default": "mutation-sample-pass"},
+            "refactor": {"type": "string", "enum": ["diff-stat-and-smoke"], "default": "diff-stat-and-smoke"}
+          },
+          "additionalProperties": false,
+          "default": {"ui": "screenshot", "api": "contract-test-pass", "cli": "command-output-diff", "backend": "mutation-sample-pass", "refactor": "diff-stat-and-smoke"}
+        }
+      },
+      "additionalProperties": false,
+      "default": {"required": true, "exclusions": {"modules": []}, "default_types": {"ui": "screenshot", "api": "contract-test-pass", "cli": "command-output-diff", "backend": "mutation-sample-pass", "refactor": "diff-stat-and-smoke"}}
     },
     "test_strategy": {
       "description": "v6.0+ controls the order of test-vs-code writing in @CodeWriter. tdd_first (default, v5 behaviour): failing tests before production code. test_after: production code first, then tests against actual behaviour with @Reviewer Pass A4 enforcing assertion quality. mixed: tdd_first for AC-bound steps, test_after for exploratory/spike steps (CodeWriter picks per step). Two forms: (a) string for the project default; (b) object with {default, allow_per_step_override}.",

@@ -52,6 +52,7 @@ kit/_shared/agents/Reviewer.body.md.template
 kit/_shared/agents/TestKeeper.body.md.template
 kit/_shared/agents/TraceabilityChecker.body.md.template
 kit/_shared/commands/kit-approve.md.template
+kit/_shared/commands/kit-attach.md.template
 kit/_shared/commands/kit-config.md.template
 kit/_shared/commands/kit-defect.md.template
 kit/_shared/commands/kit-extend.md.template

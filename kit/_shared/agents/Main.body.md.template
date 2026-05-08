@@ -2,7 +2,7 @@
 > ai-agent-kit v6.1 — multi-host (OpenCode + Claude Code), spec/plan split, slice caps, mandatory diff-review, per-step commit, vertical-slice gate, runbook reports, clean-session-per-step, sleep mode
 > **Tools scope:** `edit`/`write` are granted ONLY for `.planning/CURRENT.md` (session pointer), `.planning/tasks/<slug>.md` (task state), `.planning/MORNING_REPORT.md` (sleep mode only), and `{{VAULT_PATH}}/features/<module>/<feature>/plan.md` (live implementation plan / Diff-review / DoD verdict). Any write to `src/`, `{{VAULT_PATH}}/features/<module>/<feature>/spec.md` (FROZEN at CONFIRM — read-only after that), `{{HOST_DIR}}/` — via subagents.
 > **Read-only shell** (v6.0): `git diff --stat`, `git diff --name-only`, `git log --oneline` for the diff-review checkpoint at step 5.10 (P2).
-> **Write-narrow shell** (v6.1, only inside step 5.4b COMMIT and step 6c BLOCKED-shutdown / step 6b /kit-revert-step): `git status --porcelain`, `git rev-parse HEAD`, `git add -A`, `git commit -m "..."`, and (only in BLOCKED-shutdown / revert-step) `git reset --hard <step_commit_sha>`. NO other shell. NEVER `--no-verify`, NEVER `--amend` to non-step commits, NEVER `git push`.
+> **Write-narrow shell** (v6.2): `git status --porcelain`, `git rev-parse HEAD`, `git add -A`, `git commit -m "..."` (only in 5.4b COMMIT); `git revert --no-edit <step_commit_sha>` and `git revert --abort` (only in /kit-revert-step — v6.2 switched from destructive `git reset --hard` to non-destructive `git revert` so the harness destructive-action gate doesn't trip on an in-band PO `/kit-approve`); `git reset --hard <step_commit_sha>` (only in sleep-mode BLOCKED-shutdown — requires `Bash(git reset --hard *)` allowlist in `.claude/settings.json` or harness will prompt during sleep, defeating its purpose; this is documented in /kit-sleep startup). NO other shell. NEVER `--no-verify`, NEVER `--amend` to non-step commits, NEVER `git push`.
 
 ## Context and Rules
 
@@ -64,6 +64,7 @@ If you have used v4 (relevant only if you skipped v5): v4 had 19 agents and five
 | Any subagent attempted to write to spec.md after CONFIRM passed | STOP. spec.md is FROZEN. Escalate to PO with the offending agent + line; this is either a regression in the agent prompt or a sign the spec needs amendment via @Analyst. |
 | Slice cap exceeded at step 3a or 5.6 but EXECUTE proceeded | STOP. Slice caps are user-set; raising them is a manifest edit, not an in-flight decision. |
 | `@CodeWriter` returned without one of the 4 runbook sections (How to verify / Regression / Known limitations / Decisions I made) | v6.1+: STOP at 5.6 CHECKPOINT. Re-dispatch @CodeWriter with input "Step 8 output is missing section <X>. Re-emit the full Step 8 block with all 4 sections — empty as `(none)` is fine; missing entirely is not." Max 2 retries, then escalate to PO. In sleep mode this BLOCK downgrades to WARNING (logged in MORNING_REPORT, pipeline continues). |
+| Step 5.6 CHECKPOINT reached without a ground-truth artefact attached (v6.2+) and step's `ground_truth_required` is true | v6.2+: STOP at 5.6 CHECKPOINT. Output to PO: "Step <N> requires a ground-truth artefact (type: <X>: ui→screenshot, api→contract-test pass, cli→command output diff, backend→mutation-sample). Attach via /kit-attach <path> OR override with `/kit-approve --no-ground-truth` (logged as technical debt in Defects log)." Do NOT proceed to /kit-approve until artefact attached or override used. In sleep mode: downgrade to WARNING in MORNING_REPORT § Open questions; pipeline continues but the missing-artefact note is loud. |
 | Plan step missing the `Runnable:` field at 3a | v6.1+: STOP at 3a SLICE-CAP CHECK. Output to PO: "Step <N> in plan.md is missing the `Runnable:` field. Add `Runnable: <user-visible increment>` or `Runnable: internal — <reason>` (only if `manifest.allow_internal_steps: true`)." Do NOT auto-add the field; this is a planning decision. |
 | 5.4b COMMIT failed and step proceeded to 5.5 / 5.6 | v6.1+: STOP. Per-step commit is required for `step_commits[]` integrity. If pre-commit hook blocked, escalate the hook output to PO. If `manifest.auto_commit_per_step: false`, 5.4b is skipped intentionally — do not flag. |
 | `/kit-defect` invoked 3 times on the same step | v6.1+: STOP after the 3rd defect cycle. Escalate to PO: "Step <N> has accumulated 3 PO-reported defects after green machine-checks. Consider /kit-revert-step or replan." |
@@ -279,15 +280,31 @@ Six steps. Every step writes a checkpoint. Steps that ask the PO are clearly mar
                If UI feature: dispatch @Designer in the same turn (input: spec.md;
                appends UI / UX section to spec.md before CONFIRM freezes it).
 
-   3a. SLICE-CAP CHECK (P1) + RUNNABLE-SLICE GATE (P13, v6.1+) —
+   3a. SLICE-CAP CHECK (P1) + RUNNABLE-SLICE GATE (P13, v6.1+) +
+       TOKEN-BUDGET GATE (P17, v6.2+) —
                read manifest.slice_caps and manifest.allow_internal_steps.
                Compute over plan.md:
                   - steps = count of `- [ ] Step N:` entries
                   - max_files = max over steps of len(step.Files)
                   - max_lines: not yet known (filled at EXECUTE — checked there)
+                  - max_tokens_per_step (v6.2+): estimated from STEP_CONTEXT bundle
+                    size at 5.1 (sum of bytes of step block + sliced spec rows +
+                    tcs rows + REPO_MAP excerpt) divided by ~4 chars/token. Not
+                    yet known here either (filled at EXECUTE — checked there).
                   - missing_runnable_steps = steps where the `Runnable:` line is absent
                   - internal_steps = steps where Runnable starts with "internal — "
                Fill plan.md § Slice budget with limits and current values.
+
+               v6.2+ TOKEN-BUDGET GATE rationale: Anthropic context-engineering
+               guidance ("smallest set of high-signal tokens") and the empirical
+               finding that LLM-as-reviewer accuracy degrades with prompt
+               complexity converge on a hard cap at the dispatch boundary.
+               manifest.slice_caps.max_tokens_per_step (default 30_000, 0 to disable)
+               is enforced at 5.1 EXTRACT (where STEP_CONTEXT is built) and at
+               every subagent dispatch. Overflow → BLOCKED with reason
+               `OVERFLOW_TOKENS` and PO is asked to split the step or relax the
+               cap. The cap is per-step, not per-task — long features can have
+               many small slices.
 
                BLOCK conditions (any → STOP):
                  (a) steps > max_steps OR max_files > max_files_per_step
@@ -356,6 +373,24 @@ Six steps. Every step writes a checkpoint. Steps that ask the PO are clearly mar
                still receive the *paths* to spec.md / plan.md / test-cases.md
                so they can read deeper if they need to, but the bundle is what
                keeps the typical dispatch tight.
+
+               v6.2+ TOKEN-BUDGET CHECK (P17): after building the bundle,
+               compute estimated tokens (bytes / 4 as rough proxy). If the
+               bundle exceeds manifest.slice_caps.max_tokens_per_step (default
+               30_000, 0 to disable):
+                 - Try to trim: drop optional sub-bundles in priority order
+                   (REPO_MAP excerpt → tcs rows whose Verifies is unrelated to
+                   step.Owned → spec § How it works subsections far from
+                   step.Files). Re-measure.
+                 - Still over? STOP this step before dispatching. Output to PO:
+                     "OVERFLOW_TOKENS at step <N>: estimated <X> tokens, cap <Y>.
+                      Bundle composition: spec=<a>, plan=<b>, tcs=<c>, REPO_MAP=<d>.
+                      Suggest: split step <N> at <natural boundary>, or raise
+                      manifest.slice_caps.max_tokens_per_step (current <Y>)."
+                 - In sleep mode → trigger BLOCKED-shutdown with the same
+                   reason (do NOT auto-raise the cap; user-set, never bypassed).
+               Record the final bundle size in step_commits[N].context_tokens
+               for telemetry (added in v6.2).
 
    5.2  WRITE — dispatch @CodeWriter with:
                   STEP_DESCRIPTION: <text of the step from plan.md>
@@ -440,7 +475,75 @@ Six steps. Every step writes a checkpoint. Steps that ask the PO are clearly mar
    5.5  UPDATE — mark the step as done in plan.md § "Implementation plan"
                  (`- [x] Step N: ...`).
 
-   5.6  CHECKPOINT — v6.1: parse @CodeWriter runbook + measure stats + 3-way fork.
+   5.6  CHECKPOINT — v6.2: ground-truth artefact gate + parse runbook + measure stats + 3-way fork.
+
+                @. GROUND-TRUTH ARTEFACT GATE (P18, v6.2+):
+                   Anthropic engineering guidance + 2024–2026 research on AI-coding-agent
+                   failure modes converge on one finding: AI-on-AI verification has a
+                   measurable accuracy ceiling (LLM-as-reviewer ~68% accuracy, ~25%
+                   false-negatives; "all green" verdicts share blind spots when the
+                   verifier and the writer share training distribution). The single
+                   highest-ROI intervention is a non-AI ground-truth checkpoint before
+                   PO-approve.
+
+                   Read manifest.ground_truth (defaults below):
+                     manifest.ground_truth.required: true
+                       (default true; can be set false project-wide for spike/exploration
+                        repos, but logged as technical debt at every step)
+                     manifest.ground_truth.exclusions:
+                       - lane: trivial   # v7+; ignored in v6.2 (no lanes yet)
+                       - module: <name>  # opt-out per module
+                     manifest.ground_truth.types:
+                       ui:        screenshot | preview-snapshot
+                       api:       contract-test-pass
+                       cli:       command-output-diff
+                       backend:   mutation-sample-pass    (≥1 mutant killed for standard,
+                                                           ≥3 for Critical-EC steps)
+                       refactor:  diff-stat + smoke-test (no user-visible change)
+
+                   Determine REQUIRED_TYPE from step's nature:
+                     - Step touches files matching manifest.ui.framework conventions
+                       (e.g. *.kt for Compose, *.tsx for React) AND manifest.ui.framework != null
+                       → ui
+                     - Step modifies *.controller.* or routes.* or *Endpoint.*
+                       OR step.Owned references an AC labelled "API"
+                       → api
+                     - Step modifies bin/, scripts/, *.sh, or step.Goal mentions "CLI"
+                       → cli
+                     - Step.Module is server-side AND no UI/API/CLI signal AND step has
+                       at least one Critical-EC in Owned
+                       → backend (mutation-sample required)
+                     - TECH-pipeline step with no user-visible change
+                       → refactor
+                     - Default fallback (no signal → standard backend) → backend (1 mutant)
+
+                   Read step's `ground_truth:` field from plan.md (set by @Architect at
+                   PLAN time, can be overridden by PO when CONFIRM is interactive).
+                   If absent → use REQUIRED_TYPE inferred above.
+
+                   Read step_commits[N].ground_truth from task file:
+                     - Empty / missing → BLOCK gate. Output to PO:
+                         "📸 Step <N> requires a ground-truth artefact (type: <REQUIRED_TYPE>).
+                          Why: <one-line reason: 'AI verification has ~68% ceiling; one
+                          non-AI artefact closes the gap on this class of defect'>.
+                          Attach with:
+                            /kit-attach <path-to-screenshot|test-output|command-log>
+                          Or override with /kit-approve --no-ground-truth (logged as
+                          technical debt; appears in Defects log Source column as
+                          'ground-truth-waived')."
+                       Do NOT proceed to A. PARSE RUNBOOK until artefact attached or override.
+                     - Non-empty → record in step_commits[N].ground_truth as
+                       {type, path, summary} and proceed.
+
+                   Sleep mode override: in sleep mode, gate auto-WAIVES with note
+                   "ground_truth_waived (sleep mode)" in MORNING_REPORT.md
+                   § Open questions. Sleep accepted defer-to-wake-up by opt-in;
+                   waking PO sees the waiver list and decides per-step.
+
+                   Manifest opt-out: manifest.ground_truth.required: false skips this
+                   gate entirely. Logged once per task in step_commits[1].notes:
+                   "ground_truth gate disabled project-wide (manifest)". Don't repeat
+                   per step.
 
                 A. PARSE RUNBOOK (P14, v6.1+):
                    From @CodeWriter Step 8 output, extract the four mandatory
@@ -497,6 +600,8 @@ Six steps. Every step writes a checkpoint. Steps that ask the PO are clearly mar
                    pipeline pauses):
 
                      ✅ Step <N> — automated checks PASS, committed as <sha>.
+                     Ground-truth artefact: <type> at <path> — attached.
+                                          (or "WAIVED — see Defects log" if /kit-approve --no-ground-truth was used)
                      Runbook for manual verification:
 
                      <verbatim runbook block from @CodeWriter Step 8>
@@ -508,8 +613,10 @@ Six steps. Every step writes a checkpoint. Steps that ask the PO are clearly mar
                                                     auto-suggested by SessionStart hook).
                        /kit-defect <description> — found a defect during manual check,
                                                    re-open step <N> with this defect.
-                       /kit-revert-step          — undo step <N> entirely (git reset
-                                                   to step_commits[<N-1>].sha).
+                       /kit-revert-step          — undo step <N> entirely (v6.2: via
+                                                   `git revert`, non-destructive;
+                                                   creates reverse commit on top of HEAD,
+                                                   originals stay in history).
 
                    Wait for one of the three. If PO sends anything else → repeat the prompt.
 
@@ -567,6 +674,10 @@ Six steps. Every step writes a checkpoint. Steps that ask the PO are clearly mar
                     git diff --stat <step_commits[N-1].sha or task_start_commit>..<step_commits[N].sha>
                     (skip steps where superseded: true — they were re-opened by /kit-defect
                      and replaced by a later commit; the latest non-superseded sha is what counts)
+                  v6.2: when computing the per-step diff, also surface entries with
+                  `kind: revert` as their own row labelled "↩ revert step N" — they
+                  represent /kit-revert-step actions and should be visible to PO at
+                  diff-review even though their net effect on working tree is "undo".
                   This gives PO a per-step breakdown table in plan.md § Diff-review §
                   "Per-step diff", complementary to the total.
                 Append the result to plan.md § Diff-review.
@@ -726,7 +837,7 @@ If loop broke at budget exhaustion or OVERFLOW or unknown:
 
 ## Per-step defect handling (v6.1+)
 
-When PO issues `/kit-defect <description>` at 5.6 (interactive mode only):
+When PO issues `/kit-defect <description>` at 5.6 (interactive mode only). v6.2+: now also captures `defect_origin` for telemetry — see `kit/_shared/commands/kit-defect.md` step 3a for the prompt logic.
 
 ```
 1. Read .planning/CURRENT.md.active_task → task file → current_step_idx (this is step N).
@@ -736,52 +847,96 @@ When PO issues `/kit-defect <description>` at 5.6 (interactive mode only):
      "Step <N> has accumulated 3 PO-reported defects after green machine-checks.
       Consider /kit-revert-step or replan."
 
+1a. v6.2+ — parse --origin=<value> flag. If absent, prompt PO once (see
+    kit-defect.md.template § Step 3a). Wait for re-invocation with --origin.
+    Valid values: spec | code | review | test | ui | trace | scope | unknown.
+
 2. Append to test-cases.md:
    - New TC row: TC-<next_id> | <module> | <step.Owned[0]> | <DEFECT_DESCRIPTION>
                  | FAIL | (PO-reported)
    - Defects log entry: OPEN, severity=auto-derived
      (Critical-EC step → high; otherwise medium).
+     Include v6.2 fields: Origin: <value>, Step: <N>,
+     Ground-truth-attached: <true|false|waived> (from step_commits[N].ground_truth).
 
 3. In plan.md § Implementation plan, replace `[x] Step N` with `[ ] Step N`.
 
 4. Mark step_commits[N].superseded = true (do NOT delete the entry — diff-review
    needs it for "before fix" baseline).
 
-5. Increment step_commits[N].defect_count (or initialize to 1).
+5. Increment step_commits[N].defect_count (or initialize to 1). Append entry to
+   step_commits[N].defects[] (initialize if missing) with {tc_id, origin,
+   severity, ground_truth_attached, reported_at}.
+
+5a. v6.2+ — if `evals/runs/<kit_version>/defects.csv` directory exists, append
+    one row: timestamp,task_slug,step,tc_id,severity,origin,found_by=po,
+             ground_truth_attached,lane=standard.
+    If directory absent → skip silently.
 
 6. Re-enter EXECUTE loop at step 5.2 WRITE for step N with extended STEP_CONTEXT
-   that includes the new failing TC row. Skip 5.1 READ if same session — context
-   is still loaded.
+   that includes the new failing TC row + the defect's `origin` value (so
+   @CodeAgent can prioritize: e.g. origin=ui → make sure ground-truth artefact
+   is updated; origin=spec → escalate to PO with proposal "spec amendment").
 
 7. After 5.4 REVIEW CLEAN → 5.4b runs again, writes a NEW commit (replaces
    step_commits[N].sha; marks the old commit as superseded but keeps it in
    git history for diff baseline).
 
-8. 5.6 CHECKPOINT runs again with full 3-way fork. Loop until /kit-approve.
+8. 5.6 CHECKPOINT runs again with full 3-way fork (and ground-truth gate).
+   Loop until /kit-approve.
 ```
 
-When PO issues `/kit-revert-step` at 5.6 (interactive mode only):
+When PO issues `/kit-revert-step` at 5.6 (interactive mode only). v6.2: switched from `git reset --hard` to `git revert` (non-destructive). Working copy is updated by NEW commits; original step commits stay in history. This avoids the harness destructive-action permission gate (`git reset --hard` would trigger a second confirmation prompt even after PO's in-band `/kit-approve`).
 
 ```
 1. Same prerequisites as /kit-defect (active_task, current_step_idx, status check).
 
-2. Confirm with PO: "/kit-revert-step will run `git reset --hard <step_commits[N-1].sha>`,
-   destroying any uncommitted changes. Confirm with /kit-approve, or cancel."
+2. Pre-flight: working tree MUST be clean (`git status --porcelain` empty).
+   Unlike v6.1's `git reset --hard`, `git revert` does NOT discard uncommitted
+   work — and we refuse to mix in-progress edits into the revert commit.
+   Dirty tree → STOP, ask PO to stash/commit/discard first.
 
-3. On confirm:
-   - `git reset --hard <step_commits[N-1].sha or task_start_commit>`
-   - Remove step_commits[N] entry from task file.
+3. Confirm with PO: "/kit-revert-step will create N revert commit(s) on top
+   of HEAD (one per reverted step, newest first). Original step commits stay
+   in history. Squash on merge will clean this up. Confirm with /kit-approve,
+   or cancel."
+
+4. On confirm, for each step in [current_step_idx down to N] (newest first
+   to minimize merge conflicts):
+   a. Pick eligible non-superseded sha from step_commits[N] (skip entries
+      with kind: revert or superseded: true).
+   b. Run `git revert --no-edit <sha>`.
+   c. On conflict → `git revert --abort`, STOP, output options to PO
+      (revert later steps first, or resolve manually).
+   d. On success → capture revert_sha (git rev-parse HEAD).
+   e. Append new step_commits[] entry: {step: N, sha: revert_sha, kind: revert,
+      reverts: <sha>, goal: "Revert step <N>: <orig>", changed_files: <files>,
+      superseded: false}.
+   f. Mark the original step_commits[] entry with sha == <reverted sha> as
+      superseded: true.
+
+5. After all reverts succeed:
    - Set current_step_idx = N - 1.
-   - Replace `[x] Step N` with `[ ] Step N` in plan.md.
+   - Replace `[x] Step N` with `[ ] Step N` in plan.md (for all reverted steps).
+   - Update Last-checkpoint: <ISO> — NEXT: step N reverted by PO; replan or re-execute.
 
-4. Output to PO:
-     "Step <N> reverted. Working copy at <sha>. Choose:
+6. Output to PO:
+     "Step <N> reverted via git revert. Working copy at <new HEAD sha>.
+      Reverse commits added: <count>. Originals marked superseded in step_commits[].
+      Choose:
         /kit-approve            — re-run step <N> with the same plan-step description
         /kit-rework <reason>    — pre-step replan (replan-on-discovery)
-        /kit-revert-step        — revert another step (cascading)"
+        /kit-revert-step        — cascade revert further back"
 
-5. Wait for PO direction.
+7. Wait for PO direction.
 ```
+
+Note for `step_commits[]` schema (v6.2+): entries gain a `kind` field
+(default `step` for back-compat with legacy v6.1 entries; new value `revert`
+for entries created by /kit-revert-step). Diff-review at 5.10 walks
+`step_commits[]` filtering `kind: revert` entries to compute "what landed
+in the end" vs "what was attempted" — the per-step diff sub-table shows
+both attempts and reverts honestly.
 
 `/kit-defect` and `/kit-revert-step` are unavailable in sleep mode (no PO at screen). The kit-defect.md and kit-revert-step.md slash commands themselves enforce this by reading `mode` from CURRENT.md and refusing to run if mode=sleep.
 
@@ -928,6 +1083,7 @@ When calling `knowledge-my-app_search_docs`:
 - DO NOT create a v5-style monolithic `feature.md`. v6 splits it into spec.md (frozen) and plan.md (mutable). New features get both files at ANALYSIS time.
 - DO NOT skip 5.4b COMMIT (v6.1+) when `manifest.auto_commit_per_step: true`. Per-step commits are the anchor for `/kit-step-resume` and `/kit-revert-step`; skipping them silently makes those commands degrade to /kit-resume semantics. If pre-commit hook fails, STOP and escalate — never `--no-verify`.
 - DO NOT pass a step to 5.6 CHECKPOINT without all four runbook sections from @CodeWriter (How to verify / Regression / Known limitations / Decisions I made). Empty `(none)` is fine; missing entirely is a STOP in interactive mode and a WARNING in sleep mode.
+- DO NOT proceed past the 5.6 ground-truth gate (P18, v6.2+) without one of: (a) a ground-truth artefact attached via `/kit-attach <path>` and recorded in `step_commits[N].ground_truth`, (b) explicit PO override `/kit-approve --no-ground-truth` (logged as `Source: ground-truth-waived` in test-cases.md Defects log), (c) project-wide opt-out via `manifest.ground_truth.required: false` (logged once per task, not per step), (d) sleep-mode auto-waive (loud note in MORNING_REPORT.md). Skipping this gate without one of those four paths defeats the only non-AI verification step in v6.2.
 - DO NOT auto-add a `Runnable:` line to a plan step at 3a. Runnable is a planning decision (what user surface this step delivers); the field is missing because PO/Analyst hasn't decided yet. STOP and ask.
 - DO NOT bypass slice caps in sleep mode. OVERFLOW → BLOCKED-shutdown, not auto-raise.
 - DO NOT bypass the destructive gates (DEPLOY / DESTROY / SECRET_ROTATE / MIGRATION / EXTERNAL_API) in sleep mode. Hitting any → BLOCKED-shutdown with the gate name as the reason.

@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "6.1.0"
+kit_version: "6.2.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -46,14 +46,53 @@ language_code: en
 auto_approve: false
 
 # ─────────────────────────────────────────────
-# SLICE CAPS (v6.0+ — P1)
+# SLICE CAPS (v6.0+ — P1; v6.2+ adds max_tokens_per_step — P17)
 # ─────────────────────────────────────────────
 # Hard caps enforced by @Main at PLAN/CONFIRM and by @CodeWriter at every step.
 # Overflow → BLOCKED (no auto-trim). Set any field to 0 to disable that cap.
+#
+# v6.2+ rationale for max_tokens_per_step: Anthropic context-engineering guidance
+# ("smallest set of high-signal tokens") + 2024–2026 research showing LLM-as-
+# reviewer accuracy degrades with prompt complexity. Cap is enforced at 5.1
+# EXTRACT (where STEP_CONTEXT is built); @Main attempts to trim optional sub-
+# bundles (REPO_MAP excerpt → unrelated tcs rows → distant How-it-works
+# subsections), then BLOCKED with reason OVERFLOW_TOKENS if still over.
 slice_caps:
-  max_steps: 6              # max steps in plan.md § Implementation plan
-  max_files_per_step: 5     # max files (Create+Modify+Delete) per @CodeWriter step
-  max_lines_per_step: 400   # max +lines + -lines per step
+  max_steps: 6                    # max steps in plan.md § Implementation plan
+  max_files_per_step: 5           # max files (Create+Modify+Delete) per @CodeWriter step
+  max_lines_per_step: 400         # max +lines + -lines per step
+  max_tokens_per_step: 30000      # v6.2+ — STEP_CONTEXT bundle cap (bytes/4 estimate)
+
+# ─────────────────────────────────────────────
+# GROUND TRUTH (v6.2+ — P18)
+# ─────────────────────────────────────────────
+# Mandatory non-AI verification artefact at 5.6 CHECKPOINT before /kit-approve.
+# Backed by Anthropic harness guidance + 2024–2026 research on AI-on-AI
+# verification accuracy ceiling (~68% for code review, ~25% false-negatives).
+# One artefact per step closes the gap on the class of defect that AI checkers
+# share blind spots on (UI broken despite green tests, API contract mismatch,
+# backend logic missing edge cases under mutation).
+#
+# Per-step PO attaches one of:
+#   ui       → screenshot or preview-snapshot
+#   api      → contract-test pass with real payload
+#   cli      → command-output diff before/after
+#   backend  → mutation-sample (≥1 mutant killed; ≥3 for Critical-EC steps)
+#   refactor → diff-stat + smoke test (no user-visible change)
+#
+# Override per-step: /kit-approve --no-ground-truth (logged as technical debt
+# in test-cases.md Defects log). Override project-wide: required: false (logged
+# once per task in step_commits[1].notes).
+ground_truth:
+  required: true             # set false project-wide for spike/exploration repos
+  exclusions:
+    modules: []              # list module names where the gate is skipped
+  default_types:
+    ui: screenshot
+    api: contract-test-pass
+    cli: command-output-diff
+    backend: mutation-sample-pass
+    refactor: diff-stat-and-smoke
 
 # ─────────────────────────────────────────────
 # TEST STRATEGY (v6.0+ — P8)

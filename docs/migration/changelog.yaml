@@ -1,4 +1,184 @@
 versions:
+  - version: "6.2.0"
+    released: "2026-05-08"
+    breaking: false
+    description: |
+      Research-aligned foundation release. Closes the highest-ROI gaps from
+      external research (Anthropic context-engineering and harness guidance,
+      2024–2026 papers on LLM-as-reviewer reliability, mutation testing vs
+      coverage, agent failure modes) without disturbing v6.1's overall shape.
+      The full v7 redesign (3 risk lanes, 9→5 agent consolidation) is staged
+      for later — see PIPELINE_V7_PROPOSAL.md at repo root.
+
+      All five additions are backward-compatible:
+      - existing v6.1 task files keep parsing (legacy `step_commits[]` entries
+        without `kind` field default to `kind: step`);
+      - new manifest fields have safe defaults;
+      - ground-truth gate can be disabled project-wide via
+        `manifest.ground_truth.required: false` for spike/exploration repos.
+
+      ## P0 — /kit-revert-step non-destructive (v6.2.0)
+
+      Switched from `git reset --hard <prev_sha>` to `git revert <sha>`. Same
+      PO-visible semantics (step is undone, plan.md restores [ ] checkbox),
+      but:
+        - Working copy is updated by NEW commits (one revert per reverted step);
+          original commits stay in history. Squash on merge cleans this up.
+        - No harness destructive-action permission gate (the v6.1 double-
+          permission bug is gone — PO's in-band /kit-approve is sufficient).
+        - step_commits[] entries gain a `kind` field (default `step`,
+          new value `revert`); originals are marked `superseded: true` and
+          new revert entries are appended.
+        - Pre-flight requires clean working tree (revert refuses to mix
+          uncommitted PO edits into the revert commit; v6.1 simply discarded
+          them).
+        - Conflict path: `git revert --abort`, surface options to PO (revert
+          later steps first, or resolve manually).
+      Sleep mode BLOCKED-shutdown still uses `git reset --hard <last_green>`
+      (its design assumes wholesale reset to last green); /kit-sleep startup
+      now warns PO if `Bash(git reset --hard *)` is not in
+      `.claude/settings.json` permissions, otherwise harness will prompt
+      mid-sleep and defeat the autonomous mode.
+
+      ## P17 — token-budget slice cap
+
+      Added `manifest.slice_caps.max_tokens_per_step` (default 30000, 0 to
+      disable). Backed by Anthropic context-engineering "smallest set of
+      high-signal tokens" guidance + research showing LLM-as-reviewer
+      accuracy degrades with prompt complexity.
+
+      Enforced at 5.1 EXTRACT (after STEP_CONTEXT bundle is built, before
+      dispatch to subagents). On overflow:
+        - @Main trims optional sub-bundles in priority order (REPO_MAP excerpt
+          → unrelated test-cases rows → distant How-it-works subsections).
+        - If still over → BLOCKED with reason OVERFLOW_TOKENS, escalation
+          identical to other slice-cap overflows.
+        - In sleep mode → BLOCKED-shutdown (cap is user-set, never auto-raised).
+      Final bundle size recorded in `step_commits[N].context_tokens` for
+      telemetry (feeds future v7 analysis of token-cost per gate).
+
+      ## P18 — ground-truth artefact gate at 5.6 CHECKPOINT
+
+      Mandatory non-AI verification artefact at 5.6 before `/kit-approve`.
+      Backed by Anthropic harness guidance: e2e through browser automation /
+      command output / contract tests is critical, juries unit tests miss
+      real-world failures.
+
+      Per-step PO attaches one of (type inferred by @Main from step nature):
+        ui       → screenshot or preview-snapshot
+        api      → contract-test pass with real payload
+        cli      → command-output diff before/after
+        backend  → mutation-sample (≥1 mutant killed; ≥3 for Critical-EC)
+        refactor → diff-stat + smoke test (no user-visible change)
+
+      New command `/kit-attach <path>` records the artefact into
+      `step_commits[N].ground_truth = {type, path, summary, waived: false,
+      attached_at}`.
+
+      Override paths:
+        - per-step: `/kit-approve --no-ground-truth` — logged as technical
+          debt in test-cases.md Defects log under Source: ground-truth-waived.
+          Surfaces the class of defect this gate catches in the waiver text
+          so PO sees what they're trading off.
+        - project-wide: `manifest.ground_truth.required: false` — logged
+          once per task in step_commits[1].notes, not per step.
+        - module-level: `manifest.ground_truth.exclusions.modules: [name]`
+          — useful for headless modules with no visual surface.
+        - sleep mode: auto-WAIVED with loud note in MORNING_REPORT.md
+          § Open questions (sleep accepted defer-by-opt-in).
+
+      Anti-Loop table extended with new STOP condition: 5.6 reached without
+      ground-truth artefact AND override not invoked → block /kit-approve
+      until either attached or overridden.
+
+      ## P19 — defect_origin telemetry
+
+      `/kit-defect <description>` now also accepts `--origin=<value>` flag
+      (or prompts PO once if absent). Valid values:
+        spec | code | review | test | ui | trace | scope | unknown
+
+      Recorded in:
+        - test-cases.md Defects log entry (Origin field)
+        - step_commits[N].defects[] array
+        - evals/runs/<kit_version>/defects.csv (one row per defect; created
+          with header if absent; opt-in by directory presence, same pattern
+          as eval-collector skill)
+
+      defects.csv columns: timestamp, task_slug, step, tc_id, severity,
+      origin, found_by, ground_truth_attached, lane.
+
+      eval-collector skill extended to read defects.csv at task CLOSE and
+      aggregate per-task histograms (by origin, by severity,
+      ground_truth_attached_ratio) into the per-task <task_slug>.md record.
+
+      Purpose: feed the v7 § 8.2 exit criterion — gates with signal_ratio
+      < 5% over 30 tasks are candidates for redesign or deletion. Without
+      data, agent consolidation (9→5) is intuition; with data it is decision.
+
+      ## Reference: research basis
+
+      External:
+        - Anthropic engineering: "Effective context engineering for AI agents"
+          (smallest high-signal tokens, sub-agent dispatch with condensed
+          summaries) → P17.
+        - Anthropic engineering: "Effective harnesses for long-running agents"
+          (e2e through browser automation critical; unit tests miss real-world
+          failures) → P18.
+        - LLM-as-reviewer reliability: arXiv:2505.20206, arXiv:2509.01494,
+          ICSE 2025 calibration paper (~68% accuracy ceiling, complex
+          prompting ↑ misjudgment) → motivates P18 ground-truth, P19 origin
+          telemetry.
+        - Meta ACH (mutation testing > coverage for finding real bugs) → P18
+          backend artefact type.
+        - Failure modes (operational hallucination, scope drift, cascading)
+          → P0 keep-non-destructive, P17 token-budget.
+
+      Internal:
+        - PIPELINE_V7_PROPOSAL.md (full redesign, this release stages the
+          first wave).
+        - docs/process-review-v6.1.md (early diagnosis + P0 motivation).
+
+      ## What this release does NOT change (deliberate)
+
+      Deferred to v7.0.0 to preserve v6.1 stability:
+        - Agent consolidation 9→5 (Architect = Analyst+Designer; Verifier =
+          TestKeeper+Reviewer+DoDGate+TraceabilityChecker). Needs prompt
+          rewrites + telemetry validation.
+        - 3 risk lanes (trivial/standard/critical). Triage + lane branching
+          is significant pipeline restructure.
+        - Mutation-sample as a generic skill (currently the artefact is
+          attached by PO; future v7 wraps mutation-generation in @Verifier).
+      Migration path: v6.2 (this) → v6.3 (telemetry-only iteration) →
+      v7.0.0-alpha (lanes opt-in, agents unchanged) → v7.0.0-beta (agent
+      consolidation per defects.csv data) → v7.0.0 stable.
+    files_changed:
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/commands/kit-revert-step.md.template
+      - kit/_shared/commands/kit-defect.md.template
+      - kit/_shared/commands/kit-approve.md.template
+      - kit/_shared/commands/kit-attach.md.template
+      - kit/_shared/skills/eval-collector/SKILL.md.template
+      - kit/manifest.schema.json
+    manifest_changes:
+      added_fields:
+        - path: "slice_caps.max_tokens_per_step"
+          default: 30000
+          description: "v6.2+ (P17) — STEP_CONTEXT bundle token cap (bytes/4 estimate). Enforced at 5.1 EXTRACT after bundle build, before subagent dispatch. 0 disables. Overflow → @Main trims optional sub-bundles, then BLOCKED with reason OVERFLOW_TOKENS."
+        - path: "ground_truth.required"
+          default: true
+          description: "v6.2+ (P18) — enforce 5.6 ground-truth artefact gate project-wide. false skips the gate (logged once per task as 'gate disabled project-wide')."
+        - path: "ground_truth.exclusions.modules"
+          default: []
+          description: "v6.2+ — list of module names (matching modules[].name) where 5.6 ground-truth gate is skipped. Useful for headless modules with no visual surface."
+        - path: "ground_truth.default_types"
+          default:
+            ui: screenshot
+            api: contract-test-pass
+            cli: command-output-diff
+            backend: mutation-sample-pass
+            refactor: diff-stat-and-smoke
+          description: "v6.2+ — override @Main 5.6 type-inference defaults per category. First match wins; built-in inference fallback applies if no override matches."
+
   - version: "6.1.0"
     released: "2026-05-07"
     breaking: false

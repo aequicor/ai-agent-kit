@@ -1,8 +1,10 @@
-# AI-agent kit `v6.1.0`
+# AI-agent kit `v6.2.0`
 
-AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete, **deliberately small** agent team into your project — 9 agents (unchanged since v5), with hard slice caps, a mandatory diff-review gate, scope-drift detection, a frozen-vs-mutable spec/plan split, and (new in v6.1) **per-step commits, vertical-slice gate, runbook reports, clean-session-per-step automation, defect-feedback at 5.6, and an autonomous `sleep mode`** for unattended runs.
+AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a complete, **deliberately small** agent team into your project — 9 agents (unchanged since v5), with hard slice caps, a mandatory diff-review gate, scope-drift detection, a frozen-vs-mutable spec/plan split, per-step commits, vertical-slice gate, runbook reports, clean-session-per-step automation, defect-feedback at 5.6, an autonomous `sleep mode` for unattended runs, and **(new in v6.2)** a research-aligned foundation: **non-destructive `/kit-revert-step` (no harness double-prompt), token-budget slice cap (P17), mandatory ground-truth artefact gate at 5.6 (P18), and `defect_origin` telemetry feeding `evals/runs/<version>/defects.csv` (P19)**.
 
-v6.1 is a workflow-guarantees layer on top of v6.0. All five additions (P12–P16) are backward-compatible — opt out via manifest flags if needed. v6.0 itself was the structural release that closed three v5 gaps: scope drift, missing diff-review step, and spec rot during replan. See [docs/migration/changelog.yaml](docs/migration/changelog.yaml) for the full rationale and per-version migration plans.
+v6.2 is a research-aligned PATCH-MINOR layer (non-breaking; all opt-out via manifest) staged before the larger v7 redesign. The full v7 plan — 3 risk lanes (trivial/standard/critical) and 9→5 agent consolidation — is documented in [PIPELINE_V7_PROPOSAL.md](PIPELINE_V7_PROPOSAL.md) but not yet implemented; v6.2 lands the highest-ROI subset that does not require pipeline restructure.
+
+v6.1 was a workflow-guarantees layer on top of v6.0 (P12–P16). v6.0 itself was the structural release that closed three v5 gaps: scope drift, missing diff-review step, and spec rot during replan. See [docs/migration/changelog.yaml](docs/migration/changelog.yaml) for full rationale and per-version migration plans.
 
 **Multi-host:** pick `opencode`, `claude-code`, or both — projects can run on either runtime, or on both side-by-side. Subagent prompts are shared via the kit's `_shared/` tree, while host-specific frontmatter and config files (`opencode.json`, `.claude/settings.json`) are rendered per host.
 

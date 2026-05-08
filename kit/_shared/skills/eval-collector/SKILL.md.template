@@ -25,6 +25,23 @@ If `evals/runs/` does not exist → no-op, no warning, no log entry. The skill i
 - Task is a `/kit-techdebt` batch — those generate one record per entry, which would clutter `runs/`. Tech-debt batches use their own batch report file.
 - Task was aborted before CLOSE (no DoDGate verdict to record).
 
+## v6.2+ defect-origin telemetry
+
+In addition to the per-task `<task_slug>.md` records below, this skill is
+the read-side counterpart to `evals/runs/<kit_version>/defects.csv` (written
+incrementally by `/kit-defect` at every PO-found defect). At task CLOSE the
+skill aggregates the defects.csv rows for this task and emits a per-task
+defects summary (count by origin, count by severity, ground_truth_attached
+ratio) into the `<task_slug>.md` record.
+
+The aggregation feeds gate_signal_ratio analysis: if a particular `origin`
+class accumulates over many tasks while no gate is being credited with
+catching it pre-CLOSE, that gate is a candidate for redesign or deletion
+(per the v7 proposal § 8.2 exit criterion: signal_ratio < 5% → deprecate).
+
+The skill is purely read-on-CLOSE for defects.csv; it never writes to it
+(that is /kit-defect's job per row).
+
 ## Process
 
 ```
@@ -83,6 +100,17 @@ If `evals/runs/` does not exist → no-op, no warning, no log entry. The skill i
    - total_tokens = "(manual: copy from provider dashboard)"
    - post_close_bugs = "(manual: fill 24h after CLOSE)"
    - notes = "(manual: surprises, escalations, subjective readability)"
+
+   ## v6.2+ defect telemetry aggregation (auto from defects.csv):
+   - If evals/runs/<kit_version>/defects.csv exists:
+     Filter rows where task_slug == this task. For the matched rows compute:
+     - defects_total = row count
+     - defects_by_origin = histogram (spec/code/review/test/ui/trace/scope/unknown)
+     - defects_by_severity = histogram (low/medium/high/critical)
+     - ground_truth_attached_ratio = count(true) / count(true|false|waived)
+     - waived_count = count(waived)
+     Render as a "## Defects (v6.2 telemetry)" subsection in the task record.
+   - If defects.csv absent → omit the subsection (no error).
 
    ## For long-horizon tasks (tier: long-horizon in seed file):
    - sessions_used = count of /kit-resume invocations recorded in task file
