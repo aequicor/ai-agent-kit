@@ -171,7 +171,7 @@ The UI section is the only conditional block. All others mirror v6.x Analyst out
 (Filled by @Verifier MODE=DOD at CLOSE. Empty until then.)
 ```
 
-Plan.md skeleton is unchanged across consolidated_architect ∈ {true, false} — the merger is upstream of plan.md content.
+Plan.md skeleton structure is unchanged from v6.x — Architect's merger is upstream of plan.md content (same skeleton; @Main fills it after CONFIRM regardless of agent roster).
 
 ## Workflow
 

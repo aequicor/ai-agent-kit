@@ -1,4 +1,115 @@
 versions:
+  - version: "7.0.1"
+    released: "2026-05-08"
+    breaking: false
+    description: |
+      v7.0.0 audit-and-patch. After v7.0.0 shipped, an internal audit of
+      cross-file consistency surfaced eight regressions where v7.0.0-beta /
+      v7.0.0-alpha references survived the mass-rename pass. Plus two bugs
+      where Main.body.md.template documented PO commands (/kit-revert,
+      /kit-rework) that had no corresponding command files. Plus dangling
+      references to the removed @Designer agent in install/config prompts
+      and OpenCode runtime config.
+
+      None of these affect runtime safety — they affect documentation
+      correctness, install rendering, and PO-discoverability of features
+      that v7.0.0 already supports. Shipping as v7.0.1 PATCH.
+
+      ## Documentation regressions fixed (8)
+
+      1. `kit/.claude/agents/Architect.md.template` — frontmatter description
+         said "Active iff manifest.agents.consolidated_architect=true". Flag
+         removed in v7.0.0. Updated to "Single-pass author...; replaces v6.x
+         @Analyst + @Designer."
+      2. `kit/.claude/agents/Verifier.md.template` — same regression for
+         consolidated_verifier flag. Same fix.
+      3. `kit/.opencode/agents/Architect.md.template` — same as 1.
+      4. `kit/.opencode/agents/Verifier.md.template` — same as 2.
+      5. `kit/_shared/agents/Architect.body.md.template:174` — referenced
+         "consolidated_architect ∈ {true, false}". Rewritten to describe
+         the v6.x → v7.0 plan.md skeleton continuity instead.
+      6. `kit/_shared/commands/kit-new-feature.md.template` — three sites
+         documenting `manifest.lanes.enabled` flag (removed). Updated.
+      7. `kit/_shared/commands/kit-sleep.md.template` — risk gate condition
+         referenced `manifest.lanes.enabled: true`. Updated.
+      8. `README.md` — agent roster table still listed @Analyst, @TestKeeper,
+         @Reviewer, @TraceabilityChecker, @DoDGate, @Designer (six removed
+         agents). Replaced with the v7.0.0 5-agent roster (@Main, @Architect,
+         @CodeWriter, @Verifier, @BugFixer); added a "removed in v7.0.0"
+         line for the migration audit trail.
+
+      ## Designer agent dangling references fixed (4)
+
+      9.  `kit/opencode.json.template` — `models` block still rendered
+          `{{DESIGNER_MODEL}}` entry. Replaced with `{{ARCHITECT_MODEL}}` +
+          `{{VERIFIER_MODEL}}` entries (matching v7.0.0 manifest schema).
+      10. `docs/prompts/setup.md:397` — placeholder rendering table listed
+          `DESIGNER_MODEL`. Replaced with `ARCHITECT_MODEL` and
+          `VERIFIER_MODEL` (each falling back to `reviewer` when null).
+      11. `docs/prompts/setup.md:526` — install logic had a "Special —
+          Designer agent" subsection telling the install prompt to skip
+          rendering `Designer.md` when `models.designer == null`. Subsection
+          rewritten to "UI section handling": Architect emits the UI section
+          conditionally based on `manifest.ui.framework`.
+      12. `docs/prompts/config.md:51` — `/kit-config "удали designer"` →
+          `models.designer = null` example used a removed field. Replaced
+          with an Architect/Verifier model swap example.
+
+      ## Missing command files (2)
+
+      13. `/kit-revert <file>` was documented in 4 places (Main.body.md.template
+          step 5.10 prose, MORNING_REPORT template, kit-revert-step "next"
+          options, etc.) but no command file existed. PO running it would
+          fall through to generic command-not-found. Created
+          `kit/_shared/commands/kit-revert.md.template`: file-level revert
+          using `git checkout <task.start_commit> -- <FILE>` (surgical, non-
+          destructive — distinct from `/kit-revert-step` which reverts a
+          whole step).
+
+      14. `/kit-rework <reason>` was documented in 5 places (5.6 fork,
+          5.10 fork, kit-defect prose, MORNING_REPORT, replan section) but
+          no command file existed. Created
+          `kit/_shared/commands/kit-rework.md.template`: routes to
+          replan-on-discovery skill (Pattern E, PO-directed) when the skill
+          is installed; falls back to manual plan.md amendment otherwise.
+          Pre-EXECUTE class re-dispatches @Architect with EXISTING_DOCS for
+          a re-draft.
+
+      ## Other corrections (1)
+
+      15. `kit/_shared/skills/eval-collector/SKILL.md.template` — Hard rule
+          5 ("idempotent on re-run") gave `/kit-checkpoint` as an example
+          of a re-trigger command. That command does not exist; it was a
+          v4 artefact. Reworded to remove the spurious example.
+
+      ## What this release does NOT change
+
+      - No agent body changes.
+      - No schema changes (manifest.schema.json untouched).
+      - No new manifest fields.
+      - No telemetry changes.
+      - No pipeline behaviour changes.
+
+      Pure documentation-and-completeness patch. Upgrade is `/kit-update`
+      with a single re-render — no manifest migration needed.
+    files_changed:
+      - kit/.claude/agents/Architect.md.template
+      - kit/.claude/agents/Verifier.md.template
+      - kit/.opencode/agents/Architect.md.template
+      - kit/.opencode/agents/Verifier.md.template
+      - kit/_shared/agents/Architect.body.md.template
+      - kit/_shared/commands/kit-new-feature.md.template
+      - kit/_shared/commands/kit-sleep.md.template
+      - kit/_shared/commands/kit-revert.md.template
+      - kit/_shared/commands/kit-rework.md.template
+      - kit/_shared/skills/eval-collector/SKILL.md.template
+      - kit/opencode.json.template
+      - README.md
+      - docs/prompts/setup.md
+      - docs/prompts/config.md
+    manifest_changes:
+      added_fields: []
+
   - version: "7.0.0"
     released: "2026-05-08"
     breaking: true

@@ -1,4 +1,4 @@
-# AI-agent kit `v7.0.0`
+# AI-agent kit `v7.0.1`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a deliberately small **5-agent team** into your project: **@Main** (orchestrator), **@Architect** (spec.md + plan.md skeleton + UI section, single pass), **@CodeWriter** (code + tests + 5-section runbook), **@Verifier** (mode-driven verification — 10 modes covering test execution, code review, definition-of-done, traceability), **@BugFixer** (debug + fix). Hard slice caps, mandatory diff-review gate, scope-drift detection, frozen-vs-mutable spec/plan split, per-step commits, vertical-slice gate, runbook reports, clean-session-per-step automation, defect-feedback at 5.6, autonomous `sleep mode`, non-destructive `/kit-revert-step`, token-budget slice cap, mandatory ground-truth artefact gate at 5.6, `defect_origin` and `gate_signal_ratio` telemetry, **risk-based pipeline triage with three lanes** (trivial / standard / critical) — all mandatory in v7.0.0.
 
@@ -196,16 +196,12 @@ The setup prompt asks one question per axis, validates cardinality, and checks e
 | Agent | Role |
 |---|---|
 | `@Main` | Orchestrator — your single entry point. Runs FEATURE / BUG / TECH pipelines. **In Claude Code installs this role lives in the main session via `CLAUDE.md`** (no separate `Main.md` subagent file). |
-| `@Analyst` | Single-pass author of the feature design doc (Why, ACs, Edge Cases, How it works, Test plan) with built-in self-reflection. Replaces v4 BusinessAnalyst + SystemAnalyst + CornerCaseReviewer + CoverageChecker + ConsistencyChecker. |
-| `@CodeWriter` | Implements one step **TDD-first** (failing tests → minimal code → green). |
-| `@TestKeeper` | Owns `test-cases.md` end-to-end. Modes: GENERATE / DRAFT / EXECUTE / RECONCILE / RERUN / SCAN / APPEND. Replaces v4 QA + TestExecutor + TestRunner. |
-| `@Reviewer` | Read-only single-dispatch review: code + security smell + stub-scan. Replaces v4 CodeReviewer + SecurityReviewer + STUB-SCAN. |
-| `@TraceabilityChecker` | Read-only matrix audit AC/EC → TC → test file → source symbol. Reports orphans + weak assertions (info-only). |
-| `@DoDGate` | Definition-of-Done gate — last gate before CLOSE. 7 hard checks. Returns binary PASS / BLOCK. |
+| `@Architect` | Single-pass author of spec.md (Why / ACs / Edge cases / How it works / Test plan / UI section if applicable) plus plan.md skeleton. Built-in self-reflection. v7.0.0 merger of v6.x `@Analyst + @Designer`. |
+| `@CodeWriter` | Implements one step **TDD-first** by default (configurable via `manifest.test_strategy`); emits 5-section runbook (Changed Files / How to verify / Regression / Known limitations / Decisions I made). |
+| `@Verifier` | Mode-driven verification. Modes: GENERATE / DRAFT / EXECUTE / RECONCILE / RERUN / SCAN / APPEND / REVIEW / DOD / TRACE. v7.0.0 merger of v6.x `@TestKeeper + @Reviewer + @DoDGate + @TraceabilityChecker`; per-mode behaviour and output formats inlined in `Verifier.body.md.template`. |
 | `@BugFixer` | Defect analysis + fix + retro entry. `MODE=debug` is the v5 successor to the v4 `@Debugger` agent. |
-| `@Designer` | UI/UX appendix on UI features (read-only; appends `## UI / UX` section to `feature.md`). Optional — omit by setting `models.designer: null`. |
 
-v4 agents removed in v5: `@BusinessAnalyst`, `@SystemAnalyst`, `@CornerCaseReviewer`, `@CoverageChecker`, `@ConsistencyChecker`, `@CodeReviewer`, `@SecurityReviewer`, `@QA`, `@TestRunner`, `@TestExecutor`, `@Debugger`, `@AutoApprover`, `@PromptEngineer`. Their responsibilities are folded into the merged agents above or into the manifest's `auto_approve` flag.
+v6.x agents removed in v7.0.0: `@Analyst`, `@Designer`, `@TestKeeper`, `@Reviewer`, `@DoDGate`, `@TraceabilityChecker`. Their responsibilities and behaviour are folded into `@Architect` (the first two) and `@Verifier` (the last four, mode-driven). Telemetry — gate ids in `evals/runs/<version>/gates.csv` — is preserved across the v6.x → v7.0.0 boundary so signal_ratio aggregation stays comparable.
 
 ---
 
@@ -215,8 +211,8 @@ The test-cases file at `<vault_path>/features/<module>/<feature>/test-cases.md` 
 
 1. As you test the feature manually, change the **Status** column for each row: `PEND` → `PASS` or `FAIL`. Add Notes if helpful.
 2. If you find a bug not covered by an existing TC, **add a new row** with `Status: FAIL` and Notes describing the symptom.
-3. Run `/kit-fix` (no arguments). It dispatches `@TestKeeper MODE=SCAN`, lists all `FAIL`/`PEND` rows (including your additions), and asks which to fix.
-4. For each chosen TC, the BUG pipeline runs: `@BugFixer` analyzes, fixes, runs `@Reviewer`, builds, updates the file (Status `FAIL`→`PASS`, Defects log `OPEN`→`FIXED`), commits, appends to `retro.md`. Then `@TestKeeper MODE=RERUN` re-verifies with you.
+3. Run `/kit-fix` (no arguments). It dispatches `@Verifier MODE=SCAN`, lists all `FAIL`/`PEND` rows (including your additions), and asks which to fix.
+4. For each chosen TC, the BUG pipeline runs: `@BugFixer` analyzes, fixes, runs `@Verifier MODE=REVIEW`, builds, updates the file (Status `FAIL`→`PASS`, Defects log `OPEN`→`FIXED`), commits, appends to `retro.md`. Then `@Verifier MODE=RERUN` re-verifies with you.
 5. You can also run `/kit-fix TC-05` to fix one specific row, or `/kit-fix "login crashes when email has +"` to add a new TC and fix it in one step.
 
 You never have to leave the markdown file — it's the source of truth.

@@ -50,7 +50,9 @@ kit/_shared/commands/kit-map.md.template
 kit/_shared/commands/kit-new-feature.md.template
 kit/_shared/commands/kit-resume.md.template
 kit/_shared/commands/kit-revert-step.md.template
+kit/_shared/commands/kit-revert.md.template
 kit/_shared/commands/kit-review.md.template
+kit/_shared/commands/kit-rework.md.template
 kit/_shared/commands/kit-sleep.md.template
 kit/_shared/commands/kit-status.md.template
 kit/_shared/commands/kit-step-resume.md.template

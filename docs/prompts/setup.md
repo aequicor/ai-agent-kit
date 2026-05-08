@@ -394,7 +394,8 @@ Then build a substitution map per host. The base map (host-agnostic placeholders
 | `DEFAULT_MODEL` | `models.default` | `claude_code.models.default` |
 | `CODER_MODEL` | `models.coder` | `claude_code.models.coder` |
 | `REVIEWER_MODEL` | `models.reviewer` | `claude_code.models.reviewer` |
-| `DESIGNER_MODEL` | `models.designer` (fallback to `coder` if null) | `claude_code.models.designer` (fallback to `coder` if null) |
+| `ARCHITECT_MODEL` | `models.architect` (fallback to `reviewer` if null/absent) | `claude_code.models.architect` (fallback to `reviewer`) |
+| `VERIFIER_MODEL` | `models.verifier` (fallback to `reviewer` if null/absent) | `claude_code.models.verifier` (fallback to `reviewer`) |
 | `SMALL_MODEL` | `models.small` (fallback to `coder` if missing) | `claude_code.models.small` (fallback to `coder` if missing) |
 | `MCP_SERVERS_BLOCK` | (unused — OpenCode renders MCPs inside `opencode.json` directly) | JSON object with only enabled MCPs, inserted into `.mcp.json` at project root (rule B3) |
 
@@ -521,9 +522,9 @@ For each non-`_shared/` kit file from the index (after classification in 3.3):
 
 **Multi-host commands/skills:** because `_shared/` is only inlined via INCLUDE, and there is no top-level wrapper for individual commands/skills, each host needs to render `_shared/commands/*.md.template` and `_shared/skills/*/SKILL.md.template` directly. Implement this by, **per host**, iterating `_shared/commands/` and `_shared/skills/` (from the same `_index.txt`) and writing the rendered content to `<target>/<host_dir>/commands/` and `<target>/<host_dir>/skills/` respectively. The same is true for `_shared/_shared.md.template` → `<target>/<host_dir>/_shared.md`, `_shared/FILE_STRUCTURE.md.template` → `<target>/<host_dir>/FILE_STRUCTURE.md`, `_shared/sessions/SESSIONS.md.template` → `<target>/<host_dir>/sessions/SESSIONS.md`, `_shared/i18n/<code>.md` → `<target>/<host_dir>/i18n/<code>.md`. INCLUDE resolution still applies for any directive these files contain.
 
-### 3.6. Special — Designer agent
+### 3.6. UI section handling (v7.0.0+)
 
-If `models.designer == null` (OpenCode) OR `claude_code.models.designer == null` (Claude Code), do NOT render `Designer.md` for that host's `agents/` directory. Set `UI_FRAMEWORK` to empty for that host so any other Designer-related rendering becomes inert.
+The legacy `@Designer` agent was removed in v7.0.0. UI/UX is now produced by `@Architect` as the `## UI / UX` section of `spec.md` when `UI_REQUIRED=true` (computed at @Main step 2). To install the kit on a project with no UI surface: set `manifest.ui.framework: null`. `@Main` then sets `UI_REQUIRED=false` for every task and the section is omitted entirely (no placeholder, no `(none)` literal). Skip this step — there is no separate Designer.md to suppress.
 
 ### 3.7. Render nested module instruction files
 

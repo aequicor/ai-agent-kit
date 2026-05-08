@@ -1,5 +1,5 @@
 ---
-description: v7.0.0-beta+ Architect — consolidated Analyst + Designer. Single-pass author of spec.md (Why / ACs / Edge cases / How / Test plan / UI section if applicable) plus plan.md skeleton. Active iff manifest.agents.consolidated_architect=true; otherwise unused (legacy Analyst + Designer dispatched separately).
+description: v7.0.0+ Architect — single-pass author of spec.md (Why / ACs / Edge cases / How / Test plan / UI section if applicable) plus plan.md skeleton. Replaces v6.x @Analyst + @Designer.
 mode: subagent
 model: {{PROVIDER_ID}}/{{ARCHITECT_MODEL}}
 temperature: 0.2

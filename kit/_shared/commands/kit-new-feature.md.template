@@ -1,5 +1,5 @@
 ---
-description: Start a new feature, bug fix, or tech task. Argument: $FEATURE_DESCRIPTION. Optional flags (any order, before description): `--sleep` (autonomous mode — equivalent to /kit-sleep), `--risk=trivial|standard|critical` (v7.0.0-alpha+; only effective when manifest.lanes.enabled=true; otherwise informational). Delegates to @Main for full orchestration.
+description: Start a new feature, bug fix, or tech task. Argument: $FEATURE_DESCRIPTION. Optional flags (any order, before description): `--sleep` (autonomous mode — equivalent to /kit-sleep), `--risk=trivial|standard|critical` (overrides @Main's auto-classification at Step 0a). Delegates to @Main for full orchestration.
 ---
 
 You are a Senior project orchestrator. Your task is to start a new feature, bug fix, or tech task and hand it off to `@Main` for full pipeline execution.
@@ -35,9 +35,7 @@ Mode: interactive
 Risk: <EXPLICIT_RISK or "(auto-classify)">    # v7.0.0-alpha+; @Main resolves at Step 0a
 ```
 
-If `manifest.lanes.enabled: false` → @Main records `risk: standard` informationally and runs the v6.3 pipeline as-is, regardless of EXPLICIT_RISK or auto-classify outcome. The Risk: line is recorded for future telemetry only.
-
-If `manifest.lanes.enabled: true` → @Main routes through the matching lane variant (trivial / standard / critical — see kit/_shared/agents/Main.body.md.template § "Lane pipeline variants").
+@Main routes through the matching lane variant (trivial / standard / critical) per `kit/_shared/agents/Main.body.md.template` § "Lane pipeline variants". Lanes are mandatory in v7.0.0+; the v7.0.0-alpha `lanes.enabled: false` opt-out is gone.
 
 `@Main` will execute the v6 FEATURE pipeline:
 

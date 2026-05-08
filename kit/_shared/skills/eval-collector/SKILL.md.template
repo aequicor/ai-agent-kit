@@ -197,7 +197,7 @@ The skill is purely read-on-CLOSE for defects.csv; it never writes to it
 2. **Never overwrite an existing run record.** If `<task_slug>.md` already exists, append a version suffix. Eval history is audit data — never lose it.
 3. **Honest about what is automatable.** If a field cannot be derived deterministically (token counts, subjective notes, post-CLOSE bugs), mark it `(manual)` — do not synthesize a value.
 4. **No external network calls.** Skill operates only on filesystem + git. No fetching token counts from provider APIs (that requires credentials and adds dependency surface).
-5. **Idempotent on re-run.** If invoked twice on the same closed task (e.g. PO re-runs `/kit-status` then `/kit-checkpoint` to re-trigger), produce the same output deterministically (re-read filesystem each time).
+5. **Idempotent on re-run.** If invoked twice on the same closed task (e.g. PO re-runs `/kit-status` to inspect the record), produce the same output deterministically — re-read filesystem each time, never assume state from prior invocation.
 
 ## Cross-host compatibility
 

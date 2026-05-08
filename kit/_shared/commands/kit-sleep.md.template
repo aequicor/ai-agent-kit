@@ -18,7 +18,7 @@ Argument: $FEATURE_DESCRIPTION
 3. Verify `manifest.auto_commit_per_step != false`:
    - If the manifest has `auto_commit_per_step: false` → STOP. Output: "Sleep mode requires `auto_commit_per_step: true` (default). Set it in the manifest or run `/kit-new-feature --sleep` only after enabling per-step commits."
 
-3a. v7.0.0-alpha+ — risk gate. If `$FEATURE_DESCRIPTION` carries `--risk=critical` (or auto-classify infers critical based on heuristics in @Main Step 0a) AND `manifest.lanes.enabled: true` AND `manifest.lanes.critical_block_sleep: true` (default) → STOP. Output:
+3a. v7.0.0+ — risk gate. If `$FEATURE_DESCRIPTION` carries `--risk=critical` (or auto-classify infers critical based on heuristics in @Main Step 0a) AND `manifest.lanes.critical_block_sleep: true` (default) → STOP. Output:
     "Critical risk + sleep mode is the highest blast-radius combination. Refused per `manifest.lanes.critical_block_sleep: true`. Either run interactively (drop --sleep) or set the flag false in your manifest (logged as risk acceptance)."
     Note: this check runs at /kit-sleep entry on the explicit flag. Auto-classification happens later in @Main Step 0a; if @Main classifies as critical mid-startup, BLOCKED-shutdown procedure runs immediately with reason "critical risk auto-detected during sleep startup".
 
