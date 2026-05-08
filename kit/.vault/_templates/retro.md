@@ -58,7 +58,7 @@ What was changed.
 
 - [x] Unit test passes
 - [x] All module tests pass
-- [x] @Reviewer verdict CLEAN
+- [x] @Verifier MODE=REVIEW verdict CLEAN
 - [x] Build successful
 
 ### Lesson

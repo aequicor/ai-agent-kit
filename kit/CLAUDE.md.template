@@ -15,18 +15,14 @@
 
 For shared rules used by every subagent (instruction hierarchy, language, file-access matrix, MCP/skills, anti-loop, dispatch convention) — read `{{HOST_DIR}}/_shared.md`. That file is also injected into every subagent under `{{HOST_DIR}}/agents/`.
 
-## Subagents (v5 — 9 agents total)
+## Subagents (v7.0.0 — 4 subagents + main-session orchestrator = 5 total)
 
 Each has its own file under `{{HOST_DIR}}/agents/`. Dispatch with the Agent tool, `subagent_type=<AgentName>`.
 
-- **@Analyst** — single-pass author of the feature design doc (Why, ACs, Edge Cases, How it works, Test plan). Built-in self-reflection loop. Replaces v4 BusinessAnalyst + SystemAnalyst + CornerCaseReviewer + CoverageChecker + ConsistencyChecker.
-- **@CodeWriter** — implements one step of the plan TDD-first (failing tests → minimal code → green).
-- **@TestKeeper** — owns `test-cases.md` end-to-end: generates, executes, reconciles, reruns. Replaces v4 QA + TestExecutor + TestRunner.
-- **@Reviewer** — single read-only pass: code review + security smell + stub-scan. Replaces v4 CodeReviewer + SecurityReviewer + STUB-SCAN.
-- **@TraceabilityChecker** — AC/EC → TC → test file → source symbol matrix; orphan check.
-- **@DoDGate** — 7-check Definition-of-Done; binary PASS / BLOCK.
+- **@Architect** — single-pass author of the feature design doc (Why, ACs, Edge Cases, How it works, Test plan, UI section if applicable). Built-in self-reflection loop. Replaces v6.x @Analyst + @Designer.
+- **@CodeWriter** — implements one step of the plan TDD-first (failing tests → minimal code → green). Emits 5-section runbook.
+- **@Verifier** — mode-driven verification. MODE ∈ {GENERATE, DRAFT, EXECUTE, RECONCILE, RERUN, SCAN, APPEND, REVIEW, DOD, TRACE}. Replaces v6.x @TestKeeper + @Reviewer + @DoDGate + @TraceabilityChecker. Per-mode behaviour and output formats inlined in `_shared/agents/Verifier.body.md.template`.
 - **@BugFixer** — defect analysis + fix + retro entry. `MODE=debug` absorbs the v4 Debugger role.
-- **@Designer** — UI/UX appendix on UI features (optional; omit by setting `claude_code.models.designer: null`).
 
 There is **no** `@Main` subagent file in Claude Code installs — the orchestrator role lives in this main session.
 

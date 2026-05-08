@@ -1,4 +1,4 @@
-# ai-agent-kit v6.0+ — real-CI mirror of in-session @TestKeeper EXECUTE gates.
+# ai-agent-kit v6.0+ — real-CI mirror of in-session @Verifier MODE=EXECUTE gates.
 # Rendered when capability profile `ci-github` is selected and ci_host=github.
 # Without this workflow, the lint/compile/test gates exist only during agent
 # sessions — a PR merged via the GitHub web UI bypasses them. This workflow

@@ -45,21 +45,10 @@
       "additionalProperties": false,
       "default": {"max_steps": 6, "max_files_per_step": 5, "max_lines_per_step": 400, "max_tokens_per_step": 30000}
     },
-    "agents": {
-      "type": "object",
-      "description": "v7.0.0-beta+ (P22) — agent consolidation flags. The kit ships both legacy v6.x agents (Analyst, Designer, TestKeeper, Reviewer, DoDGate, TraceabilityChecker) and new consolidated v7.x agents (Architect, Verifier). Each consolidation is a separate opt-in flag — PO can A/B test one merger at a time, validate via gates.csv telemetry, then enable the next. v7.0.0-stable will remove the legacy agents and force consolidation; until then both code paths coexist.",
-      "properties": {
-        "consolidated_architect": {"type": "boolean", "default": false, "description": "v7.0.0-beta+ — when true, @Main dispatches @Architect (single body merging Analyst + Designer) instead of @Analyst + @Designer separately. Saves one dispatch per UI feature; one agent reads spec.md once. Requires models.architect (or fallback). Default false (legacy path) until v7.0.0-stable."},
-        "consolidated_verifier": {"type": "boolean", "default": false, "description": "v7.0.0-beta+ — when true, @Main dispatches @Verifier with MODE={GENERATE|DRAFT|EXECUTE|RECONCILE|RERUN|SCAN|APPEND|REVIEW|DOD|TRACE} instead of @TestKeeper / @Reviewer / @DoDGate / @TraceabilityChecker separately. Per-mode behaviour identical to legacy; saves four dispatches across the per-step verification chain. Requires models.verifier (or fallback). Default false (legacy path) until v7.0.0-stable."}
-      },
-      "additionalProperties": false,
-      "default": {"consolidated_architect": false, "consolidated_verifier": false}
-    },
     "lanes": {
       "type": "object",
-      "description": "v7.0.0-alpha+ (P21) — risk-based pipeline triage. When `enabled: true`, @Main's Step 0a CLASSIFY computes a `risk` value for the task (trivial | standard | critical) and routes through a different pipeline density. The 9 agents are unchanged — lanes change which gates fire, not who fires them. trivial: short pipeline (no Analyst, no DoDGate, no TraceabilityChecker, no diff-review; ground-truth still mandatory). standard: current v6.x pipeline. critical: standard + Reviewer adversarial 2nd pass + mutation-sample backend artefact + sleep mode forbidden. Default disabled — projects without explicit opt-in keep the v6.x pipeline. Per PIPELINE_V7_PROPOSAL.md § 5.",
+      "description": "v7.0.0+ (P21) — risk-based pipeline triage (MANDATORY in v7.0.0). @Main's Step 0a CLASSIFY computes a `risk` value for the task (trivial | standard | critical) and routes through a different pipeline density. trivial: short pipeline (no Architect spec, no DoD, no Trace, no diff-review; ground-truth still mandatory). standard: full pipeline. critical: standard + adversarial 2nd pass + mutation-sample backend artefact + sleep mode forbidden. Per PIPELINE_V7_PROPOSAL.md § 5.",
       "properties": {
-        "enabled": {"type": "boolean", "default": false, "description": "Opt-in for the lane-triage system. false (default) = pipeline behaves exactly like v6.3 regardless of risk. true = @Main classifies risk at Step 0a and routes accordingly."},
         "default_risk": {"type": "string", "enum": ["trivial", "standard", "critical"], "default": "standard", "description": "Fallback risk when @Main cannot determine from heuristics and PO did not pass --risk explicitly. standard is the safe default — overflows escalate, never undershoots."},
         "trivial_max_files": {"type": "integer", "minimum": 1, "default": 1, "description": "Maximum files a trivial-lane task may touch. Overflow auto-reclassifies to standard with a notice."},
         "trivial_max_lines": {"type": "integer", "minimum": 1, "default": 30, "description": "Maximum lines added+removed for a trivial-lane task. Overflow auto-reclassifies."},
@@ -69,7 +58,7 @@
         "auto_classify": {"type": "boolean", "default": true, "description": "Let @Main infer risk at Step 0a from heuristics (file count estimate, public-API touch, security-surface keywords, Critical EC presence). false = always require explicit --risk flag in /kit-new-feature; missing flag falls back to default_risk."}
       },
       "additionalProperties": false,
-      "default": {"enabled": false, "default_risk": "standard", "trivial_max_files": 1, "trivial_max_lines": 30, "trivial_no_new_public_symbols": true, "critical_block_sleep": true, "critical_require_mutation_sample": true, "auto_classify": true}
+      "default": {"default_risk": "standard", "trivial_max_files": 1, "trivial_max_lines": 30, "trivial_no_new_public_symbols": true, "critical_block_sleep": true, "critical_require_mutation_sample": true, "auto_classify": true}
     },
     "telemetry": {
       "type": "object",
@@ -275,28 +264,22 @@
     },
     "models": {
       "type": "object",
-      "description": "OpenCode model role assignments (used as {{PROVIDER_ID}}/{{MODEL}} in opencode.json and agent frontmatter). Required iff 'opencode' ∈ hosts. v7.0.0-beta+ adds optional architect/verifier roles for consolidated agents — fallback chain: architect → reviewer; verifier → reviewer (matching the legacy bodies' model assignments).",
+      "description": "OpenCode model role assignments (used as {{PROVIDER_ID}}/{{MODEL}} in opencode.json and agent frontmatter). Required iff 'opencode' ∈ hosts. v7.0.0 roster: 4 OpenCode subagents (Architect, CodeWriter, Verifier, BugFixer) + small. `models.architect` and `models.verifier` are optional — fall back to `models.reviewer` if absent (matches the v6.x convention where multiple legacy agents shared the reviewer model).",
       "required": ["default", "coder", "reviewer"],
       "properties": {
         "default": {"type": "string", "minLength": 1},
         "coder": {"type": "string", "minLength": 1},
-        "reviewer": {"type": "string", "minLength": 1},
-        "designer": {
-          "oneOf": [
-            {"type": "string", "minLength": 1},
-            {"type": "null"}
-          ]
-        },
+        "reviewer": {"type": "string", "minLength": 1, "description": "Default model for @Architect and @Verifier when `models.architect` / `models.verifier` are absent. Named `reviewer` for v6.x compatibility — actual usage in v7.0.0 covers Architect/Verifier dispatch."},
         "small": {"type": "string"},
         "architect": {
-          "description": "v7.0.0-beta+ — model for the consolidated @Architect agent (Analyst + Designer). Required iff agents.consolidated_architect: true. If absent, kit falls back to `reviewer`.",
+          "description": "v7.0.0+ — model for @Architect. Optional; falls back to `models.reviewer` if absent or null.",
           "oneOf": [
             {"type": "string", "minLength": 1},
             {"type": "null"}
           ]
         },
         "verifier": {
-          "description": "v7.0.0-beta+ — model for the consolidated @Verifier agent. Required iff agents.consolidated_verifier: true. If absent, kit falls back to `reviewer`.",
+          "description": "v7.0.0+ — model for @Verifier. Optional; falls back to `models.reviewer` if absent or null.",
           "oneOf": [
             {"type": "string", "minLength": 1},
             {"type": "null"}
@@ -306,7 +289,7 @@
     },
     "claude_code": {
       "type": "object",
-      "description": "Claude Code runtime config. Required iff 'claude-code' ∈ hosts. Models accept the Claude Code CLI aliases (opus | sonnet | haiku) or full model IDs (e.g. claude-opus-4-7, claude-sonnet-4-6, claude-haiku-4-5). v7.0.0-beta+ adds optional architect/verifier — fallback chain identical to OpenCode side.",
+      "description": "Claude Code runtime config. Required iff 'claude-code' ∈ hosts. Models accept the Claude Code CLI aliases (opus | sonnet | haiku) or full model IDs. v7.0.0 roster: 4 subagents (Architect, CodeWriter, Verifier, BugFixer) — main session is the orchestrator.",
       "required": ["models"],
       "properties": {
         "models": {
@@ -315,23 +298,17 @@
           "properties": {
             "default": {"type": "string", "minLength": 1},
             "coder": {"type": "string", "minLength": 1},
-            "reviewer": {"type": "string", "minLength": 1},
-            "designer": {
-              "oneOf": [
-                {"type": "string", "minLength": 1},
-                {"type": "null"}
-              ]
-            },
+            "reviewer": {"type": "string", "minLength": 1, "description": "Default for @Architect/@Verifier when their dedicated entries are absent. Named for v6.x compatibility."},
             "small": {"type": "string"},
             "architect": {
-              "description": "v7.0.0-beta+ — model for consolidated @Architect. Falls back to `reviewer` if absent.",
+              "description": "v7.0.0+ — model for @Architect. Optional; falls back to `reviewer`.",
               "oneOf": [
                 {"type": "string", "minLength": 1},
                 {"type": "null"}
               ]
             },
             "verifier": {
-              "description": "v7.0.0-beta+ — model for consolidated @Verifier. Falls back to `reviewer` if absent.",
+              "description": "v7.0.0+ — model for @Verifier. Optional; falls back to `reviewer`.",
               "oneOf": [
                 {"type": "string", "minLength": 1},
                 {"type": "null"}

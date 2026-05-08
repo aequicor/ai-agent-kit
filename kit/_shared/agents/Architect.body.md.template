@@ -1,4 +1,4 @@
-> ai-agent-kit v7.0.0-beta+ — multi-host (OpenCode + Claude Code), spec/plan split, **consolidated Analyst + Designer**. Active iff `manifest.agents.consolidated_architect: true`. Otherwise this agent body is unused; @Main dispatches the legacy @Analyst and (separately) @Designer agents.
+> ai-agent-kit v7.0.0+ — multi-host (OpenCode + Claude Code), spec/plan split. **Architect — single-pass author of spec.md (Why / AC / EC / How / Test plan / UI section if applicable) + plan.md skeleton.** Replaces the v6.x `@Analyst + @Designer` two-agent sequence; legacy bodies were removed in v7.0.0.
 
 ## Role
 
@@ -168,7 +168,7 @@ The UI section is the only conditional block. All others mirror v6.x Analyst out
 (Filled by @Main at step 5.10 — between EXECUTE and CLOSE. Empty until then.)
 
 ## Definition of Done
-(Filled by @Verifier MODE=DOD at CLOSE — or @DoDGate when consolidated_verifier=false. Empty until then.)
+(Filled by @Verifier MODE=DOD at CLOSE. Empty until then.)
 ```
 
 Plan.md skeleton is unchanged across consolidated_architect ∈ {true, false} — the merger is upstream of plan.md content.
@@ -222,19 +222,9 @@ Open questions: <count>
 Reflection findings: <list, or "none">
 ```
 
-## Migration from v6.x
+## Telemetry
 
-When `manifest.agents.consolidated_architect: false` (v6.x default) → @Main dispatches @Analyst + @Designer separately as before. This Architect body is unused; the kit ships both for PO to A/B test.
-
-When `manifest.agents.consolidated_architect: true` → @Main dispatches THIS agent once, with UI_REQUIRED computed at @Main step 2. UI features get a single round-trip; non-UI features avoid the unused Designer dispatch entirely.
-
-PO opts in via:
-```
-/kit-config set agents.consolidated_architect true
-```
-Or by editing the manifest directly. The flag is per-task class — no per-task override (would defeat consistency).
-
-Telemetry differential: gates.csv rows logged by Architect use `gate: architect-spec` and `gate: architect-ui`. Old separate paths log `gate: analyst-spec` and `gate: designer-ui`. After 30 tasks of either configuration, eval-collector signal_ratio comparison shows whether the merge holds quality.
+`gates.csv` rows logged by @Architect: `gate: architect-spec` (always — spec.md write) and `gate: architect-ui` (only when UI_REQUIRED=true — UI section write). Both rows include `verdict: pass` on successful return; `block` on Reflection-detected gaps that PO must resolve.
 
 ## RAG Pagination (when UI_REQUIRED=true)
 

@@ -23,7 +23,7 @@
 ## Step state (v6.1)
 
 **current_step_idx:** 0     <!-- index of the step that just completed machine-checks; 0 = no step done yet; -->
-                            <!-- updated by @Main at 5.6 CHECKPOINT after step N's @Reviewer CLEAN + commit. -->
+                            <!-- updated by @Main at 5.6 CHECKPOINT after step N's @Verifier MODE=REVIEW CLEAN + commit. -->
 
 ### step_commits
 

@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change manually — set by setup.md / /kit-update)
 # ─────────────────────────────────────────────
-kit_version: "7.0.0-beta"
+kit_version: "7.0.0"
 
 # ─────────────────────────────────────────────
 # LANGUAGE
@@ -64,63 +64,40 @@ slice_caps:
   max_tokens_per_step: 30000      # v6.2+ — STEP_CONTEXT bundle cap (bytes/4 estimate)
 
 # ─────────────────────────────────────────────
-# AGENTS (v7.0.0-beta+ — P22, OPT-IN consolidation)
+# AGENT ROSTER (v7.0.0+ — fixed, 5 agents total)
 # ─────────────────────────────────────────────
-# v7 path consolidates 9 agents → 5 over multiple stages. v7.0.0-beta ships
-# both legacy and consolidated agent bodies; per-merger flags control which
-# is dispatched. Default false on all flags = exact v7.0.0-alpha behaviour.
+# v7.0.0 finalized the 9 → 5 consolidation:
+#   @Main        — orchestrator (main session in Claude Code; subagent in OpenCode)
+#   @Architect   — spec.md + plan.md skeleton + UI section. Replaces v6.x Analyst+Designer.
+#   @CodeWriter  — code + tests + 5-section runbook. Unchanged.
+#   @Verifier    — mode-driven verification (10 modes). Replaces v6.x TestKeeper+Reviewer+DoDGate+TraceabilityChecker.
+#   @BugFixer    — debug + fix + retro. Unchanged.
 #
-# Mergers available:
-#   consolidated_architect — replaces @Analyst + @Designer with @Architect
-#                           (one dispatch produces spec.md + plan.md skeleton
-#                           + UI section if applicable). Saves one dispatch
-#                           per UI feature.
-#   consolidated_verifier  — replaces @TestKeeper + @Reviewer + @DoDGate +
-#                           @TraceabilityChecker with @Verifier (mode-driven
-#                           single agent). Saves four dispatches across the
-#                           per-step verification chain.
-#
-# Recommended A/B path:
-#   1. Stay on consolidated_architect=false, consolidated_verifier=false for
-#      ~30 tasks to accumulate gates.csv baseline.
-#   2. Flip consolidated_architect=true for 15 tasks; compare gates.csv
-#      signal_ratio for analyst-spec/designer-ui vs architect-spec/architect-ui.
-#   3. If quality holds, flip consolidated_verifier=true. Same comparison.
-#   4. v7.0.0-stable will remove the legacy bodies once data validates the
-#      mergers across the user community.
-#
-# To enable: /kit-config set agents.consolidated_architect true
-agents:
-  consolidated_architect: false   # @Analyst + @Designer → @Architect
-  consolidated_verifier: false    # @TestKeeper + @Reviewer + @DoDGate + @TraceabilityChecker → @Verifier
+# No flags. v7.0.0-beta's `agents.{consolidated_architect, consolidated_verifier}`
+# opt-in toggles are removed; consolidated dispatch is the only path.
 
 # ─────────────────────────────────────────────
-# LANES (v7.0.0-alpha+ — P21, OPT-IN)
+# LANES (v7.0.0+ — P21, MANDATORY)
 # ─────────────────────────────────────────────
-# Risk-based pipeline triage. When enabled: true, @Main classifies every new
-# task at Step 0a as trivial | standard | critical and routes through a
-# different pipeline density:
+# Risk-based pipeline triage. @Main classifies every task at Step 0a as
+# trivial | standard | critical and routes through a different pipeline
+# density:
 #
 #   trivial   — ≤1 file, ≤30 lines, no new public symbols. Short pipeline:
-#               @CodeWriter → @Reviewer (one pass) → ground-truth → commit.
-#               No @Analyst, no @TestKeeper GENERATE/DRAFT, no @DoDGate, no
-#               @TraceabilityChecker, no 5.10 diff-review.
-#   standard  — current v6.x pipeline (unchanged).
-#   critical  — standard + @Reviewer adversarial 2nd pass + mutation-sample
-#               backend artefact (≥3 mutants killed) + sleep mode forbidden.
+#               @CodeWriter → @Verifier MODE=REVIEW (Pass A only) →
+#               ground-truth → commit. No @Architect, no DoD, no Trace,
+#               no 5.10 diff-review. Saves ~70% tokens for tiny tasks.
+#   standard  — full pipeline.
+#   critical  — standard + adversarial 2nd pass on every step + mutation-
+#               sample backend artefact (≥3 mutants killed) + sleep mode
+#               forbidden + diff-review never auto-approved.
 #
-# Agents themselves are unchanged in v7.0.0-alpha (still 9). Lane consolidation
-# 9→5 lands in v7.0.0-beta after gates.csv data validates which agents earn
-# their token cost. See PIPELINE_V7_PROPOSAL.md.
-#
-# Default: enabled: false. Projects without explicit opt-in keep v6.3 pipeline
-# regardless of risk classification. Set enabled: true to start using lanes.
-#
-# PO can override @Main's auto-classification by passing --risk explicitly:
+# v7.0.0 made lanes mandatory; the v7.0.0-alpha `lanes.enabled: false`
+# opt-out is removed. PO can override @Main's auto-classification by passing
+# --risk explicitly:
 #   /kit-new-feature --risk=trivial "rename label on Save button to Submit"
 #   /kit-new-feature --risk=critical "rotate auth tokens in OAuth flow"
 lanes:
-  enabled: false                          # set true to enable lane-triage
   default_risk: standard                  # fallback when auto-classify uncertain
   trivial_max_files: 1                    # overflow → auto-reclassify to standard
   trivial_max_lines: 30
@@ -324,15 +301,15 @@ provider:
 # ─────────────────────────────────────────────
 models:
   default: moonshotai/kimi-k2.6
-  coder: qwen/qwen3-coder-next
-  reviewer: deepseek/deepseek-v4-pro
-  designer: openai/gpt-5.4         # set to null to omit @Designer agent (legacy v6.x)
+  coder: qwen/qwen3-coder-next       # @CodeWriter, @BugFixer
+  reviewer: deepseek/deepseek-v4-pro # default for @Architect, @Verifier — see architect/verifier overrides below
   small: qwen/qwen3-coder-next
-  # v7.0.0-beta+ — required ONLY when the matching consolidated flag is true.
-  # If absent, kit falls back to `reviewer`. Uncomment + set when enabling
-  # agents.consolidated_architect / agents.consolidated_verifier.
-  # architect: deepseek/deepseek-v4-pro    # for consolidated @Architect
-  # verifier: deepseek/deepseek-v4-pro     # for consolidated @Verifier
+  # v7.0.0+ — optional dedicated models for the consolidated agents.
+  # If unset, both fall back to `reviewer`. Uncomment + set if you want a
+  # different model for either entry point (e.g. stronger model for the
+  # single Architect pass that produces the entire spec).
+  # architect: openai/gpt-5.4
+  # verifier: deepseek/deepseek-v4-pro
 
 # ─────────────────────────────────────────────
 # CLAUDE_CODE (required iff claude-code ∈ hosts; omit otherwise)

@@ -1,4 +1,184 @@
 versions:
+  - version: "7.0.0"
+    released: "2026-05-08"
+    breaking: true
+    description: |
+      v7.0.0 stable — closes the migration plan from PIPELINE_V7_PROPOSAL.md.
+
+      ## Two simultaneous breaking changes
+
+      1. **Agent consolidation 9 → 5 (forced).** The v7.0.0-beta opt-in flags
+         `agents.consolidated_architect` / `agents.consolidated_verifier`
+         are removed. Six legacy agent bodies + their host wrappers are
+         deleted (18 files total). The kit now ships exactly:
+            @Main         — orchestrator
+            @Architect    — spec.md + plan.md skeleton + UI section (single pass)
+            @CodeWriter   — code + tests + runbook
+            @Verifier     — mode-driven verification (10 modes inlined)
+            @BugFixer     — bug debug + fix
+         Per-mode behaviour and output formats inside @Verifier match the
+         v6.x legacy agents verbatim — gates.csv ids unchanged, eval-collector
+         aggregation unchanged.
+
+      2. **Lanes mandatory.** The v7.0.0-alpha `lanes.enabled: false` opt-out
+         is removed. Every task is classified at Step 0a as
+         trivial | standard | critical and routed accordingly. `manifest.lanes`
+         retains the per-lane tuning fields.
+
+      ## What was removed
+
+      Agent body files (`kit/_shared/agents/`):
+        - Analyst.body.md.template
+        - Designer.body.md.template
+        - TestKeeper.body.md.template
+        - Reviewer.body.md.template
+        - DoDGate.body.md.template
+        - TraceabilityChecker.body.md.template
+
+      Host wrappers (`kit/.claude/agents/` + `kit/.opencode/agents/`):
+        - Analyst.md.template (×2 hosts)
+        - Designer.md.template
+        - TestKeeper.md.template
+        - Reviewer.md.template
+        - DoDGate.md.template
+        - TraceabilityChecker.md.template
+
+      Manifest fields:
+        - `agents.consolidated_architect` (was opt-in flag)
+        - `agents.consolidated_verifier` (was opt-in flag)
+        - `agents.*` block entirely (no remaining fields)
+        - `lanes.enabled` (was opt-in flag)
+        - `models.designer` / `claude_code.models.designer` (Designer agent removed)
+
+      ## What was preserved
+
+      - All gate ids in gates.csv (`build`, `review-correctness`, `dod`,
+        `traceability`, etc.) — telemetry is comparable across the v6.x → v7.0
+        boundary.
+      - `models.architect` / `models.verifier` (now the canonical entries;
+        fallback to `models.reviewer` when absent — `reviewer` is kept under
+        that name for compatibility, but it now drives @Architect / @Verifier
+        in v7.0.0).
+      - All v6.2 / v6.3 / v7.0.0-alpha / v7.0.0-beta features below this layer:
+        - per-step commits, slice caps, ground-truth gate, defect_origin
+          telemetry, gate_signal_ratio telemetry, sleep mode, /kit-revert-step
+          via git revert, /kit-attach for ground-truth artefacts, lane
+          variants (trivial / standard / critical).
+
+      ## Inlined Verifier prose
+
+      The v7.0.0-beta `Verifier.body.md.template` referenced legacy bodies
+      ("see TestKeeper.body.md § MODE=GENERATE"). After legacy removal those
+      references would dangle — so v7.0.0 inlines every mode's full prose
+      directly into Verifier.body.md.template (~700 lines total, organized
+      by MODE).
+
+      ## Mass-rename in `Main.body.md.template`
+
+      All 65 references to legacy agent names (@Analyst, @Designer,
+      @TestKeeper, @Reviewer, @DoDGate, @TraceabilityChecker) replaced with
+      consolidated equivalents (@Architect, @Verifier MODE=...).
+
+      Same renames applied to:
+        - kit/_shared/agents/CodeWriter.body.md.template
+        - kit/_shared/agents/BugFixer.body.md.template
+        - kit/_shared/commands/{kit-defect, kit-fix, kit-new-feature,
+                                kit-step-resume, kit-techdebt}.md.template
+        - kit/_shared/skills/{bug-retro, definition-of-done,
+                              gate-telemetry}/SKILL.md.template
+        - kit/_shared/FILE_STRUCTURE.md.template
+        - kit/.claude/hooks/{pre-tool-bash-guard.mjs, README.md}
+        - kit/.github/workflows/kit-gates.yml.template
+        - kit/.planning/tasks/TASK.md.template
+        - kit/.vault/_templates/{plan, spec, retro, test-cases}.md
+        - kit/CLAUDE.md.template (subagents roster)
+
+      ## Migration from v7.0.0-beta
+
+      `/kit-update` reads the changelog and applies the schema delta
+      automatically:
+        - Drops `agents.*` block from existing manifests (idempotent: empty
+          object is removed; non-empty raises a one-time warning surfacing
+          the deprecated keys to PO).
+        - Drops `lanes.enabled` field (idempotent).
+        - Drops `models.designer` / `claude_code.models.designer` (idempotent).
+        - Re-renders all kit-managed files; vault / .planning runtime state
+          is preserved.
+
+      Active task interruption: if `/kit-update` runs while
+      `.planning/CURRENT.md.active_task` is set, the upgrade refuses and
+      asks PO to CLOSE or revert the active task first. Reason: legacy
+      agent body removal can leave a v6.x-dispatched in-flight subagent
+      with no body to load.
+
+      ## Migration from v6.x or v7.0.0-alpha (skipping the beta)
+
+      `/kit-update` walks the changelog and applies all intermediate
+      versions' migrations in order. Direct v6.3 → v7.0.0 is supported and
+      handles the consolidation, lane-mandate, ground-truth gate, telemetry
+      additions, and ground-truth defaults in one pass. Full breaking-change
+      list shown to PO before any write.
+
+      ## End of migration plan
+
+      v7.0.0 is the terminus of the migration plan started in v6.2.0 (P0
+      fix `/kit-revert-step`) and proposed in PIPELINE_V7_PROPOSAL.md. The
+      complete migration arc:
+
+        v6.1 → research review (PIPELINE_V7_PROPOSAL.md)
+        v6.2 → P0 fix + ground-truth gate + token cap + defect_origin telemetry
+        v6.3 → gate_signal_ratio telemetry (gates.csv)
+        v7.0.0-alpha → risk lanes opt-in
+        v7.0.0-beta → agent consolidation infrastructure (opt-in)
+        v7.0.0     → consolidation + lanes mandatory; legacy removed
+
+      Future v7.x releases focus on data-driven refinement: gate deprecation
+      based on accumulated signal_ratio, mutation-sample skill (auto-generates
+      mutants for backend ground-truth instead of PO-attached reports),
+      cross-task pattern detection in eval-collector. None of those are
+      breaking; v7.0.0 is the last MAJOR bump on this arc.
+    files_changed:
+      - kit/_shared/agents/Architect.body.md.template
+      - kit/_shared/agents/Verifier.body.md.template
+      - kit/_shared/agents/Main.body.md.template
+      - kit/_shared/agents/CodeWriter.body.md.template
+      - kit/_shared/agents/BugFixer.body.md.template
+      - kit/_shared/commands/kit-defect.md.template
+      - kit/_shared/commands/kit-fix.md.template
+      - kit/_shared/commands/kit-new-feature.md.template
+      - kit/_shared/commands/kit-step-resume.md.template
+      - kit/_shared/commands/kit-techdebt.md.template
+      - kit/_shared/skills/bug-retro/SKILL.md.template
+      - kit/_shared/skills/definition-of-done/SKILL.md.template
+      - kit/_shared/skills/gate-telemetry/SKILL.md.template
+      - kit/_shared/FILE_STRUCTURE.md.template
+      - kit/.claude/hooks/pre-tool-bash-guard.mjs
+      - kit/.claude/hooks/README.md
+      - kit/.github/workflows/kit-gates.yml.template
+      - kit/.planning/tasks/TASK.md.template
+      - kit/.vault/_templates/plan.md
+      - kit/.vault/_templates/spec.md
+      - kit/.vault/_templates/retro.md
+      - kit/.vault/_templates/test-cases.md
+      - kit/CLAUDE.md.template
+      - kit/manifest.schema.json
+      - manifest.example.yaml
+    manifest_changes:
+      added_fields: []
+      removed_fields:
+        - path: "agents.consolidated_architect"
+          reason: "v7.0.0 forces consolidation; flag obsolete."
+        - path: "agents.consolidated_verifier"
+          reason: "v7.0.0 forces consolidation; flag obsolete."
+        - path: "agents"
+          reason: "Block had no remaining fields after the two consolidation flags were removed."
+        - path: "lanes.enabled"
+          reason: "v7.0.0 makes lanes mandatory; flag obsolete."
+        - path: "models.designer"
+          reason: "@Designer agent removed; UI section is part of @Architect."
+        - path: "claude_code.models.designer"
+          reason: "Same as models.designer."
+
   - version: "7.0.0-beta"
     released: "2026-05-08"
     breaking: false
