@@ -1,3 +1,7 @@
+# Archived
+
+See: https://github.com/aequicor/ai-kit-v2
+
 # AI-agent kit `v7.1.0`
 
 AI-agent configuration kit for [OpenCode](https://opencode.ai) and [Claude Code](https://claude.com/product/claude-code). Drops a deliberately small **5-agent team** into your project: **@Main** (orchestrator), **@Architect** (spec.md + plan.md skeleton + UI section, single pass), **@CodeWriter** (code + tests + 5-section runbook), **@Verifier** (mode-driven verification — 10 modes covering test execution, code review, definition-of-done, traceability), **@BugFixer** (debug + fix). Hard slice caps, mandatory diff-review gate, scope-drift detection, frozen-vs-mutable spec/plan split, per-step commits, vertical-slice gate, runbook reports, clean-session-per-step automation, defect-feedback at 5.6, autonomous `sleep mode`, non-destructive `/kit-revert-step`, token-budget slice cap, mandatory ground-truth artefact gate at 5.6, `defect_origin` and `gate_signal_ratio` telemetry, **risk-based pipeline triage with three lanes** (trivial / standard / critical) — all mandatory in v7.0.0.
